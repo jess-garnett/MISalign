@@ -1,2 +1,2 @@
 # MISalign
-Metallography Image Software for Aligment.
+A Metallography Image Software for Alignment.
