@@ -1,15 +1,7 @@
 {
-    "name": "a_myproject_04.mis",
+    "name": "a_myproject_full.mis",
     "calibration": 600000,
     "image:offset": {
-        "a_myimages03.jpg": [
-            "a_myimages02.jpg",
-            [
-                -8,
-                1144
-            ],
-            0.0
-        ],
         "a_myimages04.jpg": [
             "a_myimages03.jpg",
             [
@@ -31,6 +23,14 @@
             [
                 0,
                 0
+            ],
+            0.0
+        ],
+        "a_myimages03.jpg": [
+            "a_myimages02.jpg",
+            [
+                -8,
+                1144
             ],
             0.0
         ]
