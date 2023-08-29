@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from gui.composed import ButtonGrid
+from main_gui.composed import ButtonGrid
 from model.project import Project
-from service.project_file import load_from_mis, save_to_mis
+from model.project_service import load_from_mis, save_to_mis
 from typing import Union
 from os import getcwd
 from copy import deepcopy
