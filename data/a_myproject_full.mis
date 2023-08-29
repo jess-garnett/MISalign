@@ -1,33 +1,33 @@
 {
-    "name": "a_myproject_4.mis",
+    "name": "a_myproject_04.mis",
     "calibration": 600000,
     "image:offset": {
-        "a_myimages3.jpg": [
-            "a_myimages2.jpg",
+        "a_myimages03.jpg": [
+            "a_myimages02.jpg",
             [
                 -8,
                 1144
             ],
             0.0
         ],
-        "a_myimages4.jpg": [
-            "a_myimages3.jpg",
+        "a_myimages04.jpg": [
+            "a_myimages03.jpg",
             [
                 122,
                 1061
             ],
             0.0
         ],
-        "a_myimages2.jpg": [
-            "a_myimages1.jpg",
+        "a_myimages02.jpg": [
+            "a_myimages01.jpg",
             [
                 -9,
                 1087
             ],
             0.0
         ],
-        "a_myimages1.jpg": [
-            "a_myimages1.jpg",
+        "a_myimages01.jpg": [
+            "a_myimages01.jpg",
             [
                 0,
                 0
