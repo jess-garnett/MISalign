@@ -1,5 +1,5 @@
-from model.image import Image
-from model.offset import Offset
+from .image import Image
+from .offset import Offset
 from os.path import split
 from os import chdir
 from PIL import UnidentifiedImageError
