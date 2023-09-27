@@ -1,6 +1,6 @@
 import json
 import pprint
-from model.project import Project
+from .project import Project
 
 def save_to_mis(mis_filepath:str,project:Project) -> Project:
     project_save=dict()
