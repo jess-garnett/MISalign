@@ -1,6 +1,6 @@
-from model.image import Image
-from model.offset import Offset
-from model.project import Project
+from ..model.image import Image
+from ..model.offset import Offset
+from ..model.project import Project
 from PIL import Image as PILImage
 from PIL import ImageDraw, ImageFont
 from typing import Union

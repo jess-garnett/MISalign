@@ -1,10 +1,13 @@
+"""
+Manual Alignment Module
+"""
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image as PILImage
 from PIL import ImageTk
-from model.project import Project
-from model.offset import Offset
-from model.image import Image
+from ..model.project import Project
+from ..model.offset import Offset
+from ..model.image import Image
 
 def ReturnProject(): pass
 
