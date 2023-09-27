@@ -11,8 +11,13 @@
 
 class Relation():
     """Stores the relationship between two images."""
-    def __init__(self,image_a,image_b,relation,*data):
+    def __init__(self,image_a,image_b,relation=None,*data):
         self.ref=(image_a,image_b)
+        self._relation=relation
+        if relation is None:
+            self._rect=None
+            self._rota=None
+            self._points=None
         if relation=='r':
             #rectilinear relationship A(0,0)->B(0,0)
             self._rect=data[0]
@@ -25,14 +30,16 @@ class Relation():
             self._points=None
         elif relation=='p':
             #point-based relation Ai->Bi
-            self._points=data
+            self._points=data[0]
             self._rect=None #TODO calculate rectangular and rotational from point set.
             self._rota=None
     def __str__(self):
         return "Image '"+self.ref[0]+"' relates to image '"+self.ref[1]+"' by:"+str([self._rect,self._rota,self._points])
 
-    def get_rel(self,relation):
-        if relation=='r':
+    def get_rel(self,relation=None):
+        if relation==None:
+            return self.ref
+        elif relation=='r':
             #rectilinear relationship A(0,0)->B(0,0)
             return self._rect
         elif relation=='rr':
