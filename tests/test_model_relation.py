@@ -55,8 +55,8 @@ class TestRelation():
         test_img_a="test_a.png"
         test_img_b="test_a.png"
         test_rel="p"
-        test_data=(((0,0),(100,100)),((0,10),(107,107)))
-        expected_r="test"
+        test_data=(((0,0),(100,100)),((0,10),(100,115)))
+        expected_r=(100,102)
         test_relation=Relation(test_img_a,test_img_b,test_rel,test_data)
         assert test_relation.get_rel('r')==expected_r
     def test_relation_get_rr_points(self):
@@ -65,5 +65,5 @@ class TestRelation():
         test_rel="p"
         test_data=(((0,0),(100,100)),((0,10),(107,107)))
         test_relation=Relation(test_img_a,test_img_b,test_rel,test_data)
-        expected_rr="test"
+        expected_rr=None #TODO implement actual rotation solution algorithm.
         assert test_relation.get_rel('rr')==expected_rr

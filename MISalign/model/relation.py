@@ -8,6 +8,7 @@
     - Can generate rectangular + rotational
 - Can generate a relation tree graphic/table/something showing relation chains
 """
+from statistics import mean
 
 class Relation():
     """Stores the relationship between two images."""
@@ -31,7 +32,7 @@ class Relation():
         elif relation=='p':
             #point-based relation Ai->Bi
             self._points=data[0]
-            self._rect=None #TODO calculate rectangular and rotational from point set.
+            self._rect=None
             self._rota=None
     def __str__(self):
         return "Image '"+self.ref[0]+"' relates to image '"+self.ref[1]+"' by:"+str([self._rect,self._rota,self._points])
@@ -41,10 +42,21 @@ class Relation():
             return self.ref
         elif relation=='r':
             #rectilinear relationship A(0,0)->B(0,0)
-            return self._rect
+            if self._relation=='r':
+                return self._rect
+            elif self._relation=='p':
+                points_a=[x[0] for x in self._points]
+                points_b=[x[1] for x in self._points]
+                shift=[[b[0]-a[0],b[1]-a[1]] for a,b in zip(points_a,points_b)]
+                x_shift=int(mean([x[0] for x in shift]))
+                y_shift=int(mean([x[1] for x in shift]))
+                return (x_shift,y_shift)
         elif relation=='rr':
             #rectilinear and rotational relationship A(0,0)->B(0,0) with B rotated Theta around B(0,0)
-            return [self._rect,self._rota]
+            if self._relation=='rr':
+                return [self._rect,self._rota]
+            elif self._relation=='p':#TODO implement an actual rotation algorithm here.
+                return None
         elif relation=='p':
             #point-based relation Ai->Bi
             return self._points
