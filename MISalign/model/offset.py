@@ -1,5 +1,6 @@
 
 class Offset():
+    """Store an image-to-image offset."""
     def __init__(self,input:list):
         #expect: [ref:str,rect:tuple(int,int),rota:float]
         self._ref: str = input[0] #reference image for offset
