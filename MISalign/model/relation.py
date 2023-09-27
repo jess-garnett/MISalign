@@ -35,7 +35,7 @@ class Relation():
             self._rect=None
             self._rota=None
     def __str__(self):
-        return "Image '"+self.ref[0]+"' relates to image '"+self.ref[1]+"' by:"+str([self._rect,self._rota,self._points])
+        return "Image '"+self.ref[1]+"' relates to image '"+self.ref[0]+"' by:"+str([self._rect,self._rota,self._points])
 
     def get_rel(self,relation=None):
         if relation==None:
