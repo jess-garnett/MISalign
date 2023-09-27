@@ -32,3 +32,8 @@ class MisFile():
             return None
         else:
             return [x.get_rel() for x in self._relations]
+        
+def load_mis(mis_fp) -> MisFile:
+    pass
+def save_mis(mis_fp,misfile:MisFile) -> None:
+    pass
