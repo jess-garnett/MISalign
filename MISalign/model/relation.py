@@ -60,3 +60,13 @@ class Relation():
         elif relation=='p':
             #point-based relation Ai->Bi
             return self._points
+    def save_rel(self):
+        if self._relation is None:
+            data=None
+        if self._relation=='r':
+            data=self._rect=data[0]
+        elif self._relation=='rr':
+            data=(self._rect,self._rota)
+        elif self._relation=='p':
+            data=self._points
+        return [self.ref,self._relation,data]
