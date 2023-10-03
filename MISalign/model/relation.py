@@ -64,7 +64,7 @@ class Relation():
         if self._relation is None:
             data=None
         if self._relation=='r':
-            data=self._rect=data[0]
+            data=self._rect
         elif self._relation=='rr':
             data=(self._rect,self._rota)
         elif self._relation=='p':
