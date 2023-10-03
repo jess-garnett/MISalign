@@ -1,0 +1,22 @@
+{
+    "image_fps": null,
+    "relations": [
+        [
+            [
+                "test_a.png",
+                "test_b.png"
+            ],
+            null,
+            null
+        ],
+        [
+            [
+                "test_b.png",
+                "test_c.png"
+            ],
+            null,
+            null
+        ]
+    ],
+    "calibration": null
+}

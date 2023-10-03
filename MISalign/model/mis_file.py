@@ -4,6 +4,7 @@
 - Store as json
 """
 import json
+from MISalign.model.relation import Relation
 
 class MisFile():
     def __init__(self,**mis_data):
@@ -44,6 +45,8 @@ class MisFile():
 def load_mis(mis_fp) -> MisFile:
     with open(mis_fp) as infile:
         mis_object = json.load(infile)
+    if "relations" in mis_object.keys() and mis_object['relations'] is not None:
+        mis_object["relations"]=[Relation(x[0][0],x[0][1],x[1],x[2]) for x in mis_object["relations"]]
     return MisFile(**mis_object)
 def save_mis(mis_fp,misfile:MisFile) -> None:
     mis_save=dict()
