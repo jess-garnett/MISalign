@@ -7,6 +7,11 @@ import json
 from MISalign.model.relation import Relation
 
 class MisFile():
+    """Stores all the information about a set of images
+    -Image filepaths
+    -Relation objects
+    -Calibration information
+    """
     def __init__(self,**mis_data):
         if 'image_fps' in mis_data:
             self.image_fps=mis_data['image_fps']#list of filepaths

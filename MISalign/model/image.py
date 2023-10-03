@@ -3,7 +3,9 @@ import numpy as np
 from os.path import split
 
 class Image():
-    # Class Variables
+    """Store image data and generates numpy arrays for image and distance from edge(DFE)
+    - DFE's are used for image blending.
+    """
     def __init__(self,image_fp:str):
         self.image_fp=image_fp
         self.name=split(image_fp)[1]
