@@ -56,3 +56,5 @@ class TestMisFile():
         save_mis(mis_fp,test_mis)
         sl_mis=load_mis(mis_fp)
         assert str(sl_mis)=="A MISalign project with:[['test_a.png', 'test_b.png', 'test_c.png'], [('test_a.png', 'test_b.png'), ('test_b.png', 'test_c.png')], None]"
+    
+    #TODO add tests for relations with values

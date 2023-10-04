@@ -34,11 +34,13 @@ class MisFile():
         else:
             return "A MISalign project with:"+str([self.image_fps,self.get_rels(),self.calibration])
     
-    def get_rels(self):
+    def get_rels(self,relation=None):
         if self._relations is None:
             return None
-        else:
+        elif relation is None:
             return [x.get_rel() for x in self._relations]
+        else:
+            return [[x.get_rel(),x.get_rel(relation)] for x in self._relations]
     def save_rels(self):
         if self._relations is None:
             return None
