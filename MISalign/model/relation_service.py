@@ -6,7 +6,7 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import PIL
-from relation import Relation
+from .relation import Relation
 
 # from MISalign.model.relation import Relation
 
