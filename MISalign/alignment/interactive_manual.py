@@ -29,26 +29,29 @@ class InteractiveManualRelation():
         """Plots the points of the current relation"""
         for pop in self.points:
             self._ax.plot([pop[0][0],pop[1][0]],[pop[0][1],pop[1][1]+self._height],"x:")
-    def change_images(self,imga:Image,imgb:Image):
+    def change(self,imga:Image,imgb:Image,points=None):
         """Replaces image in IMR figure"""
         self._imga=imga
         self._imgb=imgb
         self._height=imga.size[1]
         self.plot_clear()
         self._img_ax=self._ax.imshow(np.vstack([imga._img,imgb._img]))
-    def manual(self): #generalized using button widget so it can run on any interactive GUI.
+        if points is not None:
+            self.points=points
+    def relate(self): #generalized using button widget so it can run on any interactive GUI.
         """Gets user input points from figure"""
         self._click_button=Button(self._ax,label="")
-        self._click_button_event=self._click_button.on_clicked(self.manual_callback)
+        self._click_button_event=self._click_button.on_clicked(self._relate_callback)
         self._clicked_pts=[]
-    def manual_callback(self,event):
+    def _relate_callback(self,event):
         if (int(event.button))==1: #left click #click_type:=
             # print(event.xdata,event.ydata)
             self._ax.plot([event.xdata],[event.ydata],"1r")
             self._clicked_pts.append((int(event.xdata),int(event.ydata)))
         # elif click_type==3: #right click
         #     print("Removing near:", event.xdata, event.ydata)
-    def manual_resolve(self): #resolve clicked points.
+    def relate_resolve(self): #resolve clicked points.
+        """Resolves user input points into pairs of x,y pairs"""
         self._click_button.disconnect(self._click_button_event)
         for pt in self._ax.lines:
             if pt.get_marker()=="1":
@@ -63,5 +66,6 @@ class InteractiveManualRelation():
             self.points=[(a,b) for a,b in zip(rel_pts[0],rel_pts[1])]#convert from list of x,y sorted by image to pairs of x,y pairs
         else:
             raise ValueError("Mismatched number of selected points.")
-    def get_rel(self):
+    def get_relation(self):
+        """Get the current image names and the pairs of x,y pairs as a Relation object"""
         return Relation(self._imga.name,self._imgb.name,'p',self.points)
