@@ -20,25 +20,24 @@ class InteractiveManualRelation():
         self._fig.tight_layout()
         self.points=None
         plt.show()
-    def plot_clear(self):
-        """Clears current IMR figure"""
-        self._ax.clear()
-        self.points=None
-        #TODO
     def plot_points(self):
         """Plots the points of the current relation"""
         for pop in self.points:
             self._ax.plot([pop[0][0],pop[1][0]],[pop[0][1],pop[1][1]+self._height],"x:")
     def change(self,imga:Image,imgb:Image,points=None):
         """Replaces image in IMR figure"""
+        #setup new images
         self._imga=imga
         self._imgb=imgb
         self._height=imga.size[1]
-        self.plot_clear()
+        # clear current axis/data
+        self._ax.clear()
+        self.points=None
+        # set new images and add provided points.
         self._img_ax=self._ax.imshow(np.vstack([imga._img,imgb._img]))
         if points is not None:
             self.points=points
-    def relate(self): #generalized using button widget so it can run on any interactive GUI.
+    def relate(self):
         """Gets user input points from figure"""
         self._click_button=Button(self._ax,label="")
         self._click_button_event=self._click_button.on_clicked(self._relate_callback)
