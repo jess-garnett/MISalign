@@ -18,6 +18,7 @@ class InteractiveManualRelation():
     def plot_clear(self):
         """Clears current IMR figure"""
         self.points=None
+        #TODO
     def plot_points(self):
         """Plots the points of the current relation"""
         for pop in self.points:
