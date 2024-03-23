@@ -32,18 +32,18 @@ class InteractiveManualRelation():
         self._height=imga.size[1]
         self.plot_clear()
         self._img_ax=self._ax.imshow(np.vstack([imga._img,imgb._img]))
-    def manual_gen(self): #generalized using button widget so it can run on any interactive GUI.
+    def manual(self): #generalized using button widget so it can run on any interactive GUI.
         """Gets user input points from figure"""
         self._click_button=Button(self._ax,label="")
-        self._click_button_event=self._click_button.on_clicked(self.manual_gen_callback)
+        self._click_button_event=self._click_button.on_clicked(self.manual_callback)
         self._clicked_pts=[]
-    def manual_gen_callback(self,event):
+    def manual_callback(self,event):
         if (int(event.button))==1: #left click #click_type:=
             print(event.xdata,event.ydata)
             self._clicked_pts.append((int(event.xdata),int(event.ydata)))
         # elif click_type==3: #right click
         #     print("Removing near:", event.xdata, event.ydata)
-    def manual_gen_add(self): #resolve clicked points.
+    def manual_resolve(self): #resolve clicked points.
         self._click_button.disconnect(self._click_button_event)
         rel_pts=[[],[]]
         for x,y in self._clicked_pts:
