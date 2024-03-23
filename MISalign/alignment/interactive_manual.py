@@ -4,6 +4,7 @@ Interactive Matplotlib Manual Relation Module
 # Built around PyQt5 interface due to need for plt.ginput()
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.widgets import Button
 
 from MISalign.model.relation import Relation
 from MISalign.model.image import Image
@@ -44,5 +45,11 @@ class InteractiveManualRelation():
             self.points=[(a,b) for a,b in zip(rel_pts[0],rel_pts[1])]#convert from list of x,y sorted by image to pairs of x,y pairs
         else:
             raise ValueError("Mismatched number of selected points.")
+    def manual_gen(self): #generalized using button widget so it can run on any interactive GUI.
+        """Gets user input points from figure"""
+        self._click_button=Button(self._ax,label="")
+        self._click_button_event=self._click_button.on_clicked(self.manual_gen_callback)
+    def manual_gen_callback(self,event):
+        print(event.xdata,event.ydata,int(event.button))
     def get_rel(self):
         return Relation(self._imga.name,self._imgb.name,'p',self.points)
