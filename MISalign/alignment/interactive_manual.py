@@ -32,19 +32,6 @@ class InteractiveManualRelation():
         self._height=imga.size[1]
         self.plot_clear()
         self._img_ax=self._ax.imshow(np.vstack([imga._img,imgb._img]))
-    def manual(self):
-        """Gets user input points from figure"""
-        input_points=self._fig.ginput(7)
-        rel_pts=[[],[]]
-        for x,y in input_points:
-            if y<self._height:
-                rel_pts[0].append((x,y))
-            else:
-                rel_pts[1].append((x,y-self._height))
-        if len(rel_pts[0]) == len(rel_pts[1]):
-            self.points=[(a,b) for a,b in zip(rel_pts[0],rel_pts[1])]#convert from list of x,y sorted by image to pairs of x,y pairs
-        else:
-            raise ValueError("Mismatched number of selected points.")
     def manual_gen(self): #generalized using button widget so it can run on any interactive GUI.
         """Gets user input points from figure"""
         self._click_button=Button(self._ax,label="")
