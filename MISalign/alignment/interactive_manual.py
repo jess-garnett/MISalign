@@ -49,7 +49,24 @@ class InteractiveManualRelation():
         """Gets user input points from figure"""
         self._click_button=Button(self._ax,label="")
         self._click_button_event=self._click_button.on_clicked(self.manual_gen_callback)
+        self._clicked_pts=[]
     def manual_gen_callback(self,event):
-        print(event.xdata,event.ydata,int(event.button))
+        if (int(event.button))==1: #left click #click_type:=
+            print(event.xdata,event.ydata)
+            self._clicked_pts.append((int(event.xdata),int(event.ydata)))
+        # elif click_type==3: #right click
+        #     print("Removing near:", event.xdata, event.ydata)
+    def manual_gen_add(self): #resolve clicked points.
+        self._click_button.disconnect(self._click_button_event)
+        rel_pts=[[],[]]
+        for x,y in self._clicked_pts:
+            if y<self._height:
+                rel_pts[0].append((x,y))
+            else:
+                rel_pts[1].append((x,y-self._height))
+        if len(rel_pts[0]) == len(rel_pts[1]):
+            self.points=[(a,b) for a,b in zip(rel_pts[0],rel_pts[1])]#convert from list of x,y sorted by image to pairs of x,y pairs
+        else:
+            raise ValueError("Mismatched number of selected points.")
     def get_rel(self):
         return Relation(self._imga.name,self._imgb.name,'p',self.points)
