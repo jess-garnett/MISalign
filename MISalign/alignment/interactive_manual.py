@@ -39,12 +39,16 @@ class InteractiveManualRelation():
         self._clicked_pts=[]
     def manual_callback(self,event):
         if (int(event.button))==1: #left click #click_type:=
-            print(event.xdata,event.ydata)
+            # print(event.xdata,event.ydata)
+            self._ax.plot([event.xdata],[event.ydata],"1r")
             self._clicked_pts.append((int(event.xdata),int(event.ydata)))
         # elif click_type==3: #right click
         #     print("Removing near:", event.xdata, event.ydata)
     def manual_resolve(self): #resolve clicked points.
         self._click_button.disconnect(self._click_button_event)
+        for pt in self._ax.lines:
+            if pt.get_marker()=="1":
+                pt.remove()
         rel_pts=[[],[]]
         for x,y in self._clicked_pts:
             if y<self._height:
