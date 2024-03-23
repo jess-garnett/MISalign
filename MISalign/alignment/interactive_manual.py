@@ -14,6 +14,10 @@ class InteractiveManualRelation():
     def __init__(self):
         self._fig=plt.figure()
         self._ax=self._fig.subplots()
+        self._fig.canvas.toolbar_visible = False
+        self._fig.canvas.header_visible = False
+        self._fig.canvas.footer_visible = False
+        self._fig.tight_layout()
         self.points=None
         plt.show()
     def plot_clear(self):
