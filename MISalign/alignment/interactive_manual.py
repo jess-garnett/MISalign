@@ -10,7 +10,7 @@ from MISalign.model.relation import Relation
 from MISalign.model.image import Image
 
 class InteractiveManualRelation():
-    """Allows user to manually specify relation between two images using interactive matplotlib interface."""
+    """Allows user to manually specify relation between two images using interactive matplotlib."""
     def __init__(self):
         self._fig=plt.figure()
         self._ax=self._fig.subplots()
@@ -22,10 +22,10 @@ class InteractiveManualRelation():
         plt.show()
     def plot_points(self):
         """Plots the points of the current relation"""
-        for pop in self.points:
+        for pop in self.points:#pair of pairs - pop
             self._ax.plot([pop[0][0],pop[1][0]],[pop[0][1],pop[1][1]+self._height],"x:")
     def change(self,imga:Image,imgb:Image,points=None):
-        """Replaces image in IMR figure"""
+        """Replaces images and resets points and lines of plot."""
         #setup new images
         self._imga=imga
         self._imgb=imgb
