@@ -16,27 +16,27 @@ class MisFile():
         if 'image_fps' in mis_data:
             self.image_fps=mis_data['image_fps']#list of filepaths
         else:
-            self.image_fps=None
+            self.image_fps=list()
         
         if 'relations' in mis_data:
             self._relations=mis_data['relations']#list of relation objects
         else:
-            self._relations=None
+            self._relations=list()
 
 
         if 'calibration' in mis_data:
             self.calibration=mis_data['calibration']#dictionary with 'value' and 'units'
         else:
-            self.calibration=None
+            self.calibration=dict()
     def __str__(self):
-        if self.image_fps is None and self._relations is None:
+        if self.image_fps is [] and self._relations is []:
             return "An empty MISalign project."
         else:
             return "A MISalign project with:"+str([self.image_fps,self.get_rels(),self.calibration])
     
     def get_rels(self,relation=None):
-        if self._relations is None:
-            return None
+        if self._relations is []:
+            return []
         elif relation is None:
             return [x.get_rel() for x in self._relations]
         else:
