@@ -46,7 +46,8 @@ class MisFile():
             return None
         else:
             return [x.save_rel() for x in self._relations]
-
+    def find_all_rel(self,name):
+        return [[x.ref,x._relation] for x in self._relations if name in x.ref]
 
 
 def load_mis(mis_fp) -> MisFile:
