@@ -5,9 +5,12 @@ Interactive Matplotlib Manual Relation Module
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.widgets import Button
+import ipywidgets as widgets
+from IPython.display import display
 
 from MISalign.model.relation import Relation
 from MISalign.model.image import Image
+from MISalign.model.mis_file import MisFile
 
 class InteractiveManualRelation():
     """Allows user to manually specify relation between two images using interactive matplotlib."""
@@ -68,3 +71,76 @@ class InteractiveManualRelation():
     def get_relation(self):
         """Get the current image names and the pairs of x,y pairs as a Relation object"""
         return Relation(self._imga.name,self._imgb.name,'p',self.points)
+
+class IMRControls():
+    def __init__(self,mis_project:MisFile):
+        self._project=mis_project
+        self._images=[Image(x) for x in self._project.image_fps]
+        self.names=[x.name for x in self._images]
+        ## setup dropdowns
+        self._dropdown_a=widgets.Dropdown(
+            options=self.names,
+            value=self.names[0],
+            description='Image A:',
+            disabled=False,
+        )
+        self._dropdown_b=widgets.Dropdown(
+            options=self.names,
+            value=self.names[1],
+            description='Image B:',
+            disabled=False,
+        )
+        self._dropdowns=widgets.HBox([self._dropdown_a,self._dropdown_b])
+        ## setup buttons
+        self._button_next = widgets.Button(description='Next',)
+        self._button_next.on_click(self.click_next)
+        
+        self._button_jump = widgets.Button(description='Jump To',)
+        self._button_jump.on_click(self.click_jump)
+        
+        self._button_prev = widgets.Button(description='Previous',)
+        self._button_prev.on_click(self.click_prev)
+        
+        self._button_resolve = widgets.Button(description='Resolve Relation',)
+        self._button_resolve.on_click(self.click_resolve)
+
+        self._button_save = widgets.Button(description='Save Relation',)
+        self._button_save.on_click(self.click_save)
+
+        self._buttons_move=widgets.HBox([self._button_next,self._button_jump,self._button_prev])
+        self._buttons_relate=widgets.HBox([self._button_resolve,self._button_save])
+        ## combine and display
+        self._full=widgets.VBox([self._dropdowns,self._buttons_move,self._buttons_relate])
+        display(self._full)
+        ## display IMR and set to first pair.
+        self.imr=InteractiveManualRelation()
+        self.update_imr()
+    def click_next(self,event):
+        if (current := self.names.index(self._dropdown_b.get_interact_value()))+1<len(self.names):
+            self._dropdown_a.value=self.names[current]
+            self._dropdown_b.value=self.names[current+1]
+            self.update_imr()
+    def click_jump(self,event):
+            self.update_imr()
+    def click_prev(self,event):
+        if (current := self.names.index(self._dropdown_a.get_interact_value()))-1>=0:
+            self._dropdown_a.value=self.names[current-1]
+            self._dropdown_b.value=self.names[current]
+            self.update_imr()
+    def click_resolve(self,event):
+        self.imr.relate_resolve()
+        self.imr.plot_points()
+    def click_save(self,event):
+         if self.imr.points is not None:
+           self._project._relations.append(self.imr.get_relation())
+        #TODO store in meaningful way. - Maybe break into resolve relation and save/update relation. Also displaying current relation?
+         #TODO replacing relations vs turning them on and off vs other?
+         #TODO relation management interface
+    def update_imr(self):
+            self.imr.change(
+                self._images[self.names.index(self._dropdown_a.get_interact_value())],
+                self._images[self.names.index(self._dropdown_b.get_interact_value())],
+                )
+            self.imr.relate()
+    def get_mis(self):
+            return self._project
