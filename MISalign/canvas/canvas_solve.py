@@ -5,11 +5,28 @@ from MISalign.model.relation import Relation
 
 def rectangular_solve(relations:list[Relation],image_names:list,origin:str):
     """Solves a set of relations rectangularly
-    - Input is a list of relations, a list of image names, and the image name of the origin.
+    - Input is a list of rectangular relations, a list of image names, and the image name of the origin.
     - Output is a dictionary of the form "image_name":(origin-relative x, origin-relative y)
     - Origin-relative x and y may be negative values.
     """
-    pass
+    relation_map=_relation_map(relations,image_names,origin)
+    orig_rel_position={origin:(0,0)}
+    solving=[origin]
+    cansolve=[]
+    solved=[]
+    while len(solving)>0:
+        for s in solving:
+            for image_name,rel in relation_map[s]:
+                cansolve.append(image_name)
+                if rel[0][0]==s:
+                    direction=1
+                else:
+                    direction=-1
+                orig_rel_position[image_name]=(orig_rel_position[s][0]+direction*rel[1][0],orig_rel_position[s][1]+direction*rel[1][1])
+        solved+=solving
+        solving=cansolve
+        cansolve=[]
+    return orig_rel_position
 
 def _relation_map(relations:list[Relation],image_names:list,origin:str):
     """Identify a map from origin to other images in a list of relations.
