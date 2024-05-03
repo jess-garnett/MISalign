@@ -1,5 +1,5 @@
 """ Canvas Solve
-- Converts a set of relations into relative and absolute coordinate positions.
+- Converts a set of relations into relative positions.
 """
 from MISalign.model.relation import Relation
 
