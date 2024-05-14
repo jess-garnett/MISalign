@@ -123,6 +123,32 @@ def weight_flat(img_size):
     img_height=img_size[1]
     flat_array=np.full(shape=(img_height,img_width),fill_value=1)
     return flat_array
-    ### Normalization Matrix Building
-    
+    ### Normalization Array Building
+def build_normalization(
+        image_names:list,
+        image_sizes:dict,
+        canvas_relative_offsets:dict,
+        canvas_extents:dict,
+        weight):
+    """ Builds a normalization array.
+    - Takes:
+        - A list of image names
+        - A dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}
+        - A dictionary of canvas extents with keys `width` and `height`
+        - A dictionary of image sizes {image_name:(width,height)}
+        - A weight array function `weight(img_size)`
+    - Returns a numpy array of the normalization array."""
+    normalization_array=np.zeros((canvas_extents["height"],canvas_extents["width"]))
+    for img in image_names:
+        img_size=image_sizes[img]
+        img_place=canvas_relative_offsets[img]
+        weight_arr=weight(img_size)
+        canv_slice={
+            "left":img_place[0],
+            "right":img_place[0]+img_size[0],
+            "top":img_place[1],
+            "bottom":img_place[1]+img_size[1],
+        }
+        normalization_array[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]+=weight_arr
+    return normalization_array
     ### Summation Blending
