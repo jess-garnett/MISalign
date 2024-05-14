@@ -137,7 +137,7 @@ def build_normalization(
         - A dictionary of canvas extents with keys `width` and `height`
         - A dictionary of image sizes {image_name:(width,height)}
         - A weight array function `weight(img_size)`
-    - Returns a numpy array of the normalization array."""
+    - Returns a numpy array of the normalization values."""
     normalization_array=np.zeros((canvas_extents["height"],canvas_extents["width"]))
     for img in image_names:
         img_size=image_sizes[img]
@@ -152,3 +152,39 @@ def build_normalization(
         normalization_array[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]+=weight_arr
     return normalization_array
     ### Summation Blending
+def render_blended(
+        image_names:list,
+        image_filepaths:dict,
+        image_sizes:dict,
+        canvas_relative_offsets:dict,
+        canvas_extents:dict,
+        weight,
+        normalizer:np.ndarray):
+    """ Renders a canvas without blending.
+    - Takes:
+        - A list of image names
+        - A dictionary of image filepaths {image_name:image_filepath}
+        - A dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}
+        - A dictionary of canvas extents with keys `width` and `height`
+        - A dictionary of image sizes {image_name:(width,height)}
+        - A weight array function `weight(img_size)`
+        - A numpy array of the normalization values
+    - Returns a PIL Image of the canvas."""
+    canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
+    for img in image_names:
+        img_size=image_sizes[img]
+        img_place=canvas_relative_offsets[img]
+        img_fp=image_filepaths[img]
+        img_arr=np.array(PILImage.open(img_fp))
+        canv_slice={
+            "left":img_place[0],
+            "right":img_place[0]+img_size[0],
+            "top":img_place[1],
+            "bottom":img_place[1]+img_size[1],
+        }
+        weight_arr=weight(img_size)
+        normalizing_arr=normalizer[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]
+        normed_arr=np.divide(weight_arr,normalizing_arr)
+        weighted_img_arr=np.repeat(normed_arr[:,:,np.newaxis],3,axis=2)*img_arr
+        canvas[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]+=weighted_img_arr
+    return PILImage.fromarray(canvas.astype(np.uint8))
