@@ -52,16 +52,16 @@ def resolve_extents(origin_relative_extents:dict[str,int]):
     canvas_extents={
         "width":origin_relative_extents["maxx"]-origin_relative_extents["minx"],
         "height":origin_relative_extents["maxy"]-origin_relative_extents["miny"]}
-    offsets={
+    canvas_offsets={
         "x":0-origin_relative_extents["minx"],
         "y":0-origin_relative_extents["miny"]}
-    return canvas_extents, offsets
+    return canvas_extents, canvas_offsets
 ## Place In Canvas
 def place_in_canvas(
         image_names:list,
         origin_relative_offsets:dict,
         canvas_extents:dict,
-        offsets:dict):
+        canvas_offsets:dict):
     """ Converts origin relative offsets to canvas relative offsets.
     - Takes:
         - A list of image names
@@ -70,8 +70,8 @@ def place_in_canvas(
         - A dictionary of offsets with keys `x` and `y`
     - Returns a dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}"""
     canvas_relative_offsets={name:
-        (-origin_relative_offsets[name][0]+offsets["x"],
-        canvas_extents["height"]-(origin_relative_offsets[name][1]+offsets["y"])) 
+        (-origin_relative_offsets[name][0]+canvas_offsets["x"],
+        canvas_extents["height"]-(origin_relative_offsets[name][1]+canvas_offsets["y"])) 
         for name in image_names}
     return canvas_relative_offsets
 ## Rectangular Unblended Render
