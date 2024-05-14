@@ -1,3 +1,4 @@
+#TODO deprecate this module.
 from .image import Image
 from .offset import Offset
 from os.path import split
@@ -101,7 +102,7 @@ class Project():
             if self.offsets[img_fp].get_ref()==image_fp:
                 self.offsets.pop(img_fp,None)
                 self.record_image_err(img_fp,"Offset","MIS.NoneOffset")
-
+#TODO transfer a large amount of this into the canvas module.
     def get_origins(self) -> Union[list[str],None]:
         origins:list[str] = []
         for key_image_fp,value_offset in self.offsets.items():
