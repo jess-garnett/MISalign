@@ -106,9 +106,23 @@ def render_unblended(
 ## Rectangular Blended Render
 
     ### Distance-From-Edge Weight
-
+def weight_dfe(img_size):
+    """ Generates a distance-from-edge weight array for the given image size.
+    - Takes a tuple: (width,height)
+    - Returns a numpy array of distance-from-edge values"""
+    img_width=img_size[0]
+    img_height=img_size[1]
+    dfe_array=np.fromfunction(function=lambda y,x: np.min([x+1,y+1,img_width-x,img_height-y],axis=0),shape=(img_height,img_width))
+    return dfe_array
     ### Flat Weight
-
+def weight_flat(img_size):
+    """ Generates a flat weight array for the given image size.
+    - Takes a tuple: (width,height)
+    - Returns a numpy array of flat values"""
+    img_width=img_size[0]
+    img_height=img_size[1]
+    flat_array=np.full(shape=(img_height,img_width),fill_value=1)
+    return flat_array
     ### Normalization Matrix Building
     
     ### Summation Blending
