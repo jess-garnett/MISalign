@@ -1,4 +1,4 @@
-
+#TODO deprecate this module.
 class Offset():
     """Store an image-to-image offset."""
     def __init__(self,input:list):
