@@ -4,6 +4,6 @@
         "test_b.png",
         "test_c.png"
     ],
-    "relations": null,
-    "calibration": null
+    "relations": [],
+    "calibration": {}
 }
