@@ -30,7 +30,7 @@ class MisFile():
         else:
             self.calibration=dict()
     def __str__(self):
-        if self.image_fps is [] and self._relations is []:
+        if len(self.image_fps)==0 and len(self._relations)==0:
             return "An empty MISalign project."
         else:
             return "A MISalign project with:"+str([self.image_fps,self.get_rels(),self.calibration])

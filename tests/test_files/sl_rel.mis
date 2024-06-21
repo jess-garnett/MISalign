@@ -1,5 +1,5 @@
 {
-    "image_fps": null,
+    "image_fps": [],
     "relations": [
         [
             [
@@ -18,5 +18,5 @@
             null
         ]
     ],
-    "calibration": null
+    "calibration": {}
 }
