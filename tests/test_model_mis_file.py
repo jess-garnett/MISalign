@@ -66,7 +66,7 @@ class TestMisFile():
         mis_fp=r".\tests\test_files\get_image_paths.mis"
         usage_mis=load_mis(mis_fp)
 
-        correct_paths={}
+        correct_paths={"a_myimages01.jpg":r".\example\data\set_a\a_myimages01.jpg","a_myimages02.jpg":r".\example\data\set_a\a_myimages02.jpg","a_myimages03.jpg":r".\example\data\set_a\a_myimages03.jpg"}
         um_paths=usage_mis.get_image_paths()
         assert um_paths==correct_paths
     def test_get_image_names(self):
@@ -74,15 +74,24 @@ class TestMisFile():
         mis_fp=r".\tests\test_files\get_image_names.mis"
         usage_mis=load_mis(mis_fp)
 
-        correct_names=[]
+        correct_names=["a_myimages01.jpg","a_myimages02.jpg","a_myimages03.jpg"]
         um_names=usage_mis.get_image_names()
         assert um_names==correct_names
-    def test_check_image_paths(self):
+    def test_check_image_paths__separate_folder(self):
         #Tests function that returns {name:{found:boolean,path:boolean}} dictionary.
-        mis_fp=r".\tests\test_files\check_image_paths.mis"
+            # Condition: Images are in separate folder from mis file.
+        mis_fp=r".\tests\test_files\check_image_paths__separate_folder.mis"
         usage_mis=load_mis(mis_fp)
 
         correct_check={}
         um_check_paths=usage_mis.check_image_paths()
         assert um_check_paths==correct_check
-        assert False
+    def test_check_image_paths__same_folder(self):
+        #Tests function that returns {name:{found:boolean,path:boolean}} dictionary.
+            # Condition: Images are in same folder as mis file.
+        mis_fp=r".\tests\test_files\check_image_paths__same_folder.mis"
+        usage_mis=load_mis(mis_fp)
+
+        correct_check={}
+        um_check_paths=usage_mis.check_image_paths()
+        assert um_check_paths==correct_check
