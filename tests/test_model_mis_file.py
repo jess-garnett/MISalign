@@ -63,7 +63,7 @@ class TestMisFile():
     ### Usage Testing
     def test_get_image_paths(self):
         #Tests function that returns {name:path} dictionary.
-        mis_fp=r".\tests\test_files\usage_paths.mis"
+        mis_fp=r".\tests\test_files\get_image_paths.mis"
         usage_mis=load_mis(mis_fp)
 
         correct_paths={}
@@ -71,7 +71,18 @@ class TestMisFile():
         assert um_paths==correct_paths
     def test_get_image_names(self):
         #Tests function that returns [name] list.
-        assert False
+        mis_fp=r".\tests\test_files\get_image_names.mis"
+        usage_mis=load_mis(mis_fp)
+
+        correct_names=[]
+        um_names=usage_mis.get_image_names()
+        assert um_names==correct_names
     def test_check_image_paths(self):
-        #Tests function that returns {name:found-boolean} dictionary.
+        #Tests function that returns {name:{found:boolean,path:boolean}} dictionary.
+        mis_fp=r".\tests\test_files\check_image_paths.mis"
+        usage_mis=load_mis(mis_fp)
+
+        correct_check={}
+        um_check_paths=usage_mis.check_image_paths()
+        assert um_check_paths==correct_check
         assert False
