@@ -4,7 +4,7 @@
 - Store as json
 """
 import json
-from os.path import split
+from os.path import split, isfile
 from MISalign.model.relation import Relation
 
 class MisFile():
@@ -52,6 +52,10 @@ class MisFile():
     
     def get_image_names(self):
         return [split(image_filepath)[1] for image_filepath in self.image_fps] #takes tail of image filepath
+    def get_image_paths(self):
+        return {n:p for n,p in zip(self.get_image_names(),self.image_fps)} #takes tail of image filepath
+    def check_image_paths(self):
+        return {n:isfile(p) for n,p in self.get_image_paths().items()}
 
 
 def load_mis(mis_fp) -> MisFile:

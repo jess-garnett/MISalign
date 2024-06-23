@@ -83,7 +83,7 @@ class TestMisFile():
         mis_fp=r".\tests\test_files\check_image_paths__separate_folder.mis"
         usage_mis=load_mis(mis_fp)
 
-        correct_check={}
+        correct_check={"a_myimages01.jpg":True,"a_myimages02.jpg":True,"a_myimages03.jpg":True}
         um_check_paths=usage_mis.check_image_paths()
         assert um_check_paths==correct_check
     def test_check_image_paths__same_folder(self):
@@ -92,6 +92,6 @@ class TestMisFile():
         mis_fp=r".\tests\test_files\check_image_paths__same_folder.mis"
         usage_mis=load_mis(mis_fp)
 
-        correct_check={}
+        correct_check={"a_myimages01.jpg":False,"a_myimages02.jpg":False,"a_myimages03.jpg":False}
         um_check_paths=usage_mis.check_image_paths()
         assert um_check_paths==correct_check
