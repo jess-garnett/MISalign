@@ -56,6 +56,7 @@ class MisFile():
         return {n:p for n,p in zip(self.get_image_names(),self.image_fps)} #takes tail of image filepath
     def check_image_paths(self):
         return {n:isfile(p) for n,p in self.get_image_paths().items()}
+        #TODO add correction/relocation capability to this function/additional function.
 
 
 def load_mis(mis_fp) -> MisFile:
