@@ -75,7 +75,7 @@ class InteractiveManualRelation():
 class IMRControls():
     def __init__(self,mis_project:MisFile):
         self._project=mis_project
-        self._images=[Image(x) for x in self._project.get_image_paths()]
+        self._images=[Image(x) for x in self._project.get_image_paths().values()]
         self.names=[x.name for x in self._images]
         ## setup dropdowns
         self._dropdown_a=widgets.Dropdown(
