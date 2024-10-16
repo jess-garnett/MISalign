@@ -3,7 +3,6 @@ from matplotlib import axes
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 from PIL import Image as PILImage
 from quantiphy import Quantity
-from calibrate import CalibrationManual
 
 def add_scale_bar(axes:axes.Axes,
                   scale_measurement:str,
@@ -34,12 +33,17 @@ def add_scale_bar(axes:axes.Axes,
         **asb_kwargs
     )
     axes.add_artist(scale_bar)
-def image_with_scale_bar(image_fp:str,
+def image_with_scale_bar(image:str,
                   scale_measurement:str,
                   calibration:dict,
                   **AnchoredSizeBar_kwargs:dict
                   ):
-    plt.figure()
-    plt.imshow(PILImage.open(image_fp))
+    
+    if type(image) is str:
+        image=PILImage.open(image)
+    
+    fig=plt.figure()
+    plt.imshow(image)
     add_scale_bar(plt.gca(),scale_measurement,calibration,**AnchoredSizeBar_kwargs)
+    plt.gca().set_axis_off()
     plt.show()
