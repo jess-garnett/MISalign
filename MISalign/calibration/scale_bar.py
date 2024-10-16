@@ -47,3 +47,12 @@ def image_with_scale_bar(image:str,
     add_scale_bar(plt.gca(),scale_measurement,calibration,**AnchoredSizeBar_kwargs)
     plt.gca().set_axis_off()
     plt.show()
+def scale_bar_calibrate(scale_dpi:int):
+    plt.tight_layout(pad=0)
+    y_lim=plt.gca().get_ylim()
+    y_size=abs(int(y_lim[0]-y_lim[1]))
+    x_lim=plt.gca().get_xlim()
+    x_size=abs(int(x_lim[0]-x_lim[1]))
+    y_figsize=y_size/scale_dpi
+    x_figsize=x_size/scale_dpi
+    plt.gcf().set_size_inches(x_figsize,y_figsize)
