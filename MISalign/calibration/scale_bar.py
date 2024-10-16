@@ -56,3 +56,5 @@ def scale_bar_calibrate(scale_dpi:int):
     y_figsize=y_size/scale_dpi
     x_figsize=x_size/scale_dpi
     plt.gcf().set_size_inches(x_figsize,y_figsize)
+def save_calibrated_image(image_filepath:str,scale_dpi:int):
+    plt.savefig(image_filepath,bbox_inches="tight",pad_inches=0,dpi=scale_dpi)
