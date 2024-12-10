@@ -26,9 +26,13 @@ class MisFile():
 
 
         if 'calibration' in mis_data:
-            self.calibration=mis_data['calibration']#dictionary with 'value' and 'units'
+            self.calibration=mis_data['calibration']#dictionary with 'pixel', 'length', and 'length_unit'
         else:
             self.calibration=dict()
+        if 'calibration_fp' in mis_data:
+            if mis_data['calibration_fp'] is not None:
+                with open(mis_data['calibration_fp']) as infile:
+                    self.calibration = json.load(infile)#dictionary with 'pixel', 'length', and 'length_unit'
     def __str__(self):
         if len(self.image_fps)==0 and len(self._relations)==0:
             return "An empty MISalign project."
