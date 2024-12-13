@@ -153,7 +153,12 @@ class AlignCVManager():
         self.OrbM=OrbM
         self.alignments=[]
     def run_alignment(self,match_combinations,match_reduction_ratio=1/2,ORB_parameters=None):
-        alignment_data={"alignment_parameters":{"match_combinations":match_combinations,"match_reduction_ratio":match_reduction_ratio,"ORB_parameters":ORB_parameters},"alignment_data":dict()}
+        alignment_data={"alignment_parameters":
+                        {"match_combinations":match_combinations,
+                         "match_reduction_ratio":match_reduction_ratio,
+                         "ORB_parameters":ORB_parameters,
+                         "source":"run_alignment"
+                         },"alignment_data":dict()}
         for image1,image2 in match_combinations:
             image_set=(image1,image2)
             matches,orb1,orb2=generate_match_bf(
@@ -173,7 +178,6 @@ class AlignCVManager():
         return len(self.alignments)-1
     def get_alignment(self,alignment_id):
         return self.alignments[alignment_id]
-    #TODO merging valid results
     def update_mis(self,
             mis_project:MisFile,
             alignment_id,
@@ -189,4 +193,23 @@ class AlignCVManager():
                 mc[0],
                 mc[1],
                 'p',
-                [([int(x) for x in pt1],[int(x) for x in pt2]) for (pt1,pt2),individual_valid in zip(mc_alignment_result['estimated_translation_inliers'],mc_alignment_result["estimated_translation_validity"]["individual"]) if individual_valid] ))
+                [([int(x) for x in pt1],[int(x) for x in pt2]) for (pt1,pt2),individual_valid in zip(mc_alignment_result['estimated_translation_inliers'],mc_alignment_result["estimated_translation_validity"]["individual"]) if individual_valid] ))        
+    def get_valid_match_combinations(self,alignment_id):
+        return [mc for mc in self.alignments[alignment_id]["alignment_parameters"]["match_combinations"] if self.alignments[alignment_id]["alignment_data"][tuple(mc)]["estimated_translation_validity"]["overall"]]
+    def get_invalid_match_combinations(self,alignment_id):
+        return [mc for mc in self.alignments[alignment_id]["alignment_parameters"]["match_combinations"] if not self.alignments[alignment_id]["alignment_data"][tuple(mc)]["estimated_translation_validity"]["overall"]]
+    def alignment_parameter_progression(self,step=0):
+        return {"match_reduction_ratio":(1/2),"ORB_parameters":{"nfeatures": 500*(2**step),"edgeThreshold": 5 }}
+    def merge_alignments(self,alignment_ids:list):
+        alignment_data={"alignment_parameters":
+                        {"match_combinations":list(set([tuple(mc) for match_combinations in [self.alignments[alignment_id]["alignment_parameters"]["match_combinations"] for alignment_id in alignment_ids] for mc in match_combinations])),
+                            "source":"merge_alignments"},
+                        "alignment_data":dict()}
+        for alignment_id in alignment_ids:
+            alignment=self.alignments[alignment_id]
+            for mc in alignment["alignment_parameters"]["match_combinations"]:
+                alignment_data["alignment_data"][tuple(mc)]=alignment["alignment_data"][tuple(mc)]
+                # naturally overwrite earlier results with later results.
+        self.alignments.append(alignment_data)
+        return len(self.alignments)-1
+            
