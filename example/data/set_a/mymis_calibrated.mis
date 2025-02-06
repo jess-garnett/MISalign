@@ -1,15 +1,15 @@
 {
     "image_fps": [
-        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_a\\a_myimages01.jpg",
-        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_a\\a_myimages02.jpg",
-        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_a\\a_myimages03.jpg",
-        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_a\\a_myimages04.jpg",
-        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_a\\a_myimages05.jpg",
-        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_a\\a_myimages06.jpg",
-        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_a\\a_myimages07.jpg",
-        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_a\\a_myimages08.jpg",
-        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_a\\a_myimages09.jpg",
-        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_a\\a_myimages10.jpg"
+        "..\\example\\data\\set_a\\a_myimages01.jpg",
+        "..\\example\\data\\set_a\\a_myimages02.jpg",
+        "..\\example\\data\\set_a\\a_myimages03.jpg",
+        "..\\example\\data\\set_a\\a_myimages04.jpg",
+        "..\\example\\data\\set_a\\a_myimages05.jpg",
+        "..\\example\\data\\set_a\\a_myimages06.jpg",
+        "..\\example\\data\\set_a\\a_myimages07.jpg",
+        "..\\example\\data\\set_a\\a_myimages08.jpg",
+        "..\\example\\data\\set_a\\a_myimages09.jpg",
+        "..\\example\\data\\set_a\\a_myimages10.jpg"
     ],
     "relations": [
         [
