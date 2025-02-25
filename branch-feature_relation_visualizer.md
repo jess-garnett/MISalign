@@ -1,0 +1,43 @@
+- Short brief: Develop `model/relation_visualizer.py` module to provide better relation visualization functionality. Develop `visualizer.ipynb` notebook as primary user interface/relation visualization templates.
+- Modules to build on:
+	- `mis_file.py`
+		- `MisFile` class is primary object that holds relations.
+		- `mis_project` is standard name for MisFile object.
+		- Class functions `get_image_names` , `get_image_paths`, `get_rels`, `save_rels`, `find_all_rel` may all be useful.
+	- `relation.py`
+		- Stores the basic relation information for "image A relates to Image B by X relationship".
+		- Provides basic conversion from matching points relation(primary recorded relation) to rectilinear relation(primary rendering relation).
+- Files that may be useful to build on/look at:
+	- All `.ipynb` in `notebooks`
+		- Illustrates how current modules are used for interacting with data, getting user input, and otherwise progressing through the workflow.
+	- `image.py`
+		- Illustrates how images are currently opened/accessed.
+	- `canvas_solve.py` / `canvas_render.py`
+		- Illustrates how the relations get used in creating a blended image.
+		- Have the most comprehensive doc strings(i.e. description of what the functions do) in the repo. **Good coding practice.**
+	- `interactive_manual.py` / `prototype_manual_relation.ipynb` / `prototype_ipy_ui.ipynb`
+		- Illustrates what a Graphical User Interface(GUI) can look like within a Jupyter notebook.
+		- Illustrates code prototyping process.
+		- Illustrates adding relations.
+	- branch: `feature_diff_grad_alignment` > `prototype_diff_grad.ipynb`, `prototype_diff_grad2.ipynb`
+		- Illustrates image offset visualizing.
+- Branch Activities:
+	- Prepared by Jessica:
+		- Images in `example/data/set_b` and configured `set_b2.mis` file
+			- First 5 relations are 'good'/provide enough connections to render - 4 additional relations provide various 'bad' relations.
+	- `model/prototype_relation_vizualizer.ipynb`
+		- prv1: Open images of first relation in `set_b2.mis` file and display them. Print out the relation between the images.
+		- prv2: Copy/modify/build from existing `interactive_manual.py` code to show images next to one another with related points marked and lines drawn between them.
+		- prv3: Copy/modify/build from existing `render.ipynb` code to show unblended and blended renders for each image relation.
+		- prv4: Copy/modify/build from existing `feature_diff_grad_alignment` code to show difference of overlap region for each image relation.
+		- prv5: Progress review going over current developments. Discussion of next steps.
+		- prv6: Brainstorm other ways relations could be visualized. Can be written descriptions, sketches/basic visual mock-up, or proof of concept code.
+		- prv7: Brainstorm basic Graphical User Interface(GUI) layouts for how these different perspectives and basic controls(i.e. relation drop down menu, a few control buttons) could be shown to a user. Can be done on paper, in PowerPoint, or in other design software like Adobe XD or Canva.
+		- prv8: Progress review going over current developments. Down select for continued development.
+		- prv-: To be determined - likely to include development of GUI component.
+		- prvX: Finalize prototype functions and workflows for relation visualization.
+	- `model/relation_visualizer.py`
+		- rv1: Convert prototypes from prvX into `relation_visualizer.py` module.
+		- rv2: Document rv module.
+		- rv3: Integrate `relation_visualizer.py` module with workflows from prvX to setup template/example code in `visualizer.ipynb`.
+		- rv4: Branch review and prepare to merge to main.
