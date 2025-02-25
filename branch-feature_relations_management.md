@@ -1,0 +1,37 @@
+- Short brief: Develop `model/relation_manager.py` module to provide better relation management functionality. Develop `relations.ipynb` notebook as primary user interface/relation management functionality templates.
+- Modules to build on:
+	- `mis_file.py`
+		- `MisFile` class is primary object that holds relations.
+		- `mis_project` is standard name for MisFile object.
+		- Class functions `get_image_names` , `get_image_paths`, `get_rels`, `save_rels`, `find_all_rel` may all be useful.
+	- `relation.py`
+		- Stores the basic relation information for "image A relates to Image B by X relationship".
+		- Provides basic conversion from matching points relation(primary recorded relation) to rectilinear relation(primary rendering relation).
+- Files that may be useful to build on/look at:
+	- All `.ipynb` in `notebooks`
+		- Illustrates how current modules are used for interacting with data, getting user input, and otherwise progressing through the workflow.
+	- `relation_service.py` / `prototype_relation_viewer.ipynb`
+		- Explores mock relation setup and extraction/processing/visualizing.
+		- Illustrates code prototyping process.
+	- `canvas_solve.py` / `canvas_render.py`
+		- Illustrates how the list of relations gets used in creating a blended image.
+		- Have the most comprehensive doc strings(i.e. description of what the functions do) in the repo. **Good coding practice.**
+	- `interactive_manual.py` / `prototype_manual_relation.ipynb` / `prototype_ipy_ui.ipynb`
+		- Illustrates what a Graphical User Interface(GUI) can look like within a Jupyter notebook.
+		- Illustrates code prototyping process.
+		- Illustrates adding relations.
+- Branch Activities:
+	- `model/prototype_relation_manager.ipynb`
+		- prm1: Configure mock `mis_project` with 8 images in a '2x4' naming scheme (i.e. img_aa, ab, ac, ad, ba, bb, bc, bd)
+		- prm2: Add `None` relations connecting the images in a 2x4 grid of images excessively. Every image should have a relation to every other image it is close to.
+		- prm3: Add mock `r` relations duplicating 4-5 connections. This is to imitate when someone may have done both manual and automated alignment steps resulting in multiple relations between the same images.
+		- prm4: Develop/prototype some different ways to print/display all these relations to the user in a digestible format.
+			- Ideally both "What are all the relations" and "what are the relations for A" or "What are the relations between A and B".
+		- prm5: Progress review going over current developments. Down select for continued development.
+		- prm-: To be determined at prm5 - likely to include development of GUI component.
+		- prmX: Finalize prototype functions and workflows for relation management.
+	- `model/relation_manager.py`
+		- rm1: Convert prototypes from prmX into `relation_manager.py` module.
+		- rm2: Document rm module.
+		- rm3: Integrate `relation_manager.py` module with workflows from prmX to setup template/example code in `relations.ipynb`.
+		- rm4: Branch review and prepare to merge to main.
