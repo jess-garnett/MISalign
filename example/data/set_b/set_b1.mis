@@ -1,0 +1,16 @@
+{
+    "image_fps": [
+        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_b\\b_img_1.tif",
+        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_b\\b_img_2.tif",
+        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_b\\b_img_3.tif",
+        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_b\\b_img_4.tif",
+        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_b\\b_img_5.tif",
+        "c:\\Users\\drago\\Documents\\git_gh\\MISalign\\example\\data\\set_b\\b_img_6.tif"
+    ],
+    "relations": [],
+    "calibration": {
+        "pixel": 599.006361608906,
+        "length": 1,
+        "length_unit": "mm"
+    }
+}
