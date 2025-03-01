@@ -78,8 +78,8 @@ class TestMisFile():
         um_names=usage_mis.get_image_names()
         assert um_names==correct_names
     def test_check_image_paths__separate_folder(self):
-        #Tests function that returns {name:{found:boolean,path:boolean}} dictionary.
-            # Condition: Images are in separate folder from mis file.
+        #Tests function that returns {name:boolean} dictionary.
+            # Condition: Images have path to folder other than .mis and are in that folder.
         mis_fp=r".\tests\test_files\check_image_paths__separate_folder.mis"
         usage_mis=load_mis(mis_fp)
 
@@ -87,11 +87,30 @@ class TestMisFile():
         um_check_paths=usage_mis.check_image_paths()
         assert um_check_paths==correct_check
     def test_check_image_paths__same_folder(self):
-        #Tests function that returns {name:{found:boolean,path:boolean}} dictionary.
-            # Condition: Images are in same folder as mis file.
+        #Tests function that returns {name:boolean} dictionary.
+            # Condition: Images have path to same folder as .mis but are not present.
         mis_fp=r".\tests\test_files\check_image_paths__same_folder.mis"
         usage_mis=load_mis(mis_fp)
 
         correct_check={"a_myimages01.jpg":False,"a_myimages02.jpg":False,"a_myimages03.jpg":False}
         um_check_paths=usage_mis.check_image_paths()
         assert um_check_paths==correct_check
+    def test_check_image_paths__mismatch_folder(self):
+        #Tests function that returns {name:boolean} dictionary.
+            # Condition: Images are in the same folder as the .mis but have paths to other folder.
+        mis_fp=r".\tests\test_files\check_image_paths__mismatch_folder.mis"
+        usage_mis=load_mis(mis_fp)
+
+        correct_check={"a_myimages04.jpg":False,"a_myimages05.jpg":False,"a_myimages06.jpg":False}
+        um_check_paths=usage_mis.check_image_paths()
+        assert um_check_paths==correct_check
+    def test_find_image_paths__mismatch_folder(self):
+        #Tests function that returns {name:path} dictionary.
+            # Condition: Images are in the same folder as the .mis but have paths to other folder.
+        mis_fp=r".\tests\test_files\check_image_paths__mismatch_folder.mis"
+        usage_mis=load_mis(mis_fp)
+
+        correct_check={"a_myimages04.jpg":{"found":True,"path":r".\tests\test_files\a_myimages04.jpg"},"a_myimages05.jpg":{"found":True,"path":r".\tests\test_files\a_myimages05.jpg"},"a_myimages06.jpg":{"found":True,"path":r".\tests\test_files\a_myimages06.jpg"}}
+        um_check_paths=usage_mis.find_image_paths(mis_fp)
+        assert um_check_paths==correct_check
+        assert set(usage_mis.image_fps)==set([cc["path"] for cc in correct_check.values()])
