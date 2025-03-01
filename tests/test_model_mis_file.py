@@ -110,6 +110,6 @@ class TestMisFile():
         mis_fp=r".\tests\test_files\check_image_paths__mismatch_folder.mis"
         usage_mis=load_mis(mis_fp)
 
-        correct_check={"a_myimages04.jpg":abspath(r".\example\data\set_a\a_myimages04.jpg"),"a_myimages05.jpg":abspath(r".\example\data\set_a\a_myimages05.jpg"),"a_myimages06.jpg":abspath(r".\example\data\set_a\a_myimages06.jpg")}
-        um_check_paths=usage_mis.check_image_paths()
+        correct_check={"a_myimages04.jpg":{"found":True,"path":r".\tests\test_files\a_myimages04.jpg"},"a_myimages05.jpg":{"found":True,"path":r".\tests\test_files\a_myimages05.jpg"},"a_myimages06.jpg":{"found":True,"path":r".\tests\test_files\a_myimages06.jpg"}}
+        um_check_paths=usage_mis.find_image_paths(mis_fp)
         assert um_check_paths==correct_check
