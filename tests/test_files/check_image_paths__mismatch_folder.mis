@@ -1,0 +1,9 @@
+{
+    "image_fps": [
+        ".\\example\\data\\a_myimages04.jpg",
+        ".\\example\\data\\a_myimages05.jpg",
+        ".\\example\\data\\a_myimages06.jpg"
+    ],
+    "relations": [],
+    "calibration": {}
+}
