@@ -3,7 +3,9 @@ A Metallography Image Software for Alignment.
 
 ## Still very much in development.
 The `notebooks` folder is setup with example data.
+
 The primary workflow is `setup.ipynb` > `align.ipynb` > `render.ipynb`
+
 As of 5/14/2024 MISalign is on version 1.0
 
 ## What does this project do?
