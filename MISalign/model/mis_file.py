@@ -4,7 +4,7 @@
 - Store as json
 """
 import json
-from os.path import split, isfile
+from os.path import split, isfile, join
 from MISalign.model.relation import Relation
 
 class MisFile():
@@ -61,6 +61,19 @@ class MisFile():
     def check_image_paths(self):
         return {n:isfile(p) for n,p in self.get_image_paths().items()}
         #TODO add correction/relocation capability to this function/additional function.
+    def find_image_paths(self,mis_fp,update=True,find_all=False):
+        all_image_names=self.get_image_names()
+        if find_all:
+            find_list=all_image_names
+        else:
+            find_list=[name for name,found in self.check_image_paths().items() if not found]
+        mis_head=split(mis_fp)[0]
+        find_search={name:{"found":isfile(join(mis_head,name)),"path":join(mis_head,name)} for name in find_list}
+        if update:
+            for name in find_list:
+                if find_search[name]["found"]:
+                    self.image_fps[all_image_names.index(name)]=find_search[name]["path"]
+        return find_search
 
 
 def load_mis(mis_fp) -> MisFile:
