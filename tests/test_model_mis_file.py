@@ -113,3 +113,4 @@ class TestMisFile():
         correct_check={"a_myimages04.jpg":{"found":True,"path":r".\tests\test_files\a_myimages04.jpg"},"a_myimages05.jpg":{"found":True,"path":r".\tests\test_files\a_myimages05.jpg"},"a_myimages06.jpg":{"found":True,"path":r".\tests\test_files\a_myimages06.jpg"}}
         um_check_paths=usage_mis.find_image_paths(mis_fp)
         assert um_check_paths==correct_check
+        assert set(usage_mis.image_fps)==set([cc["path"] for cc in correct_check.values()])
