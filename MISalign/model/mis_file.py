@@ -78,15 +78,23 @@ class MisFile():
 
 def load_mis(mis_fp) -> MisFile:
     with open(mis_fp) as infile:
-        mis_object = json.load(infile)
-    if "relations" in mis_object.keys() and mis_object['relations'] is not None:
-        mis_object["relations"]=[Relation(x[0][0],x[0][1],x[1],x[2]) for x in mis_object["relations"]]
-    return MisFile(**mis_object)
+        mis_json = json.load(infile)
+    return mis_from_dict(mis_dict=mis_json)
+
+def mis_from_dict(mis_dict:dict) -> MisFile:
+    if "relations" in mis_dict.keys() and mis_dict['relations'] is not None:
+        mis_dict["relations"]=[Relation(x[0][0],x[0][1],x[1],x[2]) for x in mis_dict["relations"]]
+    return MisFile(**mis_dict)
+
 def save_mis(mis_fp,misfile:MisFile) -> None:
-    mis_save=dict()
-    mis_save["image_fps"]=misfile.image_fps
-    mis_save["relations"]=misfile.save_rels()
-    mis_save["calibration"]=misfile.calibration
+    mis_save=mis_to_dict(misfile)
     json_object=json.dumps(mis_save,indent=4)
     with open(mis_fp,"w") as outfile:
         outfile.write(json_object)
+
+def mis_to_dict(misfile:MisFile) -> dict:
+    mis_dict=dict()
+    mis_dict["image_fps"]=misfile.image_fps
+    mis_dict["relations"]=misfile.save_rels()
+    mis_dict["calibration"]=misfile.calibration
+    return mis_dict
