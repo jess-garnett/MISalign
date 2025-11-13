@@ -15,24 +15,24 @@ class MisFile():
     """
     def __init__(self,**mis_data):
         if 'image_fps' in mis_data:
-            self.image_fps=mis_data['image_fps']#list of filepaths
+            self.image_fps:list[str]=mis_data['image_fps']#list of filepaths
         else:
-            self.image_fps=list()
+            self.image_fps:list[str]=list()
         
         if 'relations' in mis_data:
-            self._relations=mis_data['relations']#list of relation objects
+            self._relations:list[Relation]=mis_data['relations']#list of relation objects
         else:
-            self._relations=list()
+            self._relations:list[Relation]=list()
 
 
         if 'calibration' in mis_data:
-            self.calibration=mis_data['calibration']#dictionary with 'pixel', 'length', and 'length_unit'
+            self.calibration:dict=mis_data['calibration']#dictionary with 'pixel', 'length', and 'length_unit'
         else:
-            self.calibration=dict()
+            self.calibration:dict=dict()
         if 'calibration_fp' in mis_data:
             if mis_data['calibration_fp'] is not None:
                 with open(mis_data['calibration_fp']) as infile:
-                    self.calibration = json.load(infile)#dictionary with 'pixel', 'length', and 'length_unit'
+                    self.calibration:dict = json.load(infile)#dictionary with 'pixel', 'length', and 'length_unit'
     def __str__(self):
         if len(self.image_fps)==0 and len(self._relations)==0:
             return "An empty MISalign project."
