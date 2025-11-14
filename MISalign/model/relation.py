@@ -98,7 +98,7 @@ class MISRelationReference():
         self._relation_type=None
     def __str__(self)->str:
         """String Representation of the Relation."""
-        return f"Image {self._reference[0]} is related to image {self._reference[1]}."
+        return f"Image '{self._reference[1]}' is related to image '{self._reference[0]}'."
     def get_reference(self)->tuple[str,str]:
         """Get the images names of the pair of images that are related."""
         return self._reference
@@ -120,33 +120,53 @@ class MISRelationRectangular():
 
     def __str__(self)->str:
         """String Representation of the Relation."""
-        return f"Image {self._reference[0]} is related to image {self._reference[1]} by {self._rect}."
+        return f"Image '{self._reference[1]}' is related to image '{self._reference[0]}' by {self._rect}."
     def get_reference(self)->tuple[str,str]:
         """Get the images names of the pair of images that are related."""
         return self._reference
     def get_relation(self,relation_type):
         """Get the relation between the images in the specified relation type."""
-        ... #TODO pickup here. Case switch/match?
+        if relation_type=='r':
+            return self._rect
+        elif relation_type=='p':
+            return ((self._rect,(0,0))) # the offset point in image a should match up with 0,0 in image b.
+        else:
+            return None
     def save_relation(self)->list:
         """Get the save list of the relation."""
-        ...
+        return [self._reference,self._relation_type,self._rect]
 
 class MISRelationPoints():
     """Contains information relating an image pair in terms of matching points.
     - `relation_type='p'`
     - point-based relation Ai->Bi"""
+    def __init__(self,image_a,image_b,*data):
+        self._reference=(image_a,image_b)
+        self._relation_type='p'
+        self._points=data[0]
+
     def __str__(self)->str:
         """String Representation of the Relation."""
-        ...
+        return f"Image '{self._reference[1]}' is related to image '{self._reference[0]}' by {self._points}."
     def get_reference(self)->tuple[str,str]:
         """Get the images names of the pair of images that are related."""
-        ...
+        return self._reference
     def get_relation(self,relation_type):
         """Get the relation between the images in the specified relation type."""
-        ...
+        if relation_type=='r':
+            points_a=[x[0] for x in self._points]
+            points_b=[x[1] for x in self._points]
+            shift=[[b[0]-a[0],b[1]-a[1]] for a,b in zip(points_a,points_b)]
+            x_shift=int(mean([x[0] for x in shift]))
+            y_shift=int(mean([x[1] for x in shift]))
+            return (x_shift,y_shift)
+        elif relation_type=='p':
+            return self._points
+        else:
+            return None
     def save_relation(self)->list:
         """Get the save list of the relation."""
-        ...
+        return [self._reference,self._relation_type,self._points]
 
 
 relation_types={
@@ -154,5 +174,5 @@ relation_types={
     'r':MISRelationRectangular,
     'p':MISRelationPoints,
 }
-def setup_relation(image_pair,relation_type,relation_data)->MISRelation:
-    return relation_types[relation_type](image_pair,relation_data)
+def setup_relation(image_pair,relation_type,*relation_data)->MISRelation:
+    return relation_types[relation_type](*image_pair,relation_data)
