@@ -1,5 +1,5 @@
 import pytest
-from MISalign.model.relation import Relation
+from MISalign.model.relation import Relation, MISRelation, MISRelationReference, MISRelationRectangular, MISRelationPoints
 
 class TestRelation():
     def test_relation_init_none(self):
@@ -67,3 +67,15 @@ class TestRelation():
         test_relation=Relation(test_img_a,test_img_b,test_rel,test_data)
         expected_rr=None #TODO implement actual rotation solution algorithm.
         assert test_relation.get_rel('rr')==expected_rr
+
+
+
+class TestMISRelationReference():
+    def test_protocol_isinstance(self):
+        assert isinstance(MISRelationReference,MISRelation)
+class TestMISRelationRectangular():
+    def test_protocol_isinstance(self):
+        assert isinstance(MISRelationRectangular,MISRelation)
+class TestMISRelationPoints():
+    def test_protocol_isinstance(self):
+        assert isinstance(MISRelationPoints,MISRelation)

@@ -1,6 +1,7 @@
 from PIL import Image as PILImage
 import numpy as np
 from os.path import split
+from typing import Protocol, runtime_checkable
 
 class Image():
     """Store image data and generates numpy arrays for image and distance from edge(DFE)
@@ -36,3 +37,21 @@ class Image():
             pass
         else:
             return self._dfe
+        
+#TODO move dfe generation out of the image class.
+    # It already is? render.py has it's own dfe/weight generation. this code doesn't get used at all?
+
+@runtime_checkable
+class MISImage(Protocol):
+    """Access image data and information."""
+    def __str__(self)->str:
+        ...
+    def get_image_array(self)->np.ndarray:
+        ...
+    def get_image_size(self)->str:
+        ...
+
+class MISImageFile():
+    """Access image data and information for an image file."""
+class MISImageHDF5():
+    """Access image data and information from a HDF5."""

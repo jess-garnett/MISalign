@@ -9,7 +9,7 @@
 - Can generate a relation tree graphic/table/something showing relation chains
 """
 from statistics import mean
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 class Relation():
     """Stores the relationship between two images."""
@@ -74,7 +74,7 @@ class Relation():
     
 
 
-
+@runtime_checkable
 class MISRelation(Protocol):
     """Contains information relating an image pair."""
     def __str__(self)->str:
