@@ -3,12 +3,14 @@
 - Implements a ProjectJSON which contains image filepath, relations description, and calibration and can be saved to/loaded from JSON.
 """
 
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 from MISalign.model.relation import MISRelation, setup_relation
-from MISalign.model.image import Image
+from MISalign.model.image import MISImage
 import json
 from os.path import split, isfile, join
+from pathlib import Path
 
+@runtime_checkable
 class MISProject(Protocol):
     """Contains information about a set of images, relations, and a calibration"""
     def __str__(self)->str:
@@ -31,11 +33,18 @@ class MISProject(Protocol):
     
     def get_image_names(self)->list[str]:
         ...
-    def get_image(self,image_name:str)->Image:
+    def get_image(self,image_name:str)->MISImage:
         ...
-    def set_image(self,image_name:str,image:Image):
+    def set_image(self,image_name:str,image:MISImage):
         ...
     def del_image(self, image_name:str):
+        ...
+    def rename_image(self, old_image_name:str,new_image_name:str):
+        ...
+    
+    def set_project_path(self,project_file_path:str|Path):
+        ...
+    def get_project_path(self)->Path:
         ...
 
 class MISProjectJSON():
