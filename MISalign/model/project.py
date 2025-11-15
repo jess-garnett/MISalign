@@ -154,7 +154,7 @@ class MISProjectJSON():
     def get_image_names(self)->list[str]:
         """Get the list of image names."""
         return [x.name for x in self._images]
-    def get_image(self,image_name:str)->MISImage:
+    def get_image(self,image_name:str)->MISImageFile:
         """Get the image for an image name."""
         return [x for x in self._images if x.name==image_name][0]
     def set_image(self,image_name:str,image:MISImageFile):
