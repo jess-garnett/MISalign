@@ -97,20 +97,36 @@ class MISProjectJSON():
         else:
             self._calibration:dict=dict()
 
-    def __str__(self):
+    def __str__(self)->str:
         if len(self._images)==0 and len(self._relations)==0 and len(self._relations)==0 :
             return "An empty MISalign project."
         else:
             return "A MISalign project with:" #TODO new line/indent for each thing.
     #TODO implement the various MISProject methods.    
     # relation methods
-    def get_relations(self):
+    def get_relations(self)->list[MISRelation]:
         """Get the list of MISRelations."""
         return self._relations
-    
+    def set_relations(self,relations:list[MISRelation]):
+        """Set the list of relations."""
+        ...
+    def set_relation(self,relation_index:int,relation:MISRelation):
+        """Set a specific relation based on its index in the list of relations.
+        - Replaces existing relation."""
+        ...
+    def index_relation(self,relation:MISRelation)->int:
+        """Get the index of a relation."""
+        ...
+    def add_relation(self,relation:MISRelation)->int:
+        """Append a relation to the list of relations and return it's index."""
+        ...
+    def delete_relation(self,relation:MISRelation):
+        """Delete a relation from the list of relations."""
+        ...
+    def find_relations(self,image_name:str)->list[MISRelation]:
+        """Find all relations which include a specific image."""
+        return [x for x in self._relations if image_name in x.get_reference()]
 
-    def find_all_rel(self,name):
-        return [x for x in self._relations if name in x.get_reference()]
     
     # image methods
     def get_image_names(self)->list[str]:
