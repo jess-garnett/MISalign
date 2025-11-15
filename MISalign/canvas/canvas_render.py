@@ -203,3 +203,7 @@ def render_blended(
         weighted_img_arr=np.repeat(normed_arr[:,:,np.newaxis],3,axis=2)*img_arr
         canvas[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]+=weighted_img_arr
     return PILImage.fromarray(canvas.astype(np.uint8))
+
+#TODO rework methods/classes here. Have "Project"-based variants and "just a dictionary" variants.> potentially with a more limited version of the protocol?
+#TODO redo docstrings with project update
+#TODO unit tests
