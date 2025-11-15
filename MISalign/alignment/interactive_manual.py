@@ -5,6 +5,7 @@ Interactive Matplotlib Manual Relation Module
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.widgets import Button
+from ipympl.backend_nbagg import Canvas
 import ipywidgets as widgets
 from IPython.display import display
 
@@ -17,15 +18,16 @@ class InteractiveManualRelation():
     def __init__(self):
         self._fig=plt.figure()
         self._ax=self._fig.subplots()
-        self._fig.canvas.toolbar_visible = False
-        self._fig.canvas.header_visible = False
-        self._fig.canvas.footer_visible = False
+        canvas:Canvas=self._fig.canvas # type: ignore
+        canvas.toolbar_visible = False
+        canvas.header_visible = False
+        canvas.footer_visible = False
         self._fig.tight_layout()
         self.points=None
         plt.show()
     def plot_points(self):
         """Plots the points of the current relation"""
-        for pop in self.points:#pair of pairs - pop
+        for pop in self.points:# type: ignore #pair of pairs - pop
             self._ax.plot([pop[0][0],pop[1][0]],[pop[0][1],pop[1][1]+self._height],"x:")
     def change(self,imga:Image,imgb:Image,points=None):
         """Replaces images and resets points and lines of plot."""
