@@ -5,9 +5,9 @@ from MISalign.model.relation import MISRelation
 from MISalign.model.image import MISImage
 
 
-class MISProjectHDF5(MISProject):
+class MISProjectHDF5():
     """Access image data and information from a HDF5."""
 
 
-class MISImageHDF5(MISImage):
+class MISImageHDF5():
     """Access image data and information from a HDF5."""
