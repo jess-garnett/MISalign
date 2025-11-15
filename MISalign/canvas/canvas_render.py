@@ -3,6 +3,8 @@
 """
 from PIL import Image as PILImage
 import numpy as np
+from MISalign.model.project import MISProject
+from MISalign.model.image import MISImage
 # Rectangular Render
     # Uses solution from rectangular_solve
 
@@ -41,6 +43,14 @@ def find_relative_extents(
     origin_relative_extents["miny"]=min(y)
     origin_relative_extents["maxy"]=max(y)
     return origin_relative_extents
+
+def find_relative_extents_project(project:MISProject,origin_relative_offsets:dict):
+    image_names=project.get_image_names()
+    image_sizes={image_name:project.get_image(image_name).get_image_size() for image_name in image_names}
+    return find_relative_extents(
+        image_names=image_names,
+        image_sizes=image_sizes,
+        origin_relative_offsets=origin_relative_offsets)
     ### Resolve Extents
 def resolve_extents(origin_relative_extents:dict[str,int]):
     """ Gets canvas extents and offsets from origin relative extents.
@@ -76,9 +86,10 @@ def place_in_canvas(
     return canvas_relative_offsets
 ## Rectangular Unblended Render
 def render_unblended(
-        image_names:list,
-        image_filepaths:dict,
-        image_sizes:dict,
+        # image_names:list,
+        # image_filepaths:dict,
+        # image_sizes:dict,
+        project:MISProject,
         canvas_relative_offsets:dict,
         canvas_extents:dict):
     """ Renders a canvas without blending.
@@ -90,11 +101,10 @@ def render_unblended(
         - A dictionary of image sizes {image_name:(width,height)}
     - Returns a PIL Image of the canvas."""
     canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
-    for img in image_names:
-        img_size=image_sizes[img]
-        img_place=canvas_relative_offsets[img]
-        img_fp=image_filepaths[img]
-        img_arr=np.array(PILImage.open(img_fp))
+    for image_name in project.get_image_names():
+        img_size=project.get_image(image_name).get_image_size()
+        img_place=canvas_relative_offsets[image_name]
+        img_arr=project.get_image(image_name).get_image_array()
         canv_slice={
             "left":img_place[0],
             "right":img_place[0]+img_size[0],
@@ -125,8 +135,9 @@ def weight_flat(img_size):
     return flat_array
     ### Normalization Array Building
 def build_normalization(
-        image_names:list,
-        image_sizes:dict,
+        # image_names:list,
+        # image_sizes:dict,
+        project:MISProject,
         canvas_relative_offsets:dict,
         canvas_extents:dict,
         weight):
@@ -138,6 +149,8 @@ def build_normalization(
         - A dictionary of image sizes {image_name:(width,height)}
         - A weight array function `weight(img_size)`
     - Returns a numpy array of the normalization values."""
+    image_names=project.get_image_names()
+    image_sizes={image_name:project.get_image(image_name).get_image_size() for image_name in image_names}
     normalization_array=np.zeros((canvas_extents["height"],canvas_extents["width"]))
     for img in image_names:
         img_size=image_sizes[img]
@@ -153,9 +166,10 @@ def build_normalization(
     return normalization_array
     ### Summation Blending
 def render_blended(
-        image_names:list,
-        image_filepaths:dict,
-        image_sizes:dict,
+#         image_names:list,
+#         image_filepaths:dict,
+#         image_sizes:dict,
+        project:MISProject,
         canvas_relative_offsets:dict,
         canvas_extents:dict,
         weight,
@@ -170,12 +184,13 @@ def render_blended(
         - A weight array function `weight(img_size)`
         - A numpy array of the normalization values
     - Returns a PIL Image of the canvas."""
+    image_names=project.get_image_names()
+    image_sizes={image_name:project.get_image(image_name).get_image_size() for image_name in image_names}
     canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
-    for img in image_names:
-        img_size=image_sizes[img]
-        img_place=canvas_relative_offsets[img]
-        img_fp=image_filepaths[img]
-        img_arr=np.array(PILImage.open(img_fp))
+    for image_name in image_names:
+        img_size=image_sizes[image_name]
+        img_place=canvas_relative_offsets[image_name]
+        img_arr=project.get_image(image_name).get_image_array()
         canv_slice={
             "left":img_place[0],
             "right":img_place[0]+img_size[0],

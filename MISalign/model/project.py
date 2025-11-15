@@ -85,9 +85,9 @@ class MISProjectJSON():
     """
     def __init__(self,**mis_data):
         if 'images' in mis_data:
-            self._images:list[MISImageFile]=mis_data['images']#list of image objects
+            self._images:list[MISImage]=mis_data['images']#list of image objects
         else:
-            self._images:list[MISImageFile]=list()
+            self._images:list[MISImage]=list()
         
         if 'relations' in mis_data:
             self._relations:list[MISRelation]=mis_data['relations']#list of relation objects
@@ -154,10 +154,10 @@ class MISProjectJSON():
     def get_image_names(self)->list[str]:
         """Get the list of image names."""
         return [x.name for x in self._images]
-    def get_image(self,image_name:str)->MISImageFile:
+    def get_image(self,image_name:str)->MISImage:
         """Get the image for an image name."""
         return [x for x in self._images if x.name==image_name][0]
-    def set_image(self,image_name:str,image:MISImageFile):
+    def set_image(self,image_name:str,image:MISImage):
         """Set the image for an image name."""
         for i,name in enumerate(self.get_image_names()):
             if image_name==name:
@@ -193,7 +193,7 @@ class MISProjectJSON():
 
     # JSON/ImageFile specific - image checking methods
     def get_image_paths(self):
-        return {x.name:x.image_filepath for x in self._images} #takes tail of image filepath
+        return {x.name:x.image_filepath for x in self._images if isinstance(x,MISImageFile)} #takes tail of image filepath
     def check_image_paths(self):
         return {n:isfile(p) for n,p in self.get_image_paths().items()}
         #TODO add correction/relocation capability to this function/additional function.
@@ -220,7 +220,8 @@ class MISProjectJSON():
     def save_relations(self):
         return [x.save_relation() for x in self._relations]
     def save_image_filepaths(self):
-        return [str(x.image_filepath) for x in self._images]
+        return [str(x.image_filepath) for x in self._images if isinstance(x,MISImageFile)]
+        # TODO: rework save process for images to be more similar to the relation process. with a setup method.
     
 
 def load_mis_project_json(mis_fp) -> MISProjectJSON:
