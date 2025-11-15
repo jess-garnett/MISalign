@@ -25,14 +25,14 @@ class Image():
         dfe_array=np.fromfunction(lambda x, y: np.minimum.reduce([x+1,y+1,np_size[0]-x,np_size[1]-y]),np_size,dtype=int)
         return dfe_array
     
-    def img_arr(self,**kwargs) -> np.ndarray:
+    def img_arr(self,**kwargs) -> np.ndarray: # type: ignore
         if 'rotation' in kwargs:
             #TODO handle rotation - 0, 90, 180, 270 special cases.
             pass
         else:
             return self._img
 
-    def dfe_arr(self,**kwargs) -> np.ndarray:
+    def dfe_arr(self,**kwargs) -> np.ndarray:  # type: ignore
         if 'rotation' in kwargs:
             #TODO handle rotation - 0, 90, 180, 270 special cases.
             pass
@@ -51,7 +51,7 @@ class MISImage(Protocol):
     @property
     def name(self)->str:
         ...
-    def get_image_array(self,PIL_mode:str)->np.ndarray:
+    def get_image_array(self,PIL_mode:str="RGB")->np.ndarray:
         """Get a nparray of the image."""
         ...
     def get_image_size(self)->tuple[int,int]:

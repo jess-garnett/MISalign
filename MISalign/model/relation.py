@@ -9,7 +9,7 @@
 - Can generate a relation tree graphic/table/something showing relation chains
 """
 from statistics import mean
-from typing import Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable, Any
 
 class Relation():
     """Stores the relationship between two images."""
@@ -46,8 +46,8 @@ class Relation():
             if self._relation=='r':
                 return self._rect
             elif self._relation=='p':
-                points_a=[x[0] for x in self._points]
-                points_b=[x[1] for x in self._points]
+                points_a=[x[0] for x in self._points] # type: ignore
+                points_b=[x[1] for x in self._points] # type: ignore
                 shift=[[b[0]-a[0],b[1]-a[1]] for a,b in zip(points_a,points_b)]
                 x_shift=int(mean([x[0] for x in shift]))
                 y_shift=int(mean([x[1] for x in shift]))
@@ -70,7 +70,7 @@ class Relation():
             data=(self._rect,self._rota)
         elif self._relation=='p':
             data=self._points
-        return [self.ref,self._relation,data]
+        return [self.ref,self._relation,data]  # type: ignore
     
 
 
@@ -83,7 +83,7 @@ class MISRelation(Protocol):
     def get_reference(self)->tuple[str,str]:
         """Get the images names of the pair of images that are related."""
         ...
-    def get_relation(self,relation_type):
+    def get_relation(self,relation_type)->Any:
         """Get the relation between the images in the specified relation type."""
         ...
     def save_relation(self)->list:

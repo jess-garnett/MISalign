@@ -229,7 +229,7 @@ def load_mis_project_json(mis_fp) -> MISProjectJSON:
     if "relations" in mis_object.keys() and mis_object['relations'] is not None:
         mis_object["relations"]=[setup_relation(x[0],x[1],x[2]) for x in mis_object["relations"]]
     if "image_fps" in mis_object.keys() and mis_object['image_fps'] is not None:
-        mis_object["images"]
+        mis_object["images"]=[MISImageFile(x) for x in mis_object['image_fps']]
     mis_object["file_path"]=mis_fp
     return MISProjectJSON(**mis_object)
 
