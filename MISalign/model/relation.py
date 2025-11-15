@@ -175,4 +175,4 @@ relation_types={
     'p':MISRelationPoints,
 }
 def setup_relation(image_pair,relation_type,*relation_data)->MISRelation:
-    return relation_types[relation_type](*image_pair,relation_data)
+    return relation_types[relation_type](*image_pair,*relation_data)
