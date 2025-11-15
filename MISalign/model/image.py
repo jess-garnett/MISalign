@@ -88,7 +88,3 @@ class MISImageFile():
         except: # if image hasn't been opened then open it and grab the size.
             self.get_image_array()
             return self._size
-
-
-class MISImageHDF5():
-    """Access image data and information from a HDF5."""
