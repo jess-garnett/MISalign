@@ -10,7 +10,7 @@ class Image():
     """
     def __init__(self,image_fp:str):
         self.image_fp=image_fp
-        self.name=split(image_fp)[1].split
+        self.name=split(image_fp)[1]
         PIL_image=PILImage.open(image_fp)
         self.image=PIL_image.convert("RGB")
         self.size=self.image.size
@@ -46,9 +46,10 @@ class Image():
 @runtime_checkable
 class MISImage(Protocol):
     """Access image data and information."""
+    name:str
     def __str__(self)->str:
         ...
-    def get_image_array(self,PIL_Mode:str)->np.ndarray:
+    def get_image_array(self,PIL_mode:str)->np.ndarray:
         """Get a nparray of the image."""
         ...
     def get_image_size(self)->tuple[int,int]:
@@ -59,7 +60,7 @@ class MISImageFile():
     """Access image data and information for an image file."""
     def __init__(self,image_filepath:str|Path):
         self.image_filepath=Path(image_filepath)
-        self.name=self.image_filepath.stem
+        self.name=self.image_filepath.name
         self._PIL_mode=None
     def __str__(self):
         return "Image '"+self.name+"' with shape:"+str(self.get_image_size())
