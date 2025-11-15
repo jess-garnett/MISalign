@@ -25,7 +25,7 @@ class TestMISImageFile():
     def test_image_init(self):
         test_img_a01=r"example\data\set_a\a_myimages01.jpg"
         test_image=MISImageFile(test_img_a01)
-        assert str(test_image)=="Image 'a_myimages01' with shape:(1600, 1200)"
+        assert str(test_image)=="Image 'a_myimages01.jpg' with shape:(1600, 1200)"
     def test_image_img_rect(self):
         test_img_a01=r"example\data\set_a\a_myimages01.jpg"
         test_image=MISImageFile(test_img_a01)
