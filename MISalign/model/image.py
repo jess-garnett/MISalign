@@ -46,8 +46,10 @@ class Image():
 @runtime_checkable
 class MISImage(Protocol):
     """Access image data and information."""
-    name:str
     def __str__(self)->str:
+        ...
+    @property
+    def name(self)->str:
         ...
     def get_image_array(self,PIL_mode:str)->np.ndarray:
         """Get a nparray of the image."""
@@ -60,10 +62,13 @@ class MISImageFile():
     """Access image data and information for an image file."""
     def __init__(self,image_filepath:str|Path):
         self.image_filepath=Path(image_filepath)
-        self.name=self.image_filepath.name
+        self._name=self.image_filepath.name
         self._PIL_mode=None
     def __str__(self):
-        return "Image '"+self.name+"' with shape:"+str(self.get_image_size())
+        return "Image '"+self._name+"' with shape:"+str(self.get_image_size())
+    @property
+    def name(self)->str:
+        return self._name
     def get_image_array(self,PIL_mode:str="RGB")->np.ndarray:
         """Get a nparray of the image."""
         if self._PIL_mode==PIL_mode:
