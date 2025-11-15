@@ -220,7 +220,7 @@ class MISProjectJSON():
     def save_relations(self):
         return [x.save_relation() for x in self._relations]
     def save_image_filepaths(self):
-        return [x.image_filepath for x in self._images]
+        return [str(x.image_filepath) for x in self._images]
     
 
 def load_mis_project_json(mis_fp) -> MISProjectJSON:
@@ -232,6 +232,19 @@ def load_mis_project_json(mis_fp) -> MISProjectJSON:
         mis_object["images"]
     mis_object["file_path"]=mis_fp
     return MISProjectJSON(**mis_object)
+
+def build_mis_project_json(
+        image_filepaths:list[str],
+        calibration_filepath:str|None=None,
+        project_filepath:str|None=None,
+    )->MISProjectJSON:
+    mis_kwargs=dict()
+    mis_kwargs["images"]=[MISImageFile(image_filepath) for image_filepath in image_filepaths]
+    if calibration_filepath is not None:
+        mis_kwargs["calibration"]=calibration_from_json(calibration_filepath)
+    if project_filepath is not None:
+        mis_kwargs["file_path"]=project_filepath
+    return MISProjectJSON(**mis_kwargs)
 
 
 
