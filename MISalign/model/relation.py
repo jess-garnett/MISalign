@@ -77,6 +77,8 @@ class Relation():
 @runtime_checkable
 class MISRelation(Protocol):
     """Contains information relating an image pair."""
+    def __init__(self,**relation_data)->None:
+        """Initialize Relation"""
     def __str__(self)->str:
         """String Representation of the Relation."""
         ...
@@ -86,16 +88,18 @@ class MISRelation(Protocol):
     def get_relation(self,relation_type)->Any:
         """Get the relation between the images in the specified relation type."""
         ...
-    def save_relation(self)->list:
-        """Get the save list of the relation."""
+    def save_dict(self)->dict:
+        """Returns a dictionary compatible with JSON.dump().
+        - `relation_data["image_pair"]:tuple[str,str]`"""
         ...
 
 class MISRelationReference():
     """Image pair that is related but no specific relation is known.
     - `relation_type=None`"""
-    def __init__(self,image_a,image_b,*data):
-        self._reference=(image_a,image_b)
-        self._relation_type=None
+    _relation_type=None
+    def __init__(self,**relation_data):
+        self._dict=relation_data
+        self._reference=relation_data["image_pair"]
     def __str__(self)->str:
         """String Representation of the Relation."""
         return f"Image '{self._reference[1]}' is related to image '{self._reference[0]}'."
@@ -105,18 +109,23 @@ class MISRelationReference():
     def get_relation(self,relation_type):
         """Get the relation between the images in the specified relation type."""
         return None
-    def save_relation(self)->list:
-        """Get the save list of the relation."""
-        return [self._reference,self._relation_type,None]
+    def save_dict(self)->dict:
+        """Returns a dictionary compatible with JSON.dump()."""
+        return {
+            **self._dict,
+            "relation_type":self._relation_type,
+            "image_pair":self._reference,
+            }
 
 class MISRelationRectangular():
     """Contains information relating an image pair in terms of (x,y) offset.
     - `relation_type='r'`
     - rectilinear relationship A(0,0)->B(0,0)"""
-    def __init__(self,image_a,image_b,*data):
-        self._reference=(image_a,image_b)
-        self._relation_type='r'
-        self._rect=data[0]
+    _relation_type='r'
+    def __init__(self,**relation_data):
+        self._dict=relation_data
+        self._reference=relation_data["image_pair"]
+        self._rect=relation_data["rectangular"]
 
     def __str__(self)->str:
         """String Representation of the Relation."""
@@ -132,19 +141,24 @@ class MISRelationRectangular():
             return ((self._rect,(0,0))) # the offset point in image a should match up with 0,0 in image b.
         else:
             return None
-    def save_relation(self)->list:
-        """Get the save list of the relation."""
-        return [self._reference,self._relation_type,self._rect]
+    def save_dict(self)->dict:
+        """Returns a dictionary compatible with JSON.dump()."""
+        return {
+            **self._dict,
+            "relation_type":self._relation_type,
+            "image_pair":self._reference,
+            "rectangular":self._rect,
+            }
 
 class MISRelationPoints():
     """Contains information relating an image pair in terms of matching points.
     - `relation_type='p'`
     - point-based relation Ai->Bi"""
-    def __init__(self,image_a,image_b,*data):
-        self._reference=(image_a,image_b)
-        self._relation_type='p'
-        self._points=data[0]
-
+    _relation_type='p'
+    def __init__(self,**relation_data):
+        self._dict=relation_data
+        self._reference=relation_data["image_pair"]
+        self._points=relation_data["points"]
     def __str__(self)->str:
         """String Representation of the Relation."""
         return f"Image '{self._reference[1]}' is related to image '{self._reference[0]}' by {self._points}."
@@ -164,15 +178,20 @@ class MISRelationPoints():
             return self._points
         else:
             return None
-    def save_relation(self)->list:
-        """Get the save list of the relation."""
-        return [self._reference,self._relation_type,self._points]
+    def save_dict(self)->dict:
+        """Returns a dictionary compatible with JSON.dump()."""
+        return {
+            **self._dict,
+            "relation_type":self._relation_type,
+            "image_pair":self._reference,
+            "points":self._points
+            }
 
 
 relation_types={
-    None:MISRelationReference,
-    'r':MISRelationRectangular,
-    'p':MISRelationPoints,
+    MISRelationReference._relation_type:MISRelationReference,
+    MISRelationRectangular._relation_type:MISRelationRectangular,
+    MISRelationPoints._relation_type:MISRelationPoints,
 }
-def setup_relation(image_pair,relation_type,*relation_data)->MISRelation:
-    return relation_types[relation_type](*image_pair,*relation_data)
+def setup_relation(**relation_data)->MISRelation:
+    return relation_types[relation_data["relation_type"]](**relation_data)
