@@ -1,5 +1,5 @@
 import pytest
-from MISalign.model.image import Image, MISImage, MISImageFile, Path
+from MISalign.model.image import Image, MISImage, MISImageFile, Path, setup_image
 import numpy as np
 
 class TestImage():
@@ -19,6 +19,13 @@ class TestImage():
         assert np.all(test_image.img_arr()==np.load(test_img_arr_fp))
 
 #TODO makes tests based on `test_files` not on examples.
+class Test_setup_image():
+    def test_setup_imagefile(self):
+        assert type(setup_image(
+            image_type="file",
+            image_filepath=r"example\data\set_a\a_myimages01.jpg"
+        ))==MISImageFile
+
 class TestMISImageFile():
     def test_protocol_isinstance(self):
         assert isinstance(MISImageFile,MISImage)

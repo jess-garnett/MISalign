@@ -10,7 +10,7 @@ class TestMISProjectJSON():
         assert str(test_mis)=="An empty MISalign project."
     def test_init_images(self):
         test_image_fps=["test_a.png","test_b.png","test_c.png"]
-        test_images=[MISImageFile(x) for x in test_image_fps]
+        test_images=[MISImageFile(image_filepath=x) for x in test_image_fps]
         test_mis=MISProjectJSON(
             images=test_images
             )
@@ -28,8 +28,8 @@ Project Path:
         result=str(test_mis)
         assert result==expected_result
     def test_init_relations(self):
-        test_relations=[MISRelationReference("test_a.png","test_b.png"),
-                        MISRelationReference("test_b.png","test_c.png")]
+        test_relations=[MISRelationReference(image_pair=("test_a.png","test_b.png")),
+                        MISRelationReference(image_pair=("test_b.png","test_c.png"))]
         test_mis=MISProjectJSON(
             relations=test_relations
             )
@@ -85,9 +85,9 @@ Project Path:
         assert result==expected_result
     def test_init_all(self):
         test_image_fps=["test_a.png","test_b.png","test_c.png"]
-        test_images=[MISImageFile(x) for x in test_image_fps]
-        test_relations=[MISRelationReference("test_a.png","test_b.png"),
-                        MISRelationReference("test_b.png","test_c.png")]
+        test_images=[MISImageFile(image_filepath=x) for x in test_image_fps]
+        test_relations=[MISRelationReference(image_pair=("test_a.png","test_b.png")),
+                        MISRelationReference(image_pair=("test_b.png","test_c.png"))]
         test_calibration={
                             "pixel": 600,
                             "length": 1,
