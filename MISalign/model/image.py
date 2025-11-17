@@ -63,6 +63,7 @@ class MISImage(Protocol):
 class MISImageFile():
     """Access image data and information for an image file.
     - Expects image_filepath:str|Path"""
+    _image_type="file"
     def __init__(self,**image_data)->None:
         self.image_filepath=Path(image_data["image_filepath"])
         self.name:str=self.image_filepath.name
@@ -99,7 +100,7 @@ class MISImageFile():
 
 
 image_types={
-    "file":MISImageFile
+    MISImageFile._image_type:MISImageFile
 }
 def setup_image(**image_data)->MISImage:
     return image_types[image_data["image_type"]](**image_data)
