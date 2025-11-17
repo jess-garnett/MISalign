@@ -1,7 +1,7 @@
 from PIL import Image as PILImage
 import numpy as np
 from os.path import split
-from typing import Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable, ClassVar
 from pathlib import Path
 
 class Image():
@@ -46,10 +46,9 @@ class Image():
 @runtime_checkable
 class MISImage(Protocol):
     """Access image data and information."""
+    def __init__(self,**image_data)->None:
+        self.name:str
     def __str__(self)->str:
-        ...
-    @property
-    def name(self)->str:
         ...
     def get_image_array(self,PIL_mode:str="RGB")->np.ndarray:
         """Get a nparray of the image."""
@@ -57,18 +56,20 @@ class MISImage(Protocol):
     def get_image_size(self)->tuple[int,int]:
         """Get the size of the image."""
         ...
+    def save_dict(self)->dict:
+        """Returns a dictionary compatible with JSON.dump()"""
+        ...
 
 class MISImageFile():
-    """Access image data and information for an image file."""
-    def __init__(self,image_filepath:str|Path):
-        self.image_filepath=Path(image_filepath)
-        self._name=self.image_filepath.name
+    """Access image data and information for an image file.
+    - Expects image_filepath:str|Path"""
+    def __init__(self,**image_data)->None:
+        self.image_filepath=Path(image_data["image_filepath"])
+        self.name:str=self.image_filepath.name
+        self._dict:dict=image_data
         self._PIL_mode=None
     def __str__(self):
-        return "Image '"+self._name+"' with shape:"+str(self.get_image_size())
-    @property
-    def name(self)->str:
-        return self._name
+        return "Image '"+self.name+"' with shape:"+str(self.get_image_size())
     def get_image_array(self,PIL_mode:str="RGB")->np.ndarray:
         """Get a nparray of the image."""
         if self._PIL_mode==PIL_mode:
@@ -88,3 +89,17 @@ class MISImageFile():
         except: # if image hasn't been opened then open it and grab the size.
             self.get_image_array()
             return self._size
+    def save_dict(self)->dict:
+        """Returns a dictionary compatible with JSON.dump()"""
+        return {
+            **self._dict, # loaded dict first and then get the current values
+            "image_type":"file",
+            "image_filepath":str(self.image_filepath),
+            }
+
+
+image_types={
+    "file":MISImageFile
+}
+def setup_image(**image_data)->MISImage:
+    return image_types[image_data["image_type"]](**image_data)
