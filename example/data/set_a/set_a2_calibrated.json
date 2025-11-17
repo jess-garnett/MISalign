@@ -1,24 +1,54 @@
 {
-    "image_fps": [
-        "c:\\Users\\drago\\Documents\\GitHub\\MISalign\\example\\data\\set_a\\a_myimages01.jpg",
-        "c:\\Users\\drago\\Documents\\GitHub\\MISalign\\example\\data\\set_a\\a_myimages02.jpg",
-        "c:\\Users\\drago\\Documents\\GitHub\\MISalign\\example\\data\\set_a\\a_myimages03.jpg",
-        "c:\\Users\\drago\\Documents\\GitHub\\MISalign\\example\\data\\set_a\\a_myimages04.jpg",
-        "c:\\Users\\drago\\Documents\\GitHub\\MISalign\\example\\data\\set_a\\a_myimages05.jpg",
-        "c:\\Users\\drago\\Documents\\GitHub\\MISalign\\example\\data\\set_a\\a_myimages06.jpg",
-        "c:\\Users\\drago\\Documents\\GitHub\\MISalign\\example\\data\\set_a\\a_myimages07.jpg",
-        "c:\\Users\\drago\\Documents\\GitHub\\MISalign\\example\\data\\set_a\\a_myimages08.jpg",
-        "c:\\Users\\drago\\Documents\\GitHub\\MISalign\\example\\data\\set_a\\a_myimages09.jpg",
-        "c:\\Users\\drago\\Documents\\GitHub\\MISalign\\example\\data\\set_a\\a_myimages10.jpg"
+    "images": [
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages01.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages02.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages03.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages04.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages05.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages06.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages07.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages08.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages09.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages10.jpg",
+            "image_type": "file"
+        }
     ],
     "relations": [
-        [
-            [
+        {
+            "image_pair": [
                 "a_myimages01.jpg",
                 "a_myimages02.jpg"
             ],
-            "p",
-            [
+            "relation_type": "p",
+            "points": [
                 [
                     [
                         1277,
@@ -50,14 +80,14 @@
                     ]
                 ]
             ]
-        ],
-        [
-            [
+        },
+        {
+            "image_pair": [
                 "a_myimages02.jpg",
                 "a_myimages03.jpg"
             ],
-            "p",
-            [
+            "relation_type": "p",
+            "points": [
                 [
                     [
                         899,
@@ -89,14 +119,14 @@
                     ]
                 ]
             ]
-        ],
-        [
-            [
+        },
+        {
+            "image_pair": [
                 "a_myimages03.jpg",
                 "a_myimages04.jpg"
             ],
-            "p",
-            [
+            "relation_type": "p",
+            "points": [
                 [
                     [
                         1207,
@@ -128,14 +158,14 @@
                     ]
                 ]
             ]
-        ],
-        [
-            [
+        },
+        {
+            "image_pair": [
                 "a_myimages04.jpg",
                 "a_myimages05.jpg"
             ],
-            "p",
-            [
+            "relation_type": "p",
+            "points": [
                 [
                     [
                         1204,
@@ -167,14 +197,14 @@
                     ]
                 ]
             ]
-        ],
-        [
-            [
+        },
+        {
+            "image_pair": [
                 "a_myimages05.jpg",
                 "a_myimages06.jpg"
             ],
-            "p",
-            [
+            "relation_type": "p",
+            "points": [
                 [
                     [
                         875,
@@ -206,14 +236,14 @@
                     ]
                 ]
             ]
-        ],
-        [
-            [
+        },
+        {
+            "image_pair": [
                 "a_myimages06.jpg",
                 "a_myimages07.jpg"
             ],
-            "p",
-            [
+            "relation_type": "p",
+            "points": [
                 [
                     [
                         609,
@@ -245,14 +275,14 @@
                     ]
                 ]
             ]
-        ],
-        [
-            [
+        },
+        {
+            "image_pair": [
                 "a_myimages07.jpg",
                 "a_myimages08.jpg"
             ],
-            "p",
-            [
+            "relation_type": "p",
+            "points": [
                 [
                     [
                         959,
@@ -284,14 +314,14 @@
                     ]
                 ]
             ]
-        ],
-        [
-            [
+        },
+        {
+            "image_pair": [
                 "a_myimages08.jpg",
                 "a_myimages09.jpg"
             ],
-            "p",
-            [
+            "relation_type": "p",
+            "points": [
                 [
                     [
                         1228,
@@ -323,14 +353,14 @@
                     ]
                 ]
             ]
-        ],
-        [
-            [
+        },
+        {
+            "image_pair": [
                 "a_myimages09.jpg",
                 "a_myimages10.jpg"
             ],
-            "p",
-            [
+            "relation_type": "p",
+            "points": [
                 [
                     [
                         742,
@@ -362,11 +392,8 @@
                     ]
                 ]
             ]
-        ]
+        }
     ],
-    "calibration": {
-        "pixel": 599.006361608906,
-        "length": 1,
-        "length_unit": "mm"
-    }
+    "calibration": {},
+    "file_path": null
 }

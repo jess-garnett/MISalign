@@ -72,7 +72,7 @@ class InteractiveManualRelation():
             raise ValueError("Mismatched number of selected points.")
     def get_relation(self):
         """Get the current image names and the pairs of x,y pairs as a Relation object"""
-        return MISRelationPoints(self._imga.name,self._imgb.name,self.points)
+        return MISRelationPoints(image_pair=(self._imga.name,self._imgb.name),points=self.points)
 
 class IMRControls():
     def __init__(self,mis_project:MISProject):
