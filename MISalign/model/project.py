@@ -102,8 +102,6 @@ class MISProjectJSON():
         
         if "file_path" in mis_data:
             self._file_path=Path(mis_data['file_path'])
-        else:
-            self._file_path=None
 
     def __str__(self)->str:
         if len(self._images)==0 and len(self._relations)==0 and len(self._calibration)==0 and self.get_project_path()==None:
@@ -221,11 +219,15 @@ class MISProjectJSON():
     
     # JSON specific - save methods
     def save_dict(self):
+        try:
+            file_path=str(self._file_path)
+        except:
+            file_path=None
         return {**self._dict,
                 "relations":[x.save_dict() for x in self._relations],
                 "images":[x.save_dict() for x in self._images],
                 "calibration":self._calibration,
-                "file_path":self._file_path}
+                "file_path":file_path}
     
 
 def load_mis_project_json(mis_fp) -> MISProjectJSON:
@@ -258,3 +260,26 @@ def save_mis_project_json(mis_fp,misfile:MISProjectJSON) -> None:
     json_object=json.dumps(mis_save,indent=4)
     with open(mis_fp,"w") as outfile:
         outfile.write(json_object)
+
+def convert_mis_project_json(mis_fp)->MISProjectJSON:
+    """Convert an old `.mis` format file into a MISProjectJSON."""
+    with open(mis_fp) as infile:
+        mis_load = json.load(infile)
+    mp=build_mis_project_json(
+        image_filepaths=mis_load["image_fps"],
+        )
+    build_relations=list()
+    for x in mis_load["relations"]:
+        try:
+            if type(x[2][0])==int: # relation data is most likely rectangular offset
+                relation_data=dict(rectangular=x[2])
+            else: #relation data is most likely points
+                relation_data=dict(points=x[2])
+        except: # relation data is most likely None
+            relation_data=dict()
+        build_relations.append(setup_relation(
+                image_pair=x[0],
+                relation_type=x[1],
+                **relation_data))
+    mp.set_relations(build_relations)
+    return mp
