@@ -394,6 +394,10 @@
             ]
         }
     ],
-    "calibration": {},
-    "file_path": null
+    "calibration": {
+        "pixel": 599.006361608906,
+        "length": 1,
+        "length_unit": "mm"
+    },
+    "file_path": "..\\example\\data\\set_a\\set_a2_calibrated.json"
 }
