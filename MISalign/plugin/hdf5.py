@@ -54,7 +54,13 @@ def load_mis_project_hdf5(mis_fp) -> MISProjectHDF5:
     with h5py.File(mis_fp) as f:
         mis_object=dict()
         try: # images
-            mis_object["images"]=[setup_image(**x.attrs) for x in f["images"].values()]  # type: ignore
+            build_images=list()
+            for x in f["images"].values(): # type: ignore
+                attrs=dict(**x.attrs)
+                if "hdf5_filepath" in attrs:
+                    attrs["hdf5_filepath"]=mis_fp
+                build_images.append(setup_image(**attrs))
+            mis_object["images"]=build_images
         except:
             mis_object["images"]=list()
         try: # relations
