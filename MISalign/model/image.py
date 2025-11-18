@@ -1,7 +1,7 @@
 from PIL import Image as PILImage
 import numpy as np
 from os.path import split
-from typing import Protocol, runtime_checkable, ClassVar
+from typing import Protocol, runtime_checkable, Any
 from pathlib import Path
 
 class Image():
@@ -95,11 +95,11 @@ class MISImageFile():
         return {
             **self._dict, # loaded dict first and then get the current values
             "image_type":"file",
-            "image_filepath":str(self.image_filepath),
+            "image_filepath":self.image_filepath.as_posix(),
             }
 
 
-image_types={
+image_types:dict[str,Any]={
     MISImageFile._image_type:MISImageFile
 }
 def setup_image(**image_data)->MISImage:
