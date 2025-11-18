@@ -110,7 +110,7 @@ class MISProjectJSON():
             return "A MISalign project with:\n"+"\n".join([
                 "Images:\n"+"\n".join(["    "+x for x in self.get_image_names()]),
                 "Relations:\n"+"\n".join(["    "+str(x.get_reference()) for x in self._relations]),
-                "Calibration:\n"+"\n".join([f"    {key} : {value}" for key,value in self._calibration.items()]),
+                "Calibration:\n"+"\n".join([f"    {key} : {self._calibration[key]}" for key in ['pixel','length','length_unit'] if key in self._calibration]),
                 "Project Path:\n"+f"    {self.get_project_path()}"
             ])
     # relation methods

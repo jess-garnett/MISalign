@@ -157,7 +157,7 @@ class MISRelationPoints():
     _relation_type='p'
     def __init__(self,**relation_data):
         self._dict=relation_data
-        self._reference=relation_data["image_pair"]
+        self._reference=tuple(relation_data["image_pair"])
         self._points=relation_data["points"]
     def __str__(self)->str:
         """String Representation of the Relation."""
