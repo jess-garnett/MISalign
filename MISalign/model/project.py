@@ -145,35 +145,6 @@ class MISProjectJSON(MISProject):
     - Relations
     - Calibration
     """
-    def __init__(self,**mis_data)->None:
-        super().__init__(**mis_data)
-    #TODO move these methods into the image module/MISImageFile
-    # JSON/ImageFile specific - image checking methods
-    def get_image_paths(self):
-        return {x.name:x.image_filepath for x in self._images if isinstance(x,MISImageFile)} #takes tail of image filepath
-    def check_image_paths(self):
-        return {n:isfile(p) for n,p in self.get_image_paths().items()}
-        #TODO add correction/relocation capability to this function/additional function.
-    def find_image_paths(self,mis_fp,update=True,find_all=False):
-        all_image_names=self.get_image_names()
-        if find_all:
-            find_list=all_image_names
-        else:
-            find_list=[name for name,found in self.check_image_paths().items() if not found]
-        mis_head=split(mis_fp)[0]
-        find_search={name:{
-                            "found":isfile(join(mis_head,name)),
-                            "path":join(mis_head,name)}
-                     for name in find_list}
-        if update:
-            for name in find_list:
-                if find_search[name]["found"]:
-                    image_data=self.get_image(name).save_dict()
-                    image_data["image_filepath"]=find_search[name]["path"]
-                    self.set_image(
-                        image_name=name,
-                        image=setup_image(**image_data))
-        return find_search
 
 def load_mis_project_json(mis_fp) -> MISProjectJSON:
     with open(mis_fp) as infile:
