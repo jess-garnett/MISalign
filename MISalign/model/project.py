@@ -145,43 +145,42 @@ class MISProjectJSON(MISProject):
     - Relations
     - Calibration
     """
-
-def load_mis_project_json(mis_fp) -> MISProjectJSON:
-    with open(mis_fp) as infile:
-        mis_object = json.load(infile)
-    if "relations" in mis_object.keys() and mis_object['relations'] is not None:
-        mis_object["relations"]=[setup_relation(**x) for x in mis_object["relations"]]
-    if "images" in mis_object.keys() and mis_object['images'] is not None:
-        mis_object["images"]=[setup_image(**x) for x in mis_object['images']]
-    mis_object["file_path"]=mis_fp
-    return MISProjectJSON(**mis_object)
-
-def build_mis_project_json(
-        image_filepaths:list[str],
+    def load(self,mis_filepath):
+        with open(mis_filepath) as f:
+            mis_data=json.load(f)
+        if "relations" in mis_data.keys() and mis_data['relations'] is not None:
+            mis_data["relations"]=[setup_relation(**x) for x in mis_data["relations"]]
+        if "images" in mis_data.keys() and mis_data['images'] is not None:
+            mis_data["images"]=[setup_image(**x) for x in mis_data['images']]
+        mis_data["file_path"]=mis_filepath
+        self.__init__(**mis_data)
+        return self
+    def save(self,mis_filepath):
+        mis_data=self.save_dict()
+        with open(mis_filepath,"w") as f:
+            f.write(json.dumps(mis_data,indent=4))
+    def build(self,
+        image_filepaths:list[str]|None=None,
         calibration_filepath:str|None=None,
         project_filepath:str|None=None,
-    )->MISProjectJSON:
-    mis_kwargs=dict()
-    mis_kwargs["images"]=[MISImageFile(image_filepath=image_filepath) for image_filepath in image_filepaths]
-    if calibration_filepath is not None:
-        mis_kwargs["calibration"]=calibration_from_json(calibration_filepath)
-    if project_filepath is not None:
-        mis_kwargs["file_path"]=project_filepath
-    return MISProjectJSON(**mis_kwargs)
-
-
-
-def save_mis_project_json(mis_fp,misfile:MISProjectJSON) -> None:
-    mis_save=misfile.save_dict()
-    json_object=json.dumps(mis_save,indent=4)
-    with open(mis_fp,"w") as outfile:
-        outfile.write(json_object)
+        **kwargs):
+        mis_data=dict()
+        if image_filepaths is not None:
+            mis_data["images"]=[MISImageFile(image_filepath=x) for x in image_filepaths]
+        if calibration_filepath is not None:
+            mis_data["calibration"]=calibration_from_json(calibration_filepath)
+        if project_filepath is not None:
+            mis_data["file_path"]=project_filepath
+        for key,value in kwargs.items():
+            mis_data[key]=value
+        self.__init__(**mis_data)
+        return self
 
 def convert_mis_project_json(mis_fp)->MISProjectJSON:
     """Convert an old `.mis` format file into a MISProjectJSON."""
     with open(mis_fp) as infile:
         mis_load = json.load(infile)
-    mp=build_mis_project_json(
+    mp=MISProjectJSON().build(
         image_filepaths=mis_load["image_fps"],
         )
     build_relations=list()
