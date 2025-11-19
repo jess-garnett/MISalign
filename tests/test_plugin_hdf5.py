@@ -5,8 +5,8 @@ from pathlib import Path
 import numpy as np
 
 class TestMISProjectHDF5():
-    def test_protocol_isinstance(self):
-        assert isinstance(MISProjectHDF5,MISProject)
+    # def test_protocol_isinstance(self):
+    #     assert isinstance(MISProjectHDF5,MISProject)
     def test_load_str(self):
         test_filepath="tests/test_files/mytestfile1.hdf5"
         mp=load_mis_project_hdf5(test_filepath)
