@@ -3,7 +3,7 @@
 - Implements a ProjectJSON which contains image filepath, relations description, and calibration and can be saved to/loaded from JSON.
 """
 
-from typing import Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable, Any
 from MISalign.model.relation import MISRelation, setup_relation
 from MISalign.model.image import MISImage, MISImageFile,setup_image
 from MISalign.calibration.calibrate import calibration_from_json
@@ -14,94 +14,32 @@ from pathlib import Path
 @runtime_checkable
 class MISProject(Protocol):
     """Contains information about a set of images, relations, and a calibration"""
-    def __str__(self)->str:
-        ...
-
-    # relation methods
-    def get_relations(self)->list[MISRelation]:
-        """Get the list of relations."""
-        ...
-    def set_relations(self,relations:list[MISRelation]):
-        """Set the list of relations."""
-        ...
-    def set_relation(self,relation_index:int,relation:MISRelation):
-        """Set a specific relation based on its index in the list of relations.
-        - Replaces existing relation."""
-        ...
-    def index_relation(self,relation:MISRelation)->int:
-        """Get the index of a relation."""
-        ...
-    def add_relation(self,relation:MISRelation)->int:
-        """Append a relation to the list of relations and return it's index."""
-        ...
-    def remove_relation(self,relation:MISRelation):
-        """Remove a relation from the list of relations."""
-        ...
-    def find_relations(self,image_name:str)->list[MISRelation]:
-        """Find all relations which include a specific image."""
-        ...
-    def rename_image_relations(self, old_image_name:str,new_image_name:str):
-        """Rename an image in all relations.
-        - Does not modify images."""
-        ...
-    
-    # image methods
-    def get_image_names(self)->list[str]:
-        """Get the list of image names."""
-        ...
-    def get_image(self,image_name:str)->MISImage:
-        """Get the image for an image name."""
-        ...
-    def set_image(self,image_name:str,image:MISImage):
-        """Set the image for an image name."""
-        ...
-    def remove_image(self, image_name:str):
-        """Remove the image for an image name.
-        - Does not modify/delete relations."""
-        ...
-
-    # calibration methods
-    def set_calibration(self,calibration:dict):
-        """Set the calibration."""
-        ...
-    def get_calibration(self)->dict:
-        """Get the calibration."""
-        ...
-    
-    # project methods
-    def set_project_path(self,project_file_path:str|Path):
-        """Set path for project save file."""
-        ...
-    def get_project_path(self)->Path|None:
-        """Get path for project save file.
-        - Returns `None` if project does not currently have save file."""
-        ...
-
-class MISProjectJSON():
-    """MISProject compatible with loading from/saving to JSON. Contains:
-    - Image Filepaths
-    - Relations
-    - Calibration
-    """
-    def __init__(self,**mis_data):
-        self._dict=mis_data
+    data:dict[str,Any]
+    _images:list[MISImage]
+    _relations:list[MISRelation]
+    _calibration:dict[str,Any]
+    _file_path:Path|None
+    def __init__(self,**mis_data)->None:
+        self.data=mis_data
         if 'images' in mis_data:
-            self._images:list[MISImage]=mis_data['images']#list of image objects
+            self._images=mis_data['images']#list of image objects
         else:
-            self._images:list[MISImage]=list()
+            self._images=list()
         
         if 'relations' in mis_data:
-            self._relations:list[MISRelation]=mis_data['relations']#list of relation objects
+            self._relations=mis_data['relations']#list of relation objects
         else:
-            self._relations:list[MISRelation]=list()
+            self._relations=list()
 
         if 'calibration' in mis_data:
-            self._calibration:dict=mis_data['calibration']#dictionary with 'pixel', 'length', and 'length_unit'
+            self._calibration=mis_data['calibration']#dictionary with 'pixel', 'length', and 'length_unit'
         else:
-            self._calibration:dict=dict()
+            self._calibration=dict()
         
         if "file_path" in mis_data:
             self._file_path=Path(mis_data['file_path'])
+        else:
+            self._file_path=None
 
     def __str__(self)->str:
         if len(self._images)==0 and len(self._relations)==0 and len(self._calibration)==0 and self.get_project_path()==None:
@@ -169,7 +107,6 @@ class MISProjectJSON():
             if name==image_name:
                 self._images.remove(self.get_image(image_name=name))
 
-
     # calibration methods
     def set_calibration(self,calibration:dict):
         """Set the calibration."""
@@ -189,7 +126,28 @@ class MISProjectJSON():
             return self._file_path
         except:
             return None
+    
+    # save methods
+    def save_dict(self):
+        try:
+            file_path=str(self._file_path)
+        except:
+            file_path=None
+        return {**self.data,
+                "relations":[x.save_dict() for x in self._relations],
+                "images":[x.save_dict() for x in self._images],
+                "calibration":self._calibration,
+                "file_path":file_path}
 
+class MISProjectJSON(MISProject):
+    """MISProject compatible with loading from/saving to JSON. Contains:
+    - Image Filepaths
+    - Relations
+    - Calibration
+    """
+    def __init__(self,**mis_data)->None:
+        super().__init__(**mis_data)
+    #TODO move these methods into the image module/MISImageFile
     # JSON/ImageFile specific - image checking methods
     def get_image_paths(self):
         return {x.name:x.image_filepath for x in self._images if isinstance(x,MISImageFile)} #takes tail of image filepath
@@ -216,19 +174,6 @@ class MISProjectJSON():
                         image_name=name,
                         image=setup_image(**image_data))
         return find_search
-    
-    # JSON specific - save methods
-    def save_dict(self):
-        try:
-            file_path=str(self._file_path)
-        except:
-            file_path=None
-        return {**self._dict,
-                "relations":[x.save_dict() for x in self._relations],
-                "images":[x.save_dict() for x in self._images],
-                "calibration":self._calibration,
-                "file_path":file_path}
-    
 
 def load_mis_project_json(mis_fp) -> MISProjectJSON:
     with open(mis_fp) as infile:
@@ -236,7 +181,7 @@ def load_mis_project_json(mis_fp) -> MISProjectJSON:
     if "relations" in mis_object.keys() and mis_object['relations'] is not None:
         mis_object["relations"]=[setup_relation(**x) for x in mis_object["relations"]]
     if "images" in mis_object.keys() and mis_object['images'] is not None:
-        mis_object["images"]=[MISImageFile(**x) for x in mis_object['images']]
+        mis_object["images"]=[setup_image(**x) for x in mis_object['images']]
     mis_object["file_path"]=mis_fp
     return MISProjectJSON(**mis_object)
 

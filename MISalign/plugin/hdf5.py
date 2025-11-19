@@ -10,7 +10,7 @@ from MISalign.model.relation import MISRelation, setup_relation
 from MISalign.model.image import MISImage, setup_image, image_types
 
 
-class MISProjectHDF5(MISProjectJSON):
+class MISProjectHDF5(MISProject):
     """Access image data and information from a HDF5."""
 
 class MISImageHDF5(MISImage):

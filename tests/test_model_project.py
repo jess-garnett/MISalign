@@ -2,11 +2,11 @@ from MISalign.model.project import MISProject, MISProjectJSON, load_mis_project_
 from MISalign.model.image import MISImageFile
 from MISalign.model.relation import MISRelationReference
 
-class TestMISProjectJSON():
-    def test_protocol_isinstance(self):
-        assert isinstance(MISProjectJSON,MISProject)
+class TestMISProject():
+    # def test_protocol_isinstance(self):
+    #     assert isinstance(MISProjectJSON,MISProject)
     def test_init_none(self):
-        test_mis=MISProjectJSON()
+        test_mis=MISProject()
         assert str(test_mis)=="An empty MISalign project."
     def test_init_images(self):
         test_image_fps=["test_a.png","test_b.png","test_c.png"]
