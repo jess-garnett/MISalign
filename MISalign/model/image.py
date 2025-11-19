@@ -1,6 +1,6 @@
 from PIL import Image as PILImage
 import numpy as np
-from os.path import split
+from os.path import split, isfile
 from typing import Protocol, runtime_checkable, Any
 from pathlib import Path
 
@@ -97,6 +97,26 @@ class MISImageFile():
             "image_type":"file",
             "image_filepath":self.image_filepath.as_posix(),
             }
+    def check_image_path(self)->bool:
+        """Checks if image filepath is a file."""
+        return isfile(self.image_filepath)
+    def find_image_path(self,mis_fp,update=True)->Path|None:
+        """Find, and optionally update, image paths.
+        - Checks stored location.
+        - Checks mis filepath folder for matching name."""
+        filepath=Path(mis_fp)
+        return_path=Path("")
+        if self.check_image_path():
+            return_path=self.image_filepath
+        else:
+            check_path=filepath.parent.joinpath(self.name)
+            if isfile(check_path):
+                return_path=check_path
+        if update and return_path!=Path(""):
+            self.image_filepath=return_path
+            return return_path
+        else:
+            return None
 
 
 image_types:dict[str,Any]={
