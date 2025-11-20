@@ -1,4 +1,4 @@
-from MISalign.model.project import MISProject, MISProjectJSON, load_mis_project_json, save_mis_project_json
+from MISalign.model.project import MISProject, MISProjectJSON
 from MISalign.model.image import MISImageFile
 from MISalign.model.relation import MISRelationReference
 
