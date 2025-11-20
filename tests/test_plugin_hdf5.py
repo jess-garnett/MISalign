@@ -8,7 +8,7 @@ class TestMISProjectHDF5():
     # def test_protocol_isinstance(self):
     #     assert isinstance(MISProjectHDF5,MISProject)
     def test_load_str(self):
-        test_filepath="tests/test_files/mytestfile1.hdf5"
+        test_filepath="tests/test_files/plugin_hdf5/mytestfile1.hdf5"
         mp=load_mis_project_hdf5(test_filepath)
         expected_result=f"""A MISalign project with:
 Images:
@@ -30,7 +30,7 @@ class Test_setup_image():
     def test_setup_imagefile(self):
         assert type(setup_image(
             image_name="a_myimages01.jpg",
-            hdf5_filepath="tests/test_files/mytestfile1.hdf5",
+            hdf5_filepath="tests/test_files/plugin_hdf5/mytestfile1.hdf5",
             image_type="hdf5",
             PIL_mode="RGB"
         ))==MISImageHDF5
@@ -41,7 +41,7 @@ class TestMISImageHDF5():
     def test_image_init(self):
         test_image_data=dict(
             image_name="a_myimages01.jpg",
-            hdf5_filepath="tests/test_files/mytestfile1.hdf5",
+            hdf5_filepath="tests/test_files/plugin_hdf5/mytestfile1.hdf5",
             image_type="hdf5",
             PIL_mode="RGB")
         test_image=MISImageHDF5(**test_image_data)
@@ -49,49 +49,49 @@ class TestMISImageHDF5():
     def test_image_save(self):
         test_image_data=dict(
             image_name="a_myimages01.jpg",
-            hdf5_filepath="tests/test_files/mytestfile1.hdf5",
+            hdf5_filepath="tests/test_files/plugin_hdf5/mytestfile1.hdf5",
             image_type="hdf5",
             PIL_mode="RGB")
         test_image=MISImageHDF5(**test_image_data)
         assert test_image.save_dict()==dict(
             image_name="a_myimages01.jpg",
-            hdf5_filepath="tests/test_files/mytestfile1.hdf5",
+            hdf5_filepath="tests/test_files/plugin_hdf5/mytestfile1.hdf5",
             image_type="hdf5",
             PIL_mode="RGB")
     def test_image_save_note(self):
         test_image_data=dict(
             image_name="a_myimages01.jpg",
-            hdf5_filepath="tests/test_files/mytestfile1.hdf5",
+            hdf5_filepath="tests/test_files/plugin_hdf5/mytestfile1.hdf5",
             image_type="hdf5",
             PIL_mode="RGB",
             note="Test note")
         test_image=MISImageHDF5(**test_image_data)
         assert test_image.save_dict()==dict(
             image_name="a_myimages01.jpg",
-            hdf5_filepath="tests/test_files/mytestfile1.hdf5",
+            hdf5_filepath="tests/test_files/plugin_hdf5/mytestfile1.hdf5",
             image_type="hdf5",
             PIL_mode="RGB",
             note="Test note")
     def test_image_save_change(self):
         test_image_data=dict(
             image_name="a_myimages01.jpg",
-            hdf5_filepath="tests/test_files/mytestfile1.hdf5",
+            hdf5_filepath="tests/test_files/plugin_hdf5/mytestfile1.hdf5",
             image_type="hdf5",
             PIL_mode="RGB")
         test_image=MISImageHDF5(**test_image_data)
-        change_test_img_a01="tests/test_files/mytestfile2.hdf5"
+        change_test_img_a01="tests/test_files/plugin_hdf5/mytestfile2.hdf5"
         test_image.hdf5_filepath=Path(change_test_img_a01)
         assert test_image.save_dict()==dict(
             image_name="a_myimages01.jpg",
-            hdf5_filepath="tests/test_files/mytestfile2.hdf5",
+            hdf5_filepath="tests/test_files/plugin_hdf5/mytestfile2.hdf5",
             image_type="hdf5",
             PIL_mode="RGB")
     def test_image_img_rect(self):
         test_image_data=dict(
             image_name="a_myimages01.jpg",
-            hdf5_filepath="tests/test_files/mytestfile1.hdf5",
+            hdf5_filepath="tests/test_files/plugin_hdf5/mytestfile1.hdf5",
             image_type="hdf5",
             PIL_mode="RGB")
         test_image=MISImageHDF5(**test_image_data)
-        test_img_arr_fp="example/expected_result/set_a/img_a01.npy"
+        test_img_arr_fp="tests/test_files/model_image/test_image_a01.npy"
         assert np.all(test_image.get_image_array()==np.load(test_img_arr_fp))
