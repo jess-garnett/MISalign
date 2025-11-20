@@ -14,7 +14,7 @@ class BuildCanvasRectangular():
         self.build_horizontal()
         self.build_quadrants()
     def build_npy(self):
-        image=PILImage.open(self.source_image.absolute())
+        image=PILImage.open(self.source_image)
         self.array=np.asarray(image)
         np.save(self.build_folder.joinpath(self.source_image.stem+".npy"),self.array)
     def build_vertical(self):
@@ -93,10 +93,24 @@ class BuildCanvasRectangular():
         )
         with open(self.build_folder.joinpath(self.source_image.stem.replace("image","project")+"_q.json"),"w") as f:
             dump(build_project,fp=f,indent=4)
-    
+
+class BuildModelImage():
+    def __init__(self,folder:Path,image:Path) -> None:
+        self.build_folder=folder
+        self.source_image=image
+        self.build_npy_png()
+    def build_npy_png(self):
+        image=PILImage.open(self.source_image)
+        self.array=np.asarray(image)
+        np.save(self.build_folder.joinpath(self.source_image.stem+".npy"),self.array)
+        image.save(self.build_folder.joinpath(self.source_image.stem+".png"))
 
 if __name__=="__main__":
     BuildCanvasRectangular(
         folder=Path("canvas_rectangular"),
+        image=Path("test_data/test_image_a01.jpg")
+        )
+    BuildModelImage(
+        folder=Path("model_image"),
         image=Path("test_data/test_image_a01.jpg")
         )
