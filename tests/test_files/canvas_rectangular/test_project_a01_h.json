@@ -1,0 +1,33 @@
+{
+    "images": [
+        {
+            "image_type": "file",
+            "image_filepath": "tests/test_files/canvas_rectangular/test_image_a01_h_l.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "tests/test_files/canvas_rectangular/test_image_a01_h_r.png"
+        }
+    ],
+    "relations": [
+        {
+            "image_pair": [
+                "test_image_a01_h_l.png",
+                "test_image_a01_h_r.png"
+            ],
+            "relation_type": "p",
+            "points": [
+                [
+                    [
+                        750,
+                        0
+                    ],
+                    [
+                        0,
+                        0
+                    ]
+                ]
+            ]
+        }
+    ]
+}

@@ -74,3 +74,12 @@ class CalibrationManual():
         with open(miscal_filepath) as infile:
             miscal = json.load(infile)
         self.distances=miscal
+
+def calibration_from_json(calibration_filepath):
+    "Returns calibration from JSON in `.miscal` file"
+    with open(calibration_filepath) as infile:
+        return json.load(infile)
+def calibration_from_mis(mis_filepath):
+    "Returns calibration from JSON in `.mis` file"
+    with open(mis_filepath) as infile:
+        return json.load(infile)["calibration"]
