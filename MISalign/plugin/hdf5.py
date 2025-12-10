@@ -87,6 +87,7 @@ def load_mis_project_hdf5(mis_fp) -> MISProjectHDF5:
     #     mis_object["images"]=[MISImageFile(**x) for x in mis_object['images']]
     # mis_object["file_path"]=mis_fp
     # return MISProjectJSON(**mis_object)
+    #TODO convert to load method
 def save_mis_project_hdf5(mis_fp,misfile:MISProjectHDF5) -> None:
     save_dict=misfile.save_dict()
     with h5py.File(mis_fp,"a") as f:
@@ -113,6 +114,7 @@ def save_mis_project_hdf5(mis_fp,misfile:MISProjectHDF5) -> None:
             for key in save_dict:
                 if key in ["images","relations","calibration"]: continue
                 f["project"].attrs[key]=dumps(save_dict[key])
+    #TODO convert to save method
 
 def build_mis_project_json(
         image_filepaths:list[str],
@@ -120,3 +122,5 @@ def build_mis_project_json(
         project_filepath:str|None=None,
     )->MISProjectHDF5:
     ...
+    #TODO convert to build method
+    #TODO handle images as filepath images vs hdf5 images
