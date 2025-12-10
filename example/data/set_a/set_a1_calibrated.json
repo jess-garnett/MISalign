@@ -1,0 +1,51 @@
+{
+    "images": [
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages01.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages02.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages03.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages04.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages05.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages06.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages07.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages08.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages09.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "..\\example\\data\\set_a\\a_myimages10.jpg",
+            "image_type": "file"
+        }
+    ],
+    "calibration": {
+        "pixel": 599.006361608906,
+        "length": 1,
+        "length_unit": "mm"
+    },
+    "relations": [],
+    "file_path": "..\\example\\data\\set_a\\set_a1_calibrated.json"
+}
