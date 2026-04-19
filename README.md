@@ -18,3 +18,6 @@ One of the core issues I found with many existing alternatives is that they focu
 Requirements.txt includes everything you need for your virtual environment and the `notebooks` folder is configured with paths to the example data so you can explore how it works.
 ## Where can I get more help, if I need it?
 Feel free to share issues on the Github(https://github.com/jess-garnett/MISalign/issues). Documentation may also be developed which can be referenced.
+
+## Python and NumPy version support
+This project intends on following [NEP 29 — Recommend Python and NumPy version support as a community policy standard](https://numpy.org/neps/nep-0029-deprecation_policy.html) and [SPEC 0 — Minimum Supported Dependencies](https://scientific-python.org/specs/spec-0000/) for its Python version and core package dependency support.
