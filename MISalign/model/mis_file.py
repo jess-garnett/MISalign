@@ -5,6 +5,7 @@
 """
 import json
 from os.path import split, isfile, join
+from pathlib import Path
 from MISalign.model.relation import Relation
 
 class MisFile():
@@ -68,7 +69,7 @@ class MisFile():
         else:
             find_list=[name for name,found in self.check_image_paths().items() if not found]
         mis_head=split(mis_fp)[0]
-        find_search={name:{"found":isfile(join(mis_head,name)),"path":join(mis_head,name)} for name in find_list}
+        find_search={name:{"found":isfile(join(mis_head,name)),"path":Path(join(mis_head,name))} for name in find_list}
         if update:
             for name in find_list:
                 if find_search[name]["found"]:
