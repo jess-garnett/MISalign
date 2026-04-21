@@ -1,9 +1,0 @@
-{
-    "image_fps": [
-        "test_a.png",
-        "test_b.png",
-        "test_c.png"
-    ],
-    "relations": null,
-    "calibration": null
-}
