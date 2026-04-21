@@ -1,0 +1,253 @@
+{
+    "images": [
+        {
+            "image_filepath": "../example/project_a/image_a01.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "../example/project_a/image_a02.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "../example/project_a/image_a03.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "../example/project_a/image_a04.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "../example/project_a/image_a05.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "../example/project_a/image_a06.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "../example/project_a/image_a07.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "../example/project_a/image_a08.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "../example/project_a/image_a09.jpg",
+            "image_type": "file"
+        },
+        {
+            "image_filepath": "../example/project_a/image_a10.jpg",
+            "image_type": "file"
+        }
+    ],
+    "calibration": {
+        "pixel": 600,
+        "length": 1,
+        "length_unit": "mm"
+    },
+    "relations": [
+        {
+            "image_pair": [
+                "image_a01.jpg",
+                "image_a02.jpg"
+            ],
+            "points": [
+                [
+                    [
+                        1259,
+                        1097
+                    ],
+                    [
+                        1270,
+                        17
+                    ]
+                ]
+            ],
+            "relation_type": "p"
+        },
+        {
+            "image_pair": [
+                "image_a02.jpg",
+                "image_a03.jpg"
+            ],
+            "points": [
+                [
+                    [
+                        905,
+                        1183
+                    ],
+                    [
+                        917,
+                        40
+                    ]
+                ]
+            ],
+            "relation_type": "p"
+        },
+        {
+            "image_pair": [
+                "image_a03.jpg",
+                "image_a04.jpg"
+            ],
+            "points": [
+                [
+                    [
+                        1202,
+                        1165
+                    ],
+                    [
+                        1076,
+                        102
+                    ]
+                ]
+            ],
+            "relation_type": "p"
+        },
+        {
+            "image_pair": [
+                "image_a04.jpg",
+                "image_a05.jpg"
+            ],
+            "points": [
+                [
+                    [
+                        1236,
+                        989
+                    ],
+                    [
+                        1242,
+                        51
+                    ]
+                ]
+            ],
+            "relation_type": "p"
+        },
+        {
+            "image_pair": [
+                "image_a05.jpg",
+                "image_a06.jpg"
+            ],
+            "points": [
+                [
+                    [
+                        900,
+                        886
+                    ],
+                    [
+                        900,
+                        34
+                    ]
+                ],
+                [
+                    [
+                        979,
+                        926
+                    ],
+                    [
+                        985,
+                        62
+                    ]
+                ],
+                [
+                    [
+                        192,
+                        1006
+                    ],
+                    [
+                        204,
+                        154
+                    ]
+                ]
+            ],
+            "relation_type": "p"
+        },
+        {
+            "image_pair": [
+                "image_a06.jpg",
+                "image_a07.jpg"
+            ],
+            "points": [
+                [
+                    [
+                        221,
+                        1063
+                    ],
+                    [
+                        232,
+                        74
+                    ]
+                ],
+                [
+                    [
+                        940,
+                        1006
+                    ],
+                    [
+                        945,
+                        22
+                    ]
+                ]
+            ],
+            "relation_type": "p"
+        },
+        {
+            "image_pair": [
+                "image_a07.jpg",
+                "image_a08.jpg"
+            ],
+            "points": [
+                [
+                    [
+                        1139,
+                        1051
+                    ],
+                    [
+                        1145,
+                        45
+                    ]
+                ]
+            ],
+            "relation_type": "p"
+        },
+        {
+            "image_pair": [
+                "image_a08.jpg",
+                "image_a09.jpg"
+            ],
+            "points": [
+                [
+                    [
+                        757,
+                        1125
+                    ],
+                    [
+                        768,
+                        182
+                    ]
+                ]
+            ],
+            "relation_type": "p"
+        },
+        {
+            "image_pair": [
+                "image_a09.jpg",
+                "image_a10.jpg"
+            ],
+            "points": [
+                [
+                    [
+                        529,
+                        943
+                    ],
+                    [
+                        529,
+                        228
+                    ]
+                ]
+            ],
+            "relation_type": "p"
+        }
+    ],
+    "file_path": "..\\example\\project_a\\project_a-no_relations-calibrated.json"
+}
