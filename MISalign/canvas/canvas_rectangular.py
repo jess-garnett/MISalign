@@ -1,8 +1,66 @@
-""" Canvas Render
-- Renders combined images.
+""" Canvas Rectangular
+- Canvas Solve: Converts a set of relations into relative positions.
+- Canvas Render: Renders combined images.
 """
 from PIL import Image as PILImage
 import numpy as np
+from MISalign.model.project import MISProject
+from MISalign.model.image import MISImage
+from MISalign.model.relation import MISRelation
+
+def rectangular_solve(relations:list[MISRelation],image_names:list,origin:str):
+    """Solves a set of relations rectangularly
+    - Input is a list of rectangular relations, a list of image names, and the image name of the origin.
+    - Output is a dictionary of the form "image_name":(origin-relative x, origin-relative y)
+    - Origin-relative x and y may be negative values.
+    """
+    relation_map=_relation_map(relations,image_names,origin)
+    orig_rel_position={origin:(0,0)}
+    solving=[origin]
+    cansolve=[]
+    solved=[]
+    while len(solving)>0:
+        for s in solving:
+            for image_name,rel in relation_map[s]:
+                cansolve.append(image_name)
+                if rel.get_reference()[0]==s:
+                    direction=1
+                else:
+                    direction=-1
+                orig_rel_position[image_name]=(orig_rel_position[s][0]+direction*rel.get_relation('r')[0],orig_rel_position[s][1]+direction*rel.get_relation('r')[1])
+        solved+=solving
+        solving=cansolve
+        cansolve=[]
+    return orig_rel_position
+
+def _relation_map(relations:list[MISRelation],image_names:list,origin:str):
+    """Identify a map from origin to other images in a list of relations.
+    - Input is a list of relations, a list of image names, and the image name of the origin.
+    - Output is a dictionary of the form "image_name":[images that reference to this image]
+    """
+    found=[image_names.index(origin)]
+    matched=[]
+    resolved=[]
+    relation_map=dict({x:[] for x in image_names})
+
+    while len(resolved)<len(relations):
+        for i in found:
+            for ii,x in enumerate(image_names):
+                if (ii not in found) & (ii not in resolved) & (ii not in matched):
+                    i_match=[image_names[i] in r.get_reference() for r in relations]
+                    ii_match=[image_names[ii] in r.get_reference() for r in relations]
+                    full_match=[im&iim for im,iim in zip(i_match,ii_match)]
+                    if any(full_match):
+                        relation_map[image_names[i]].append((image_names[ii],relations[full_match.index(True)]))
+                        matched.append(ii)
+            resolved.append(i)
+        found=matched
+        matched=[]
+        #break if stuck
+        if found==[]:
+            break
+    return relation_map
+
 # Rectangular Render
     # Uses solution from rectangular_solve
 
@@ -41,6 +99,14 @@ def find_relative_extents(
     origin_relative_extents["miny"]=min(y)
     origin_relative_extents["maxy"]=max(y)
     return origin_relative_extents
+
+def find_relative_extents_project(project:MISProject,origin_relative_offsets:dict):
+    image_names=project.get_image_names()
+    image_sizes={image_name:project.get_image(image_name).get_image_size() for image_name in image_names}
+    return find_relative_extents(
+        image_names=image_names,
+        image_sizes=image_sizes,
+        origin_relative_offsets=origin_relative_offsets)
     ### Resolve Extents
 def resolve_extents(origin_relative_extents:dict[str,int]):
     """ Gets canvas extents and offsets from origin relative extents.
@@ -76,9 +142,10 @@ def place_in_canvas(
     return canvas_relative_offsets
 ## Rectangular Unblended Render
 def render_unblended(
-        image_names:list,
-        image_filepaths:dict,
-        image_sizes:dict,
+        # image_names:list,
+        # image_filepaths:dict,
+        # image_sizes:dict,
+        project:MISProject,
         canvas_relative_offsets:dict,
         canvas_extents:dict):
     """ Renders a canvas without blending.
@@ -90,11 +157,10 @@ def render_unblended(
         - A dictionary of image sizes {image_name:(width,height)}
     - Returns a PIL Image of the canvas."""
     canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
-    for img in image_names:
-        img_size=image_sizes[img]
-        img_place=canvas_relative_offsets[img]
-        img_fp=image_filepaths[img]
-        img_arr=np.array(PILImage.open(img_fp))
+    for image_name in project.get_image_names():
+        img_size=project.get_image(image_name).get_image_size()
+        img_place=canvas_relative_offsets[image_name]
+        img_arr=project.get_image(image_name).get_image_array()
         canv_slice={
             "left":img_place[0],
             "right":img_place[0]+img_size[0],
@@ -125,8 +191,9 @@ def weight_flat(img_size):
     return flat_array
     ### Normalization Array Building
 def build_normalization(
-        image_names:list,
-        image_sizes:dict,
+        # image_names:list,
+        # image_sizes:dict,
+        project:MISProject,
         canvas_relative_offsets:dict,
         canvas_extents:dict,
         weight):
@@ -138,6 +205,8 @@ def build_normalization(
         - A dictionary of image sizes {image_name:(width,height)}
         - A weight array function `weight(img_size)`
     - Returns a numpy array of the normalization values."""
+    image_names=project.get_image_names()
+    image_sizes={image_name:project.get_image(image_name).get_image_size() for image_name in image_names}
     normalization_array=np.zeros((canvas_extents["height"],canvas_extents["width"]))
     for img in image_names:
         img_size=image_sizes[img]
@@ -153,9 +222,10 @@ def build_normalization(
     return normalization_array
     ### Summation Blending
 def render_blended(
-        image_names:list,
-        image_filepaths:dict,
-        image_sizes:dict,
+#         image_names:list,
+#         image_filepaths:dict,
+#         image_sizes:dict,
+        project:MISProject,
         canvas_relative_offsets:dict,
         canvas_extents:dict,
         weight,
@@ -170,12 +240,13 @@ def render_blended(
         - A weight array function `weight(img_size)`
         - A numpy array of the normalization values
     - Returns a PIL Image of the canvas."""
+    image_names=project.get_image_names()
+    image_sizes={image_name:project.get_image(image_name).get_image_size() for image_name in image_names}
     canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
-    for img in image_names:
-        img_size=image_sizes[img]
-        img_place=canvas_relative_offsets[img]
-        img_fp=image_filepaths[img]
-        img_arr=np.array(PILImage.open(img_fp))
+    for image_name in image_names:
+        img_size=image_sizes[image_name]
+        img_place=canvas_relative_offsets[image_name]
+        img_arr=project.get_image(image_name).get_image_array()
         canv_slice={
             "left":img_place[0],
             "right":img_place[0]+img_size[0],
@@ -188,3 +259,7 @@ def render_blended(
         weighted_img_arr=np.repeat(normed_arr[:,:,np.newaxis],3,axis=2)*img_arr
         canvas[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]+=weighted_img_arr
     return PILImage.fromarray(canvas.astype(np.uint8))
+
+#TODO rework methods/classes here. Have "Project"-based variants and "just a dictionary" variants.> potentially with a more limited version of the protocol?
+#TODO redo docstrings with project update
+#TODO unit tests
