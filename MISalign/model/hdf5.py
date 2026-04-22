@@ -10,8 +10,39 @@ from MISalign.model.relation import MISRelation, setup_relation
 from MISalign.model.image import MISImage, setup_image, image_types
 
 
-class MISProjectHDF5(MISProject):
+class MISProjectHDF5(MISProjectJSON):
     """Access image data and information from a HDF5."""
+    @classmethod
+    def load(cls,hdf5_filepath,project_hdf5path): # type: ignore
+        with h5py.File(hdf5_filepath) as f:
+            mis_data=loads(f[project_hdf5path][()]) # type: ignore
+            mis_data["file_path"]=hdf5_filepath
+
+            if "relations" in mis_data.keys() and mis_data['relations'] is not None:
+                mis_data["relations"]=[setup_relation(**x) for x in mis_data["relations"]]
+            if "images" in mis_data.keys() and mis_data['images'] is not None:
+                mis_data["images"]=[setup_image(**x) for x in mis_data['images']]
+            loaded_project=MISProjectHDF5(**mis_data)
+            return loaded_project
+        return cls(**mis_data)
+    def save(self, # type: ignore
+             hdf5_filepath:Path|str,
+             project_hdf5path:str,
+             ):
+        mis_data=self.save_dict()
+        mis_data["file_path"]=hdf5_filepath
+        with h5py.File(hdf5_filepath, "r+") as f:
+            f[project_hdf5path]=dumps(mis_data)
+    @classmethod
+    def build(cls,  # type: ignore
+                hdf5_filepath:Path|str,
+                project_hdf5path:str,
+                image_filepaths:list[Path|str]|None=None,
+                image_objects:list[MISImage]|None=None,
+                calibration_filepath:Path|str|None=None,
+                **kwargs):
+        ...
+
 
 class MISImageHDF5(MISImage):
     _image_type="hdf5"
@@ -19,6 +50,7 @@ class MISImageHDF5(MISImage):
     def __init__(self,**image_data)->None:
         self.hdf5_filepath=Path(image_data["hdf5_filepath"])
         self.name:str=image_data["image_name"]
+        self.hdf5path:str=image_data["hdf5path"]
         self._dict:dict=image_data
         self._PIL_mode=image_data["PIL_mode"]
     def __str__(self):
@@ -27,17 +59,17 @@ class MISImageHDF5(MISImage):
         """Get a nparray of the image."""
         if self._PIL_mode==PIL_mode:
             with h5py.File(self.hdf5_filepath, "r") as f:
-                return f[f"images/{self.name}"][()] # type: ignore
+                return f[self.hdf5path][()] # type: ignore
         else:
             with h5py.File(self.hdf5_filepath, "r") as f:
-                PIL_image=PILImage.fromarray(f["images"][self.name][()]) # type: ignore
+                PIL_image=PILImage.fromarray(f[self.hdf5path][()]) # type: ignore
             PIL_image=PIL_image.convert(PIL_mode)
             return np.asarray(PIL_image)
         #TODO option for not keeping the array in memory when working with very large objects.
     def get_image_size(self)->tuple[int,int]:
         """Get the size of the image."""
         with h5py.File(self.hdf5_filepath, "r") as f:
-            shape=f["images"][self.name].shape  # type: ignore
+            shape=f[self.hdf5path].shape  # type: ignore
         return (shape[1],shape[0]) # PIL size and numpy shape have first two flipped.
     def save_dict(self)->dict:
         """Returns a dictionary compatible with JSON.dump()"""
@@ -45,49 +77,14 @@ class MISImageHDF5(MISImage):
             **self._dict, # loaded dict first and then get the current values
             "image_type":self._image_type,
             "hdf5_filepath":self.hdf5_filepath.as_posix(),
+            "hdf5path":self.hdf5path,
+            "image_name":self.name
             }
 
 
 image_types[MISImageHDF5._image_type]=MISImageHDF5
 
-def load_mis_project_hdf5(mis_fp) -> MISProjectHDF5:
-    with h5py.File(mis_fp) as f:
-        mis_object=dict()
-        try: # images
-            build_images=list()
-            for x in f["images"].values(): # type: ignore
-                attrs=dict(**x.attrs)
-                if "hdf5_filepath" in attrs:
-                    attrs["hdf5_filepath"]=mis_fp
-                build_images.append(setup_image(**attrs))
-            mis_object["images"]=build_images
-        except:
-            mis_object["images"]=list()
-        try: # relations
-            mis_object["relations"]=[setup_relation(**loads(x)) for x in f["relations"]]  # type: ignore
-        except:
-            mis_object["relations"]=list()
-        try: # calibration
-            mis_object["calibration"]=dict(f["calibration"].attrs)  # type: ignore
-        except:
-            mis_object["calibration"]=dict()
-        # project
-        if "project" in f.keys():
-            for key in f["project"].attrs:
-                if key in ["images","relations","calibration"]: continue
-                else: mis_object[key]=loads(f["project"].attrs[key])  # type: ignore
 
-        mis_object["file_path"]=mis_fp
-
-    return MISProjectHDF5(**mis_object)
-    #     mis_object = json.load(infile)
-    # if "relations" in mis_object.keys() and mis_object['relations'] is not None:
-    #     mis_object["relations"]=[setup_relation(**x) for x in mis_object["relations"]]
-    # if "images" in mis_object.keys() and mis_object['images'] is not None:
-    #     mis_object["images"]=[MISImageFile(**x) for x in mis_object['images']]
-    # mis_object["file_path"]=mis_fp
-    # return MISProjectJSON(**mis_object)
-    #TODO convert to load method
 def save_mis_project_hdf5(mis_fp,misfile:MISProjectHDF5) -> None:
     save_dict=misfile.save_dict()
     with h5py.File(mis_fp,"a") as f:

@@ -95,10 +95,19 @@ class MISProject(Protocol):
         """Get the image for an image name."""
         return [x for x in self._images if x.name==image_name][0]
     def set_image(self,image_name:str,image:MISImage):
-        """Set the image for an image name."""
-        for i,name in enumerate(self.get_image_names()):
-            if image_name==name:
-                self._images[i]=image
+        """Set the image for an image name.
+        - If `image_name` is already in images, replaces.
+        - If `image_name` is not in images, appends."""
+        if image_name in self.get_image_names():
+            # replace an image
+            image_index=[i for i,name in enumerate(self.get_image_names()) if name==image_name][0]
+            self._images[image_index]=image
+        else:
+            # add the image
+            self._images.append(image)
+    def set_images(self,images:list[MISImage]):
+        """Replaces all the current images with the given images."""
+        self._images=images
     def remove_image(self, image_name:str):
         """Remove the image for an image name.
         - Does not modify/delete the image file.
@@ -158,14 +167,15 @@ class MISProjectJSON(MISProject):
         return loaded_project
     def save(self,mis_filepath):
         mis_data=self.save_dict()
+        mis_data["file_path"]=mis_filepath
         with open(mis_filepath,"w") as f:
             f.write(json.dumps(mis_data,indent=4))
     @classmethod
     def build(cls,
-        image_filepaths:list[str]|None=None,
-        calibration_filepath:str|None=None,
-        project_filepath:str|None=None,
-        **kwargs):
+                image_filepaths:list[Path|str]|None=None,
+                calibration_filepath:Path|str|None=None,
+                project_filepath:Path|str|None=None,
+                **kwargs):
         mis_data=dict()
         if image_filepaths is not None:
             mis_data["images"]=[MISImageFile(image_filepath=x) for x in image_filepaths]
