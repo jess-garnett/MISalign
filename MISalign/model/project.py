@@ -145,7 +145,8 @@ class MISProjectJSON(MISProject):
     - Relations
     - Calibration
     """
-    def load(self,mis_filepath):
+    @classmethod
+    def load(cls,mis_filepath):
         with open(mis_filepath) as f:
             mis_data=json.load(f)
         if "relations" in mis_data.keys() and mis_data['relations'] is not None:
@@ -153,13 +154,14 @@ class MISProjectJSON(MISProject):
         if "images" in mis_data.keys() and mis_data['images'] is not None:
             mis_data["images"]=[setup_image(**x) for x in mis_data['images']]
         mis_data["file_path"]=mis_filepath
-        self.__init__(**mis_data)
-        return self
+        loaded_project=cls(**mis_data)
+        return loaded_project
     def save(self,mis_filepath):
         mis_data=self.save_dict()
         with open(mis_filepath,"w") as f:
             f.write(json.dumps(mis_data,indent=4))
-    def build(self,
+    @classmethod
+    def build(cls,
         image_filepaths:list[str]|None=None,
         calibration_filepath:str|None=None,
         project_filepath:str|None=None,
@@ -173,14 +175,14 @@ class MISProjectJSON(MISProject):
             mis_data["file_path"]=project_filepath
         for key,value in kwargs.items():
             mis_data[key]=value
-        self.__init__(**mis_data)
-        return self
+        new_project=cls(**mis_data)
+        return new_project
 
 def convert_mis_project_json(mis_fp)->MISProjectJSON:
     """Convert an old `.mis` format file into a MISProjectJSON."""
     with open(mis_fp) as infile:
         mis_load = json.load(infile)
-    mp=MISProjectJSON().build(
+    mp=MISProjectJSON.build(
         image_filepaths=mis_load["image_fps"],
         )
     build_relations=list()

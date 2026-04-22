@@ -7,7 +7,7 @@ class TestSolveRender():
         reference_image_path="tests/test_files/canvas_rectangular/test_image_a01.npy"
         reference_image=np.load(reference_image_path)
         mis_filepath="tests/test_files/canvas_rectangular/test_project_a01_v.json"
-        mis_project=MISProjectJSON().load(mis_filepath)
+        mis_project=MISProjectJSON.load(mis_filepath)
         origin=mis_project.get_image_names()[0]
         origin_relative_offsets=cr.rectangular_solve(
             relations=mis_project.get_relations(),
@@ -51,7 +51,7 @@ class TestSolveRender():
         reference_image_path="tests/test_files/canvas_rectangular/test_image_a01.npy"
         reference_image=np.load(reference_image_path)
         mis_filepath="tests/test_files/canvas_rectangular/test_project_a01_h.json"
-        mis_project=MISProjectJSON().load(mis_filepath)
+        mis_project=MISProjectJSON.load(mis_filepath)
         origin=mis_project.get_image_names()[0]
         origin_relative_offsets=cr.rectangular_solve(
             relations=mis_project.get_relations(),
@@ -88,7 +88,7 @@ class TestSolveRender():
         reference_image_path="tests/test_files/canvas_rectangular/test_image_a01.npy"
         reference_image=np.load(reference_image_path)
         mis_filepath="tests/test_files/canvas_rectangular/test_project_a01_q.json"
-        mis_project=MISProjectJSON().load(mis_filepath)
+        mis_project=MISProjectJSON.load(mis_filepath)
         origin=mis_project.get_image_names()[0]
         origin_relative_offsets=cr.rectangular_solve(
             relations=mis_project.get_relations(),
