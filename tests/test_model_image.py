@@ -59,4 +59,4 @@ class TestMISImageFile():
         test_img_arr_fp="tests/test_files/model_image/test_image_a01.npy"
         assert np.all(test_image.get_image_array()==np.load(test_img_arr_fp))
 
-    #TODO add tests for filepath checking.
+    #TODO add tests for `check_image_path` and `find_image_path`
