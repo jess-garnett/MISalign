@@ -66,6 +66,8 @@ class MISImageHDF5(MISImage):
             PIL_image=PIL_image.convert(PIL_mode)
             return np.asarray(PIL_image)
         #TODO option for not keeping the array in memory when working with very large objects.
+        #TODO option for getting the exact array as stored without modification > default behavior?
+        #TODO option for passing a currently open h5py.File rather than requiring opening a new one.
     def get_image_size(self)->tuple[int,int]:
         """Get the size of the image."""
         with h5py.File(self.hdf5_filepath, "r") as f:
@@ -87,6 +89,9 @@ image_types[MISImageHDF5._image_type]=MISImageHDF5
 
 def save_mis_project_hdf5(mis_fp,misfile:MISProjectHDF5) -> None:
     save_dict=misfile.save_dict()
+    #TODO update this save function to match the new MISProjectHDF5 format
+        # Consider avoiding saving/modifying any datasets other than the project scalar without getting explicit direction to do so.
+        # Plan around save method for saving an existing project(with some updates) and a build method for creating either a new project, and a new HDF5 if needed.
     with h5py.File(mis_fp,"a") as f:
         try:
             f.create_group("images")
@@ -111,7 +116,6 @@ def save_mis_project_hdf5(mis_fp,misfile:MISProjectHDF5) -> None:
             for key in save_dict:
                 if key in ["images","relations","calibration"]: continue
                 f["project"].attrs[key]=dumps(save_dict[key])
-    #TODO convert to save method
 
 def build_mis_project_json(
         image_filepaths:list[str],
@@ -119,5 +123,5 @@ def build_mis_project_json(
         project_filepath:str|None=None,
     )->MISProjectHDF5:
     ...
-    #TODO convert to build method
-    #TODO handle images as filepath images vs hdf5 images
+    #TODO create build method
+        # handle images as filepath images, filepath images to ingest into hdf5, or existing hdf5 images
