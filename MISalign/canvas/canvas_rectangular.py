@@ -92,7 +92,6 @@ def find_relative_extents(
         y.append(img_corner[1])#top side
         y.append(img_corner[1]-img_size[1])#bottom side
         # Top to bottom is in the negative direction which is why the -img_size[1] is needed.
-        #TODO make sure this is in-line with numpy coordinate system.
     origin_relative_extents=dict()
     origin_relative_extents["minx"]=min(x)
     origin_relative_extents["maxx"]=max(x)
@@ -260,6 +259,6 @@ def render_blended(
         canvas[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]+=weighted_img_arr
     return PILImage.fromarray(canvas.astype(np.uint8))
 
-#TODO rework methods/classes here. Have "Project"-based variants and "just a dictionary" variants.> potentially with a more limited version of the protocol?
+#TODO rework methods/classes of canvas_rectangular to have "MISProject" and "just a dictionary" variants.
 #TODO redo docstrings with project update
-#TODO unit tests
+#TODO canvas_rectangular unit tests
