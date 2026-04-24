@@ -135,9 +135,7 @@ class IMRControls():
     def click_save(self,event):
          if self.imr.points is not None:
            self._project.add_relation(self.imr.get_relation())
-        #TODO store in meaningful way. - Maybe break into resolve relation and save/update relation. Also displaying current relation?
-         #TODO replacing relations vs turning them on and off vs other?
-         #TODO relation management interface
+        #TODO relation management interface - replace relations, prioritize relations, disable relations, etc.
     def update_imr(self):
             self.imr.change(
                 self._project.get_image(self._dropdown_a.get_interact_value()),
