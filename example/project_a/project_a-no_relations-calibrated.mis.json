@@ -47,5 +47,5 @@
         "length_unit": "mm"
     },
     "relations": [],
-    "file_path": "../example/project_a/project_a-no_relations-calibrated.json"
+    "file_path": "../example/project_a/project_a-no_relations-calibrated.mis.json"
 }
