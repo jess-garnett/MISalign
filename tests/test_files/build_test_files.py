@@ -4,6 +4,8 @@ import numpy as np
 from pathlib import Path
 from json import dump
 
+#TODO update to use ".mis.json" notation.
+
 class BuildCanvasRectangular():
     def __init__(self,folder:Path,image:Path,overlap=100) -> None:
         self.build_folder=folder
