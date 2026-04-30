@@ -1,6 +1,6 @@
 [project]
 name = "misalign"
-version = "1.1.0"
+version = "2.0.0.dev1"
 description = "A Metallography Image Software for Alignment."
 readme = "README.md"
 authors = [
