@@ -9,9 +9,9 @@ from ipympl.backend_nbagg import Canvas
 import ipywidgets as widgets
 from IPython.display import display
 
-from MISalign.model.project import MISProject
-from MISalign.model.relation import MISRelationPoints
-from MISalign.model.image import MISImage
+from misalign.model.project import MISProject
+from misalign.model.relation import MISRelationPoints
+from misalign.model.image import MISImage
 
 class InteractiveManualRelation():
     """Allows user to manually specify relation between two images using interactive matplotlib."""

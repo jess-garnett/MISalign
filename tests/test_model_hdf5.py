@@ -1,6 +1,6 @@
-from MISalign.model.hdf5 import MISProjectHDF5, MISImageHDF5
-from MISalign.model.project import MISProject
-from MISalign.model.image import MISImage, setup_image
+from misalign.model.hdf5 import MISProjectHDF5, MISImageHDF5
+from misalign.model.project import MISProject
+from misalign.model.image import MISImage, setup_image
 from pathlib import Path
 import numpy as np
 
@@ -11,7 +11,7 @@ class TestMISProjectHDF5():
         test_filepath="tests/test_files/model_hdf5/test-project_a-rel-cal-comp.hdf5"
         project_hdf5path="MISContainer0/MISProjectJSON0"
         mp=MISProjectHDF5.load(test_filepath,project_hdf5path)
-        expected_result=f"""A MISalign project with:
+        expected_result=f"""A misalign project with:
 Images:
     image_a01.jpg
     image_a02.jpg

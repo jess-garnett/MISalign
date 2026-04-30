@@ -5,9 +5,9 @@ from json import dumps, loads
 from PIL import Image as PILImage
 import numpy as np
 
-from MISalign.model.project import MISProject, MISProjectJSON
-from MISalign.model.relation import MISRelation, setup_relation
-from MISalign.model.image import MISImage, setup_image, image_types
+from misalign.model.project import MISProject, MISProjectJSON
+from misalign.model.relation import MISRelation, setup_relation
+from misalign.model.image import MISImage, setup_image, image_types
 
 
 class MISProjectHDF5(MISProjectJSON):
