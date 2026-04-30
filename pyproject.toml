@@ -1,0 +1,37 @@
+[project]
+name = "MISalign"
+version = "1.1.0"
+description = "A Metallography Image Software for Alignment."
+readme = "README.md"
+authors = [
+    { name = "Jessica Garnett", email = "jgarnett.pypi@protonmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.10.9",
+    "numpy>=2.4.4",
+    "pillow>=12.2.0",
+    "quantiphy>=2.21",
+]
+
+[project.optional-dependencies]
+relation-visualize = [
+    "networkx>=3.6.1",
+]
+ipy = [
+    "ipykernel>=7.2.0",
+    "ipympl>=0.10.0",
+    "ipython>=9.13.0",
+    "ipywidgets>=8.1.8",
+]
+
+[dependency-groups]
+dev = ["pytest>=9.0.3"]
+
+[build-system]
+requires = ["uv_build>=0.11.8,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "MISalign"
+module-root = ""
