@@ -1,4 +1,4 @@
-from MISalign.model.relation import MISRelation, MISRelationReference, MISRelationRectangular, MISRelationPoints, setup_relation
+from misalign.model.relation import MISRelation, MISRelationReference, MISRelationRectangular, MISRelationPoints, setup_relation
 
 class Test_setup_relation():
     def test_setup_reference(self):

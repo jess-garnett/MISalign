@@ -4,9 +4,9 @@
 """
 from PIL import Image as PILImage
 import numpy as np
-from MISalign.model.project import MISProject
-from MISalign.model.image import MISImage
-from MISalign.model.relation import MISRelation
+from misalign.model.project import MISProject
+from misalign.model.image import MISImage
+from misalign.model.relation import MISRelation
 
 def rectangular_solve(relations:list[MISRelation],image_names:list,origin:str):
     """Solves a set of relations rectangularly

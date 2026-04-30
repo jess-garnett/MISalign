@@ -1,4 +1,4 @@
-"""Build test files for MISalign"""
+"""Build test files for misalign"""
 from PIL import Image as PILImage
 import numpy as np
 from pathlib import Path

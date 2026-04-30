@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 
-from MISalign.model.image import MISImage, MISImageFile, Path, setup_image
+from misalign.model.image import MISImage, MISImageFile, Path, setup_image
 
 class Test_setup_image():
     def test_setup_imagefile(self):

@@ -6,7 +6,7 @@
 import json
 from os.path import split, isfile, join
 from pathlib import Path
-from MISalign.model.relation import Relation
+from misalign.model.relation import Relation
 
 class MisFile():
     """Stores all the information about a set of images
@@ -36,9 +36,9 @@ class MisFile():
                     self.calibration = json.load(infile)#dictionary with 'pixel', 'length', and 'length_unit'
     def __str__(self):
         if len(self.image_fps)==0 and len(self._relations)==0:
-            return "An empty MISalign project."
+            return "An empty misalign project."
         else:
-            return "A MISalign project with:"+str([self.image_fps,self.get_rels(),self.calibration])
+            return "A misalign project with:"+str([self.image_fps,self.get_rels(),self.calibration])
     
     def get_rels(self,relation=None):
         if self._relations is []:

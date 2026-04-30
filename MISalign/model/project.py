@@ -4,9 +4,9 @@
 """
 
 from typing import Protocol, runtime_checkable, Any
-from MISalign.model.relation import MISRelation, setup_relation
-from MISalign.model.image import MISImage, MISImageFile,setup_image
-from MISalign.calibration.calibrate import calibration_from_json
+from misalign.model.relation import MISRelation, setup_relation
+from misalign.model.image import MISImage, MISImageFile,setup_image
+from misalign.calibration.calibrate import calibration_from_json
 import json
 from os.path import split, isfile, join
 from pathlib import Path
@@ -43,9 +43,9 @@ class MISProject(Protocol):
 
     def __str__(self)->str:
         if len(self._images)==0 and len(self._relations)==0 and len(self._calibration)==0 and self.get_project_path()==None:
-            return "An empty MISalign project."
+            return "An empty misalign project."
         else:
-            return "A MISalign project with:\n"+"\n".join([
+            return "A misalign project with:\n"+"\n".join([
                 "Images:\n"+"\n".join(["    "+x for x in self.get_image_names()]),
                 "Relations:\n"+"\n".join(["    "+str(x.get_reference()) for x in self._relations]),
                 "Calibration:\n"+"\n".join([f"    {key} : {self._calibration[key]}" for key in ['pixel','length','length_unit'] if key in self._calibration]),

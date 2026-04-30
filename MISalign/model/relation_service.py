@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import PIL
 from .relation import Relation
 
-# from MISalign.model.relation import Relation
+# from misalign.model.relation import Relation
 
 
 def relation_tree(rel_list,start,show_ion=False,return_fig_ax=False):

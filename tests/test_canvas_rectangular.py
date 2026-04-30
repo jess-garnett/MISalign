@@ -1,5 +1,5 @@
-from MISalign.model.project import MISProjectJSON
-import MISalign.canvas.canvas_rectangular as cr
+from misalign.model.project import MISProjectJSON
+import misalign.canvas.canvas_rectangular as cr
 import numpy as np
 
 class TestSolveRender():
