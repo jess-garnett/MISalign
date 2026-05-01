@@ -1,0 +1,111 @@
+{
+    "images": [
+        {
+            "hdf5_filepath": "test_files/test-project_a-rel-cal-comp.hdf5",
+            "hdf5path": "/MISContainer0/MISDataContainer0/image_a01.jpg",
+            "image_name": "image_a01.jpg",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "test_files/test-project_a-rel-cal-comp.hdf5",
+            "hdf5path": "/MISContainer0/MISDataContainer0/image_a02.jpg",
+            "image_name": "image_a02.jpg",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "test_files/test-project_a-rel-cal-comp.hdf5",
+            "hdf5path": "/MISContainer0/MISDataContainer0/image_a03.jpg",
+            "image_name": "image_a03.jpg",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        }
+    ],
+    "relations": [
+        {
+            "image_pair": [
+                "image_a01.jpg",
+                "image_a02.jpg"
+            ],
+            "relation_type": "p",
+            "points": [
+                [
+                    [
+                        1277,
+                        1146
+                    ],
+                    [
+                        1295,
+                        61
+                    ]
+                ],
+                [
+                    [
+                        850,
+                        1139
+                    ],
+                    [
+                        861,
+                        47
+                    ]
+                ],
+                [
+                    [
+                        644,
+                        1170
+                    ],
+                    [
+                        651,
+                        82
+                    ]
+                ]
+            ]
+        },
+        {
+            "image_pair": [
+                "image_a02.jpg",
+                "image_a03.jpg"
+            ],
+            "relation_type": "p",
+            "points": [
+                [
+                    [
+                        899,
+                        1184
+                    ],
+                    [
+                        903,
+                        40
+                    ]
+                ],
+                [
+                    [
+                        668,
+                        1156
+                    ],
+                    [
+                        679,
+                        19
+                    ]
+                ],
+                [
+                    [
+                        1459,
+                        1191
+                    ],
+                    [
+                        1470,
+                        47
+                    ]
+                ]
+            ]
+        }
+    ],
+    "calibration": {
+        "pixel": 600,
+        "length": 1,
+        "length_unit": "mm"
+    },
+    "file_path": "test_files/test-project_a-rel-cal-comp-image_hdf5.json"
+}
