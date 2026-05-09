@@ -822,7 +822,7 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-dev-hdf5 = [
+example-hdf5 = [
     { name = "nexusformat" },
     { name = "pynxtools" },
 ]
@@ -840,9 +840,6 @@ relation-visualize = [
 dev = [
     { name = "pytest" },
 ]
-ipy = [
-    { name = "ipykernel" },
-]
 
 [package.metadata]
 requires-dist = [
@@ -853,17 +850,16 @@ requires-dist = [
     { name = "ipywidgets", marker = "extra == 'ipy'", specifier = ">=8.1.8" },
     { name = "matplotlib", specifier = ">=3.10.9" },
     { name = "networkx", marker = "extra == 'relation-visualize'", specifier = ">=3.6.1" },
-    { name = "nexusformat", marker = "extra == 'dev-hdf5'", specifier = ">=2.0.2" },
+    { name = "nexusformat", marker = "extra == 'example-hdf5'", specifier = ">=2.0.2" },
     { name = "numpy", specifier = ">=2.4.4" },
     { name = "pillow", specifier = ">=12.2.0" },
-    { name = "pynxtools", marker = "extra == 'dev-hdf5'", specifier = ">=0.13.2" },
+    { name = "pynxtools", marker = "extra == 'example-hdf5'", specifier = ">=0.13.2" },
     { name = "quantiphy", specifier = ">=2.21" },
 ]
-provides-extras = ["relation-visualize", "ipy", "dev-hdf5"]
+provides-extras = ["relation-visualize", "ipy", "example-hdf5"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=9.0.3" }]
-ipy = [{ name = "ipykernel", specifier = ">=6,<7" }]
 
 [[package]]
 name = "nest-asyncio"
