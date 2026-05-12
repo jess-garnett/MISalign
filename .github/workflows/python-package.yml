@@ -17,6 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.12","3.13","3.14"]
+        oldest-supported-python-version: ["3.12"]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
@@ -27,11 +28,11 @@ jobs:
         enable-cache: true
         version: "0.11.8" # Install a specific version of uv.
         python-version: ${{ matrix.python-version }}
-    - name: Install the project(oldest)
-      if: ${{ matrix.python-version == 3.12}}
+    - name: Install the project (oldest with lowest dependencies)
+      if: ${{ matrix.python-version == matrix.oldest-supported-python-version}}
       run: uv sync --all-extras --resolution lowest-direct
-    - name: Install the project(newer)
-      if: ${{ matrix.python-version != 3.12}}
+    - name: Install the project (newer with locked dependencies)
+      if: ${{ matrix.python-version != matrix.oldest-supported-python-version}}
       run: uv sync --locked --all-extras
     - name: Run tests
       run: uv run pytest tests
