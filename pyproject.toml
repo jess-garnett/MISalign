@@ -12,7 +12,7 @@ requires-python = ">=3.12"
 dependencies = [
     "numpy>=2.1.0", # SPEC0 Core Project
     "matplotlib>=3.10.0", # SPEC0 Core Project
-    "h5py>=3.15.0", # https://pypi.org/project/h5py/#history
+    "h5py>=3.14.0", # https://pypi.org/project/h5py/#history
     "pillow>=10.4.0", # https://pypi.org/project/pillow/#history
     "quantiphy>=2.21", # https://pypi.org/project/quantiphy/#history
 ]
