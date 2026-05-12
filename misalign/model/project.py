@@ -167,12 +167,12 @@ class MISProjectJSON(MISProject):
         return loaded_project
     def save(self,mis_filepath):
         mis_data=self.save_dict()
-        mis_data["file_path"]=mis_filepath
+        mis_data["file_path"]=str(mis_filepath)
         with open(mis_filepath,"w") as f:
             f.write(json.dumps(mis_data,indent=4))
     @classmethod
     def build(cls,
-                image_filepaths:list[Path|str]|None=None,
+                image_filepaths:list[Path]|list[str]|None=None,
                 calibration_filepath:Path|str|None=None,
                 project_filepath:Path|str|None=None,
                 **kwargs):
