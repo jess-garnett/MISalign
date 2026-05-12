@@ -6,24 +6,23 @@ readme = "README.md"
 authors = [
     { name = "Jessica Garnett", email = "jgarnett.pypi@protonmail.com" }
 ]
+
+# SPEC0 for supported versioning https://scientific-python.org/specs/spec-0000/
 requires-python = ">=3.12"
 dependencies = [
-    "h5py>=3.16.0",
-    "matplotlib>=3.10.9",
-    "numpy>=2.4.4",
-    "pillow>=12.2.0",
-    "quantiphy>=2.21",
+    "numpy>=2.1.0", # SPEC0 Core Project
+    "matplotlib>=3.10.0", # SPEC0 Core Project
+    "h5py>=3.12.1", # https://pypi.org/project/h5py/#history
+    "pillow>=10.4.0", # https://pypi.org/project/pillow/#history
+    "quantiphy>=2.21", # https://pypi.org/project/quantiphy/#history
 ]
 
 [project.optional-dependencies]
-relation-visualize = [
-    "networkx>=3.6.1",
-]
 ipy = [
-    "ipykernel>=6,<7",
-    "ipympl>=0.10.0",
-    "ipython>=9.13.0",
-    "ipywidgets>=8.1.8",
+    "ipython>=8.27.0", # SPEC0 Core Project
+    "ipykernel>=6.29", # https://pypi.org/project/ipykernel/#history
+    "ipympl>=0.9.7", # https://pypi.org/project/ipympl/#history
+    "ipywidgets>=8.1.6", # https://pypi.org/project/ipywidgets/#history
 ]
 
 [dependency-groups]
@@ -32,6 +31,7 @@ dev = [
     "ruff>=0.15.12",
     "ty>=0.0.35",
     "uv>=0.11.12",
+    "ipykernel<7", # freezing issue in VS Code
 ]
 
 [build-system]
