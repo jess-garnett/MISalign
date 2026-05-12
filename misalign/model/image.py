@@ -20,6 +20,9 @@ class MISImage(Protocol):
     def save_dict(self)->dict:
         """Returns a dictionary compatible with JSON.dump()"""
         ...
+    def find_image_path(self,mis_fp,update=True)->Path|None:
+        """Find path to the image either in its original file path or in the same folder as the mis filepath."""
+        ...
 
 class MISImageFile():
     """Access image data and information for an image file.
@@ -60,13 +63,12 @@ class MISImageFile():
             }
     def check_image_path(self)->bool:
         """Checks if image filepath is a file."""
-        return isfile(self.image_filepath)
+        return self.image_filepath.is_file()
     def find_image_path(self,mis_fp,update=True)->Path|None:
         """Find, and optionally update, image paths.
         - Checks stored location.
         - Checks mis filepath folder for matching name."""
         filepath=Path(mis_fp)
-        return_path=Path("")
         if self.check_image_path():
             return_path=self.image_filepath
         else:

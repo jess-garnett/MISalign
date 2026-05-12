@@ -59,10 +59,10 @@ class MISImageHDF5(MISImage):
         """Get a nparray of the image."""
         if self._PIL_mode==PIL_mode:
             with h5py.File(self.hdf5_filepath, "r") as f:
-                return f[self.hdf5path][()] # type: ignore
+                return np.squeeze(f[self.hdf5path][()]) # type: ignore
         else:
             with h5py.File(self.hdf5_filepath, "r") as f:
-                PIL_image=PILImage.fromarray(f[self.hdf5path][()]) # type: ignore
+                PIL_image=PILImage.fromarray(np.squeeze(f[self.hdf5path][()])) # type: ignore
             PIL_image=PIL_image.convert(PIL_mode)
             return np.asarray(PIL_image)
         #TODO option for not keeping the array in memory when working with very large objects.
@@ -82,6 +82,26 @@ class MISImageHDF5(MISImage):
             "hdf5path":self.hdf5path,
             "image_name":self.name
             }
+    def check_image_path(self)->bool:
+        """Checks if image filepath is a file."""
+        return self.hdf5_filepath.is_file()
+    def find_image_path(self,mis_fp,update=True)->Path|None:
+        """Find, and optionally update, image paths.
+        - Checks stored location.
+        - Checks mis filepath folder for matching name."""
+        filepath=Path(mis_fp)
+        return_path=Path("")
+        if self.check_image_path():
+            return_path=self.hdf5_filepath
+        else:
+            check_path=filepath.parent.joinpath(self.hdf5_filepath.name)
+            if check_path.is_file():
+                return_path=check_path
+        if update and return_path!=Path(""):
+            self.hdf5_filepath=return_path
+            return return_path
+        else:
+            return None
 
 
 image_types[MISImageHDF5._image_type]=MISImageHDF5

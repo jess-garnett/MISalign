@@ -115,6 +115,9 @@ class MISProject(Protocol):
         for name in self.get_image_names():
             if name==image_name:
                 self._images.remove(self.get_image(image_name=name))
+    def find_image_paths(self,mis_filepath,update=True):
+        """Finds and optionally updates all image names using stored paths and mis_filepath."""
+        return {image.name:image.find_image_path(mis_fp=mis_filepath,update=update) for image in self._images}
 
     # calibration methods
     def set_calibration(self,calibration:dict):
