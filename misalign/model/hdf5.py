@@ -71,7 +71,7 @@ class MISImageHDF5(MISImage):
     def get_image_size(self)->tuple[int,int]:
         """Get the size of the image."""
         with h5py.File(self.hdf5_filepath, "r") as f:
-            shape=f[self.hdf5path].shape  # type: ignore
+            shape=[dimension for dimension in f[self.hdf5path].shape if dimension>1]  # type: ignore
         return (shape[1],shape[0]) # PIL size and numpy shape have first two flipped.
     def save_dict(self)->dict:
         """Returns a dictionary compatible with JSON.dump()"""
