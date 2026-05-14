@@ -601,18 +601,14 @@ version = "2.0.0.dev3"
 source = { editable = "." }
 dependencies = [
     { name = "h5py" },
-    { name = "matplotlib" },
-    { name = "numpy" },
-    { name = "pillow" },
-    { name = "quantiphy" },
-]
-
-[package.optional-dependencies]
-ipy = [
     { name = "ipykernel" },
     { name = "ipympl" },
     { name = "ipython" },
     { name = "ipywidgets" },
+    { name = "matplotlib" },
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "quantiphy" },
 ]
 
 [package.dev-dependencies]
@@ -627,16 +623,15 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "h5py", specifier = ">=3.14.0" },
-    { name = "ipykernel", marker = "extra == 'ipy'", specifier = ">=6.29" },
-    { name = "ipympl", marker = "extra == 'ipy'", specifier = ">=0.9.7" },
-    { name = "ipython", marker = "extra == 'ipy'", specifier = ">=8.27.0" },
-    { name = "ipywidgets", marker = "extra == 'ipy'", specifier = ">=8.1.6" },
+    { name = "ipykernel", specifier = ">=6.29" },
+    { name = "ipympl", specifier = ">=0.9.7" },
+    { name = "ipython", specifier = ">=8.27.0" },
+    { name = "ipywidgets", specifier = ">=8.1.6" },
     { name = "matplotlib", specifier = ">=3.10.0" },
     { name = "numpy", specifier = ">=2.1.0" },
     { name = "pillow", specifier = ">=10.4.0" },
     { name = "quantiphy", specifier = ">=2.21" },
 ]
-provides-extras = ["ipy"]
 
 [package.metadata.requires-dev]
 dev = [
