@@ -8,8 +8,8 @@ from misalign.model.relation import MISRelation, setup_relation
 from misalign.model.image import MISImage, MISImageFile,setup_image
 from misalign.calibration.calibrate import calibration_from_json
 import json
-from os.path import split, isfile, join
 from pathlib import Path
+import h5py
 
 @runtime_checkable
 class MISProject(Protocol):
@@ -213,3 +213,69 @@ def convert_mis_project_json(mis_fp)->MISProjectJSON:
                 **relation_data))
     mp.set_relations(build_relations)
     return mp
+
+class MISProjectHDF5(MISProjectJSON):
+    """Access image data and information from a HDF5."""
+    @classmethod
+    def load(cls,hdf5_filepath,project_hdf5path): # type: ignore
+        with h5py.File(hdf5_filepath) as f:
+            mis_data=json.loads(f[project_hdf5path][()]) # type: ignore
+            mis_data["file_path"]=hdf5_filepath
+
+            if "relations" in mis_data.keys() and mis_data['relations'] is not None:
+                mis_data["relations"]=[setup_relation(**x) for x in mis_data["relations"]]
+            if "images" in mis_data.keys() and mis_data['images'] is not None:
+                mis_data["images"]=[setup_image(**x) for x in mis_data['images']]
+            loaded_project=MISProjectHDF5(**mis_data)
+            return loaded_project
+        return cls(**mis_data)
+    def save(self, # type: ignore
+             hdf5_filepath:Path|str,
+             project_hdf5path:str,
+             ):
+        mis_data=self.save_dict()
+        mis_data["file_path"]=hdf5_filepath
+        with h5py.File(hdf5_filepath, "r+") as f:
+            f[project_hdf5path]=json.dumps(mis_data)
+    @classmethod
+    def build(cls,  # type: ignore
+                hdf5_filepath:Path|str,
+                project_hdf5path:str,
+                image_filepaths:list[Path|str]|None=None,
+                image_objects:list[MISImage]|None=None,
+                calibration_filepath:Path|str|None=None,
+                **kwargs):
+        ...
+    #TODO create build method
+        # handle images as filepath images, filepath images to ingest into hdf5, or existing hdf5 images
+def save_mis_project_hdf5(mis_fp,misfile:MISProjectHDF5) -> None:
+    save_dict=misfile.save_dict()
+    #TODO update this save function to match the new MISProjectHDF5 format
+        # Consider avoiding saving/modifying any datasets other than the project scalar without getting explicit direction to do so.
+        # Plan around save method for saving an existing project(with some updates) and a build method for creating either a new project, and a new HDF5 if needed.
+    with h5py.File(mis_fp,"a") as f:
+        try:
+            f.create_group("images")
+        finally:
+            for image_name in misfile.get_image_names():
+                if image_name not in f["images"]:  # type: ignore
+                    f["images"].create_dataset(image_name,dtype="f") # type: ignore #empty placeholder 
+                for key,value in misfile.get_image(image_name).save_dict().items():
+                    f["images"][image_name].attrs[key]=value  # type: ignore
+        try:
+            f.create_dataset("relations")
+        finally:
+            f["relations"]=[json.dumps(x) for x in save_dict["relations"]]
+        try:
+            f.create_group("calibration")
+        finally:
+            for key,value in misfile.get_calibration().items():
+                f["calibration"].attrs[key]=value
+        try:
+            f.create_group("project")
+        finally:
+            for key in save_dict:
+                if key in ["images","relations","calibration"]: continue
+                f["project"].attrs[key]=json.dumps(save_dict[key])
+
+#TODO Add a project registry > uses file extension and/or keywords to identify project type when given file path.

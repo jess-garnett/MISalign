@@ -1,6 +1,8 @@
-from misalign.model.project import MISProject, MISProjectJSON
+from pathlib import Path
+from misalign.model.project import MISProject, MISProjectJSON, MISProjectHDF5
 from misalign.model.image import MISImageFile
 from misalign.model.relation import MISRelationReference
+
 
 class TestMISProjectJSON():
     # def test_protocol_isinstance(self):
@@ -116,3 +118,26 @@ Project Path:
     project.json"""
         result=str(test_mis)
         assert result==expected_result
+
+class TestMISProjectHDF5():
+    # def test_protocol_isinstance(self):
+    #     assert isinstance(MISProjectHDF5,MISProject)
+    def test_load_str(self):
+        test_filepath="tests/test_files/test_hdf5/test-project_a-rel-cal-comp.hdf5"
+        project_hdf5path="MISContainer0/MISProjectJSON0"
+        mp=MISProjectHDF5.load(test_filepath,project_hdf5path)
+        expected_result=f"""A misalign project with:
+Images:
+    image_a01.jpg
+    image_a02.jpg
+    image_a03.jpg
+Relations:
+    ('image_a01.jpg', 'image_a02.jpg')
+    ('image_a02.jpg', 'image_a03.jpg')
+Calibration:
+    pixel : 600
+    length : 1
+    length_unit : mm
+Project Path:
+    {Path(test_filepath)}"""
+        assert str(mp)==expected_result
