@@ -27,3 +27,5 @@ Documentation is also being developed as part of the 2.0 release.
 
 ## Python and Package Version Support
 This project follows [SPEC 0 — Minimum Supported Dependencies](https://scientific-python.org/specs/spec-0000/) for its Python version and package dependency support.
+
+Note: Automated testing uses the `--resolution lowest-direct` option only on the oldest version of python supported. This gives some coverage of the specified oldest compatible packages while avoiding the issues that arise with using a python version released after a package version(i.e. missing wheels causing failed builds).
