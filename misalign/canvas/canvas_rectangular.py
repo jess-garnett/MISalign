@@ -66,11 +66,12 @@ def _relation_map(relations:list[MISRelation],image_names:list,origin:str):
 
 ## Find Extents
     ### Image Sizes
-def find_image_sizes(image_filepaths:dict) -> dict:
-    """ Gets image size from a dictionary of image filepaths.
-    - Takes a dictionary: {image_name:image_filepath}
-    - Returns a dictionary of image sizes: {image_name:(width,height)}"""
-    return {img_name:PILImage.open(img_fp).size for img_name,img_fp in image_filepaths.items()}
+# Deprecated. Image Shapes are found using MISImage.shape
+# def find_image_sizes(image_filepaths:dict) -> dict:
+#     """ Gets image size from a dictionary of image filepaths.
+#     - Takes a dictionary: {image_name:image_filepath}
+#     - Returns a dictionary of image sizes: {image_name:(width,height)}"""
+#     return {img_name:PILImage.open(img_fp).size for img_name,img_fp in image_filepaths.items()}
     ### Generate Points
 def find_relative_extents(
         image_names:list,
