@@ -33,10 +33,29 @@ def rectangular_solve(relations:list[MISRelation],image_names:list,origin:str):
         cansolve=[]
     return orig_rel_position
 
+def rectangular_solve_project(
+        project:MISProject,
+        image_names:list[str]|None,
+        origin:str|None=None):
+    """Solves a set of relations rectangularly given a MISProject
+    - Input is a MISProject, optional: a list of image names(otherwise all images in project used), and optional: the image name of the origin(otherwise first image used).
+    - Output is a dictionary of the form "image_name":(origin-relative x, origin-relative y)
+    - Origin-relative x and y may be negative values.
+    """
+    if image_names is None:
+        image_names=project.get_image_names()
+    if origin is None:
+        origin=image_names[0]
+    return rectangular_solve(
+        relations=project.get_relations(),
+        image_names=image_names,
+        origin=origin
+    )
+
 def _relation_map(relations:list[MISRelation],image_names:list,origin:str):
     """Identify a map from origin to other images in a list of relations.
     - Input is a list of relations, a list of image names, and the image name of the origin.
-    - Output is a dictionary of the form "image_name":[images that reference to this image]
+    - Output is a dictionary of the form "image_name":[(image_name,relation) that reference to this image]
     """
     found=[image_names.index(origin)]
     matched=[]
