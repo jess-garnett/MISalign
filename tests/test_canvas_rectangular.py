@@ -8,12 +8,7 @@ class TestSolveRender():
         reference_image=np.load(reference_image_path)
         mis_filepath="tests/test_files/canvas_rectangular/test_project_a01_v.json"
         mis_project=MISProjectJSON.load(mis_filepath)
-        origin=mis_project.get_image_names()[0]
-        origin_relative_offsets=cr.rectangular_solve(
-            relations=mis_project.get_relations(),
-            image_names=mis_project.get_image_names(),
-            origin=origin
-        )
+        origin_relative_offsets=cr.rectangular_solve_project(project=mis_project)
         origin_relative_extents=cr.find_relative_extents_project(
             project=mis_project,
             origin_relative_offsets=origin_relative_offsets,)
@@ -23,22 +18,16 @@ class TestSolveRender():
             origin_relative_offsets=origin_relative_offsets,
             canvas_extents=canvas_extents,
             canvas_offsets=canvas_offsets)
-        unblended_canvas=cr.render_unblended(
+        unblended_canvas=cr.render_unblended_project(
             project=mis_project,
             canvas_relative_offsets=canvas_relative_offsets,
             canvas_extents=canvas_extents)
         assert np.all(np.asarray(unblended_canvas)==reference_image) # all pixels perfectly match their reference value in the unblended image
-        dfe_normalizer=cr.build_normalization(
+        blended_canvas_dfe=cr.render_blended_project(
             project=mis_project,
             canvas_relative_offsets=canvas_relative_offsets,
             canvas_extents=canvas_extents,
             weight=cr.weight_dfe)
-        blended_canvas_dfe=cr.render_blended(
-            project=mis_project,
-            canvas_relative_offsets=canvas_relative_offsets,
-            canvas_extents=canvas_extents,
-            weight=cr.weight_dfe,
-            normalizer=dfe_normalizer)
         # print(np.max(np.asarray(blended_canvas_dfe)-reference_image))
         # print(np.min(np.asarray(blended_canvas_dfe)-reference_image))
         # print(np.unique(np.asarray(blended_canvas_dfe,dtype=np.int16)-reference_image,return_counts=True))
@@ -52,12 +41,7 @@ class TestSolveRender():
         reference_image=np.load(reference_image_path)
         mis_filepath="tests/test_files/canvas_rectangular/test_project_a01_h.json"
         mis_project=MISProjectJSON.load(mis_filepath)
-        origin=mis_project.get_image_names()[0]
-        origin_relative_offsets=cr.rectangular_solve(
-            relations=mis_project.get_relations(),
-            image_names=mis_project.get_image_names(),
-            origin=origin
-        )
+        origin_relative_offsets=cr.rectangular_solve_project(project=mis_project)
         origin_relative_extents=cr.find_relative_extents_project(
             project=mis_project,
             origin_relative_offsets=origin_relative_offsets,)
@@ -67,34 +51,23 @@ class TestSolveRender():
             origin_relative_offsets=origin_relative_offsets,
             canvas_extents=canvas_extents,
             canvas_offsets=canvas_offsets)
-        unblended_canvas=cr.render_unblended(
+        unblended_canvas=cr.render_unblended_project(
             project=mis_project,
             canvas_relative_offsets=canvas_relative_offsets,
             canvas_extents=canvas_extents)
         assert np.all(np.asarray(unblended_canvas)==reference_image)
-        dfe_normalizer=cr.build_normalization(
+        blended_canvas_dfe=cr.render_blended_project(
             project=mis_project,
             canvas_relative_offsets=canvas_relative_offsets,
             canvas_extents=canvas_extents,
             weight=cr.weight_dfe)
-        blended_canvas_dfe=cr.render_blended(
-            project=mis_project,
-            canvas_relative_offsets=canvas_relative_offsets,
-            canvas_extents=canvas_extents,
-            weight=cr.weight_dfe,
-            normalizer=dfe_normalizer)
         assert np.all(np.abs(np.asarray(blended_canvas_dfe,dtype=np.int16)-reference_image)<=1) # all pixels are within 1 of their reference value in the blended image
     def test_quadrants(self):
         reference_image_path="tests/test_files/canvas_rectangular/test_image_a01.npy"
         reference_image=np.load(reference_image_path)
         mis_filepath="tests/test_files/canvas_rectangular/test_project_a01_q.json"
         mis_project=MISProjectJSON.load(mis_filepath)
-        origin=mis_project.get_image_names()[0]
-        origin_relative_offsets=cr.rectangular_solve(
-            relations=mis_project.get_relations(),
-            image_names=mis_project.get_image_names(),
-            origin=origin
-        )
+        origin_relative_offsets=cr.rectangular_solve_project(project=mis_project)
         origin_relative_extents=cr.find_relative_extents_project(
             project=mis_project,
             origin_relative_offsets=origin_relative_offsets,)
@@ -104,20 +77,16 @@ class TestSolveRender():
             origin_relative_offsets=origin_relative_offsets,
             canvas_extents=canvas_extents,
             canvas_offsets=canvas_offsets)
-        unblended_canvas=cr.render_unblended(
+        unblended_canvas=cr.render_unblended_project(
             project=mis_project,
             canvas_relative_offsets=canvas_relative_offsets,
             canvas_extents=canvas_extents)
         assert np.all(np.asarray(unblended_canvas)==reference_image)
-        dfe_normalizer=cr.build_normalization(
+        blended_canvas_dfe=cr.render_blended_project(
             project=mis_project,
             canvas_relative_offsets=canvas_relative_offsets,
             canvas_extents=canvas_extents,
             weight=cr.weight_dfe)
-        blended_canvas_dfe=cr.render_blended(
-            project=mis_project,
-            canvas_relative_offsets=canvas_relative_offsets,
-            canvas_extents=canvas_extents,
-            weight=cr.weight_dfe,
-            normalizer=dfe_normalizer)
         assert np.all(np.abs(np.asarray(blended_canvas_dfe,dtype=np.int16)-reference_image)<=1) # all pixels are within 1 of their reference value in the blended image
+
+    #TODO test non-project based solving

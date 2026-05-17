@@ -39,7 +39,7 @@ class InteractiveManualRelation():
         self._ax.clear()
         self.points=None
         # set new images and add provided points.
-        self._img_ax=self._ax.imshow(np.vstack([np.array(imga),np.array(imgb)]))
+        self._img_ax=self._ax.imshow(np.vstack([np.asarray(imga),np.asarray(imgb)]))
         if points is not None:
             self.points=points
     def relate(self):
