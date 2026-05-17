@@ -11,10 +11,11 @@ class MISImage(Protocol):
         self.name:str
     def __str__(self)->str:
         ...
-    def get_image_array(self,PIL_mode:str="RGB")->np.ndarray:
-        """Get a nparray of the image."""
+    def __array__(self)->np.ndarray:
+        """Get a ndarray of the image."""
         ...
-    def get_image_size(self)->tuple[int,int]:
+    @property
+    def shape(self)->tuple[int, ...]:
         """Get the size of the image."""
         ...
     def for_json(self)->dict:
@@ -34,26 +35,21 @@ class MISImageFile():
         self._dict:dict=image_data
         self._PIL_mode=None
     def __str__(self):
-        return "Image '"+self.name+"' with shape:"+str(self.get_image_size())
-    def get_image_array(self,PIL_mode:str="RGB")->np.ndarray:
-        """Get a nparray of the image."""
-        if self._PIL_mode==PIL_mode:
-            return self._array
-        else:
-            PIL_image=PILImage.open(self.image_filepath)
-            PIL_image=PIL_image.convert(PIL_mode)
-            self._PIL_mode=PIL_mode
-            self._array=np.asarray(PIL_image)
-            self._size=PIL_image.size
-            return self._array
-        #TODO option for not keeping the array in memory when working with very large objects.
-    def get_image_size(self)->tuple[int,int]:
+        return "Image '"+self.name+"' with shape:"+str(self.shape)
+    def __array__(self)->np.ndarray:
+        """Get a ndarray of the image."""
+        PIL_image=PILImage.open(self.image_filepath)
+        array=np.asarray(PIL_image)
+        self._shape:tuple[int, ...]=array.shape
+        return array
+    @property
+    def shape(self)->tuple[int, ...]:
         """Get the size of the image."""
         try: # if image has already been opened just get the size that was stored.
-            return self._size
-        except: # if image hasn't been opened then open it and grab the size.
-            self.get_image_array()
-            return self._size
+            return self._shape
+        except AttributeError: # if image hasn't been opened then open it and grab the size.
+            self.__array__()
+            return self._shape
     def for_json(self)->dict:
         """Returns a dictionary compatible with JSON.dump()"""
         return {
@@ -91,25 +87,18 @@ class MISImageHDF5(MISImage):
         self._dict:dict=image_data
         self._PIL_mode=image_data["PIL_mode"]
     def __str__(self):
-        return "Image '"+self.name+"' with shape:"+str(self.get_image_size())
-    def get_image_array(self,PIL_mode:str="RGB")->np.ndarray:
+        return "Image '"+self.name+"' with shape:"+str(self.shape)
+    def __array__(self)->np.ndarray:
         """Get a nparray of the image."""
-        if self._PIL_mode==PIL_mode:
-            with h5py.File(self.hdf5_filepath, "r") as f:
-                return np.squeeze(f[self.hdf5path][()]) # type: ignore
-        else:
-            with h5py.File(self.hdf5_filepath, "r") as f:
-                PIL_image=PILImage.fromarray(np.squeeze(f[self.hdf5path][()])) # type: ignore
-            PIL_image=PIL_image.convert(PIL_mode)
-            return np.asarray(PIL_image)
-        #TODO option for not keeping the array in memory when working with very large objects.
-        #TODO option for getting the exact array as stored without modification > default behavior?
+        with h5py.File(self.hdf5_filepath, "r") as f:
+            return np.squeeze(f[self.hdf5path][()])
         #TODO option for passing a currently open h5py.File rather than requiring opening a new one.
-    def get_image_size(self)->tuple[int,int]:
+    @property
+    def shape(self)->tuple[int, ...]:
         """Get the size of the image."""
         with h5py.File(self.hdf5_filepath, "r") as f:
-            shape=[dimension for dimension in f[self.hdf5path].shape if dimension>1]  # type: ignore
-        return (shape[1],shape[0]) # PIL size and numpy shape have first two flipped.
+            shape=tuple([int(dimension) for dimension in f[self.hdf5path].shape if dimension!=1])
+        return shape
     def for_json(self)->dict:
         """Returns a dictionary compatible with JSON.dump()"""
         return {

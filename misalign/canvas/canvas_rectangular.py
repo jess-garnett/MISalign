@@ -75,7 +75,7 @@ def find_image_sizes(image_filepaths:dict) -> dict:
 def find_relative_extents(
         image_names:list,
         origin_relative_offsets:dict,
-        image_sizes:dict):
+        image_shapes:dict):
     """ Gets minimum and maximum x and y extents relative to the origin.
     - Takes:
         - A list of image names
@@ -86,11 +86,11 @@ def find_relative_extents(
     y=[]
     for img in image_names:
         img_corner=origin_relative_offsets[img] #top left corner
-        img_size=image_sizes[img]
+        img_shape=image_shapes[img]
         x.append(-img_corner[0])#left side 
-        x.append(-img_corner[0]+img_size[0])#right side
+        x.append(-img_corner[0]+img_shape[1])#right side
         y.append(img_corner[1])#top side
-        y.append(img_corner[1]-img_size[1])#bottom side
+        y.append(img_corner[1]-img_shape[0])#bottom side
         # Top to bottom is in the negative direction which is why the -img_size[1] is needed.
     origin_relative_extents=dict()
     origin_relative_extents["minx"]=min(x)
@@ -101,10 +101,10 @@ def find_relative_extents(
 
 def find_relative_extents_project(project:MISProject,origin_relative_offsets:dict):
     image_names=project.get_image_names()
-    image_sizes={image_name:project.get_image(image_name).get_image_size() for image_name in image_names}
+    image_shapes={image_name:project.get_image(image_name).shape for image_name in image_names}
     return find_relative_extents(
         image_names=image_names,
-        image_sizes=image_sizes,
+        image_shapes=image_shapes,
         origin_relative_offsets=origin_relative_offsets)
     ### Resolve Extents
 def resolve_extents(origin_relative_extents:dict[str,int]):
@@ -157,35 +157,36 @@ def render_unblended(
     - Returns a PIL Image of the canvas."""
     canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
     for image_name in project.get_image_names():
-        img_size=project.get_image(image_name).get_image_size()
+        img_shape=project.get_image(image_name).shape
         img_place=canvas_relative_offsets[image_name]
-        img_arr=project.get_image(image_name).get_image_array()
+        img_arr=np.array(project.get_image(image_name))
         canv_slice={
             "left":img_place[0],
-            "right":img_place[0]+img_size[0],
+            "right":img_place[0]+img_shape[1],
             "top":img_place[1],
-            "bottom":img_place[1]+img_size[1],
+            "bottom":img_place[1]+img_shape[0],
         }
         canvas[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]=img_arr
     return PILImage.fromarray(canvas.astype(np.uint8))
 ## Rectangular Blended Render
 
     ### Distance-From-Edge Weight
-def weight_dfe(img_size):
-    """ Generates a distance-from-edge weight array for the given image size.
-    - Takes a tuple: (width,height)
+#TODO add weight protocol
+def weight_dfe(img_shape):
+    """ Generates a distance-from-edge weight array for the given image shape.
+    - Takes a tuple: (rows,columns)
     - Returns a numpy array of distance-from-edge values"""
-    img_width=img_size[0]
-    img_height=img_size[1]
+    img_width=img_shape[1]
+    img_height=img_shape[0]
     dfe_array=np.fromfunction(function=lambda y,x: np.min([x+1,y+1,img_width-x,img_height-y],axis=0),shape=(img_height,img_width))
     return dfe_array
     ### Flat Weight
-def weight_flat(img_size):
+def weight_flat(img_shape):
     """ Generates a flat weight array for the given image size.
-    - Takes a tuple: (width,height)
+    - Takes a tuple: (rows,columns)
     - Returns a numpy array of flat values"""
-    img_width=img_size[0]
-    img_height=img_size[1]
+    img_width=img_shape[1]
+    img_height=img_shape[0]
     flat_array=np.full(shape=(img_height,img_width),fill_value=1)
     return flat_array
     ### Normalization Array Building
@@ -205,17 +206,17 @@ def build_normalization(
         - A weight array function `weight(img_size)`
     - Returns a numpy array of the normalization values."""
     image_names=project.get_image_names()
-    image_sizes={image_name:project.get_image(image_name).get_image_size() for image_name in image_names}
+    image_shapes={image_name:project.get_image(image_name).shape for image_name in image_names}
     normalization_array=np.zeros((canvas_extents["height"],canvas_extents["width"]))
-    for img in image_names:
-        img_size=image_sizes[img]
-        img_place=canvas_relative_offsets[img]
-        weight_arr=weight(img_size)
+    for image_name in image_names:
+        img_shape=image_shapes[image_name]
+        img_place=canvas_relative_offsets[image_name]
+        weight_arr=weight(img_shape)
         canv_slice={
             "left":img_place[0],
-            "right":img_place[0]+img_size[0],
+            "right":img_place[0]+img_shape[1],
             "top":img_place[1],
-            "bottom":img_place[1]+img_size[1],
+            "bottom":img_place[1]+img_shape[0],
         }
         normalization_array[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]+=weight_arr
     return normalization_array
@@ -240,19 +241,19 @@ def render_blended(
         - A numpy array of the normalization values
     - Returns a PIL Image of the canvas."""
     image_names=project.get_image_names()
-    image_sizes={image_name:project.get_image(image_name).get_image_size() for image_name in image_names}
+    image_shapes={image_name:project.get_image(image_name).shape for image_name in image_names}
     canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
     for image_name in image_names:
-        img_size=image_sizes[image_name]
+        img_shape=image_shapes[image_name]
         img_place=canvas_relative_offsets[image_name]
-        img_arr=project.get_image(image_name).get_image_array()
+        img_arr=np.array(project.get_image(image_name))
         canv_slice={
             "left":img_place[0],
-            "right":img_place[0]+img_size[0],
+            "right":img_place[0]+img_shape[1],
             "top":img_place[1],
-            "bottom":img_place[1]+img_size[1],
+            "bottom":img_place[1]+img_shape[0],
         }
-        weight_arr=weight(img_size)
+        weight_arr=weight(img_shape)
         normalizing_arr=normalizer[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]
         normed_arr=np.divide(weight_arr,normalizing_arr)
         weighted_img_arr=np.repeat(normed_arr[:,:,np.newaxis],3,axis=2)*img_arr

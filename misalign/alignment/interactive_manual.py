@@ -34,12 +34,12 @@ class InteractiveManualRelation():
         #setup new images
         self._imga=imga
         self._imgb=imgb
-        self._height=imga.get_image_size()[1]
+        self._height=imga.shape[0]
         # clear current axis/data
         self._ax.clear()
         self.points=None
         # set new images and add provided points.
-        self._img_ax=self._ax.imshow(np.vstack([imga.get_image_array(),imgb.get_image_array()]))
+        self._img_ax=self._ax.imshow(np.vstack([np.array(imga),np.array(imgb)]))
         if points is not None:
             self.points=points
     def relate(self):
