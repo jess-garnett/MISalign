@@ -32,12 +32,12 @@ class TestMISRelationReference():
         expected_reference=("test_a","test_b")
         test_relation=MISRelationReference(image_pair=(test_img_a,test_img_b))
         assert test_relation.get_reference()==expected_reference
-    def test_save_dict(self):
+    def test_for_json(self):
         test_img_a="test_a"
         test_img_b="test_b"
         expected_save=dict(image_pair=(test_img_a,test_img_b),relation_type=None)
         test_relation=MISRelationReference(image_pair=(test_img_a,test_img_b))
-        assert test_relation.save_dict()==expected_save
+        assert test_relation.for_json()==expected_save
 class TestMISRelationRectangular():
     def test_protocol_isinstance(self):
         assert isinstance(MISRelationRectangular,MISRelation)
@@ -84,7 +84,7 @@ class TestMISRelationRectangular():
         test_relation=MISRelationRectangular(
             image_pair=(test_img_a,test_img_b),
             rectangular=test_data)
-        assert test_relation.save_dict()==expected_save
+        assert test_relation.for_json()==expected_save
 class TestMISRelationPoints():
     def test_protocol_isinstance(self):
         assert isinstance(MISRelationPoints,MISRelation)
@@ -131,4 +131,4 @@ class TestMISRelationPoints():
         test_relation=MISRelationPoints(
             image_pair=(test_img_a,test_img_b),
             points=test_data)
-        assert test_relation.save_dict()==expected_save
+        assert test_relation.for_json()==expected_save

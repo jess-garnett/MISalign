@@ -17,7 +17,7 @@ class MISImage(Protocol):
     def get_image_size(self)->tuple[int,int]:
         """Get the size of the image."""
         ...
-    def save_dict(self)->dict:
+    def for_json(self)->dict:
         """Returns a dictionary compatible with JSON.dump()"""
         ...
     def find_image_path(self,mis_fp,update=True)->Path|None:
@@ -54,7 +54,7 @@ class MISImageFile():
         except: # if image hasn't been opened then open it and grab the size.
             self.get_image_array()
             return self._size
-    def save_dict(self)->dict:
+    def for_json(self)->dict:
         """Returns a dictionary compatible with JSON.dump()"""
         return {
             **self._dict, # loaded dict first and then get the current values
@@ -110,7 +110,7 @@ class MISImageHDF5(MISImage):
         with h5py.File(self.hdf5_filepath, "r") as f:
             shape=[dimension for dimension in f[self.hdf5path].shape if dimension>1]  # type: ignore
         return (shape[1],shape[0]) # PIL size and numpy shape have first two flipped.
-    def save_dict(self)->dict:
+    def for_json(self)->dict:
         """Returns a dictionary compatible with JSON.dump()"""
         return {
             **self._dict, # loaded dict first and then get the current values

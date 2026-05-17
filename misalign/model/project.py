@@ -80,7 +80,7 @@ class MISProject(Protocol):
         - Does not modify images."""
         for i,r in enumerate(self._relations):
             if old_image_name in r.get_reference():
-                relation_data=r.save_dict()
+                relation_data=r.for_json()
                 relation_data["image_pair"]=tuple([new_image_name if x==old_image_name else x for x in relation_data["image_pair"]])
                 self.set_relation(
                     relation_index=i,
@@ -140,14 +140,14 @@ class MISProject(Protocol):
             return None
     
     # save methods
-    def save_dict(self):
+    def for_json(self):
         try:
             file_path=str(self._file_path)
         except:
             file_path=None
         return {**self.data,
-                "relations":[x.save_dict() for x in self._relations],
-                "images":[x.save_dict() for x in self._images],
+                "relations":[x.for_json() for x in self._relations],
+                "images":[x.for_json() for x in self._images],
                 "calibration":self._calibration,
                 "file_path":file_path}
 
@@ -169,7 +169,7 @@ class MISProjectJSON(MISProject):
         loaded_project=cls(**mis_data)
         return loaded_project
     def save(self,mis_filepath):
-        mis_data=self.save_dict()
+        mis_data=self.for_json()
         mis_data["file_path"]=str(mis_filepath)
         with open(mis_filepath,"w") as f:
             f.write(json.dumps(mis_data,indent=4))
@@ -233,7 +233,7 @@ class MISProjectHDF5(MISProjectJSON):
              hdf5_filepath:Path|str,
              project_hdf5path:str,
              ):
-        mis_data=self.save_dict()
+        mis_data=self.for_json()
         mis_data["file_path"]=hdf5_filepath
         with h5py.File(hdf5_filepath, "r+") as f:
             f[project_hdf5path]=json.dumps(mis_data)
@@ -248,34 +248,34 @@ class MISProjectHDF5(MISProjectJSON):
         ...
     #TODO create build method
         # handle images as filepath images, filepath images to ingest into hdf5, or existing hdf5 images
-def save_mis_project_hdf5(mis_fp,misfile:MISProjectHDF5) -> None:
-    save_dict=misfile.save_dict()
-    #TODO update this save function to match the new MISProjectHDF5 format
-        # Consider avoiding saving/modifying any datasets other than the project scalar without getting explicit direction to do so.
-        # Plan around save method for saving an existing project(with some updates) and a build method for creating either a new project, and a new HDF5 if needed.
-    with h5py.File(mis_fp,"a") as f:
-        try:
-            f.create_group("images")
-        finally:
-            for image_name in misfile.get_image_names():
-                if image_name not in f["images"]:  # type: ignore
-                    f["images"].create_dataset(image_name,dtype="f") # type: ignore #empty placeholder 
-                for key,value in misfile.get_image(image_name).save_dict().items():
-                    f["images"][image_name].attrs[key]=value  # type: ignore
-        try:
-            f.create_dataset("relations")
-        finally:
-            f["relations"]=[json.dumps(x) for x in save_dict["relations"]]
-        try:
-            f.create_group("calibration")
-        finally:
-            for key,value in misfile.get_calibration().items():
-                f["calibration"].attrs[key]=value
-        try:
-            f.create_group("project")
-        finally:
-            for key in save_dict:
-                if key in ["images","relations","calibration"]: continue
-                f["project"].attrs[key]=json.dumps(save_dict[key])
+# def save_mis_project_hdf5(mis_fp,misfile:MISProjectHDF5) -> None:
+#     mis_data=misfile.for_json()
+#     #TODO update this save function to match the new MISProjectHDF5 format
+#         # Consider avoiding saving/modifying any datasets other than the project scalar without getting explicit direction to do so.
+#         # Plan around save method for saving an existing project(with some updates) and a build method for creating either a new project, and a new HDF5 if needed.
+#     with h5py.File(mis_fp,"a") as f:
+#         try:
+#             f.create_group("images")
+#         finally:
+#             for image_name in misfile.get_image_names():
+#                 if image_name not in f["images"]:  # type: ignore
+#                     f["images"].create_dataset(image_name,dtype="f") # type: ignore #empty placeholder 
+#                 for key,value in misfile.get_image(image_name).for_json().items():
+#                     f["images"][image_name].attrs[key]=value  # type: ignore
+#         try:
+#             f.create_dataset("relations")
+#         finally:
+#             f["relations"]=[json.dumps(x) for x in mis_data["relations"]]
+#         try:
+#             f.create_group("calibration")
+#         finally:
+#             for key,value in misfile.get_calibration().items():
+#                 f["calibration"].attrs[key]=value
+#         try:
+#             f.create_group("project")
+#         finally:
+#             for key in mis_data:
+#                 if key in ["images","relations","calibration"]: continue
+#                 f["project"].attrs[key]=json.dumps(mis_data[key])
 
 #TODO Add a project registry > uses file extension and/or keywords to identify project type when given file path.

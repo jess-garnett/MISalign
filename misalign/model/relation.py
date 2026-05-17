@@ -22,8 +22,8 @@ class MISRelation(Protocol):
     def get_relation(self,relation_type)->Any:
         """Get the relation between the images in the specified relation type."""
         ...
-    def save_dict(self)->dict[str,Any]:
-        """Returns a dictionary compatible with JSON.dump().
+    def for_json(self)->dict[str,Any]:
+        """Returns a dictionary compatible with `json.JSONEncoder`.
         - `relation_data["image_pair"]:tuple[str,str]`"""
         ...
 
@@ -43,8 +43,8 @@ class MISRelationReference():
     def get_relation(self,relation_type):
         """Get the relation between the images in the specified relation type."""
         return None
-    def save_dict(self)->dict[str,Any]:
-        """Returns a dictionary compatible with JSON.dump()."""
+    def for_json(self)->dict[str,Any]:
+        """Returns a dictionary compatible with `json.JSONEncoder`."""
         return {
             **self._dict,
             "relation_type":self._relation_type,
@@ -75,8 +75,8 @@ class MISRelationRectangular():
             return ((self._rect,(0,0))) # the offset point in image a should match up with 0,0 in image b.
         else:
             return None
-    def save_dict(self)->dict[str,Any]:
-        """Returns a dictionary compatible with JSON.dump()."""
+    def for_json(self)->dict[str,Any]:
+        """Returns a dictionary compatible with `json.JSONEncoder`."""
         return {
             **self._dict,
             "relation_type":self._relation_type,
@@ -112,8 +112,8 @@ class MISRelationPoints():
             return self._points
         else:
             return None
-    def save_dict(self)->dict[str,Any]:
-        """Returns a dictionary compatible with JSON.dump()."""
+    def for_json(self)->dict[str,Any]:
+        """Returns a dictionary compatible with `json.JSONEncoder`."""
         return {
             **self._dict,
             "relation_type":self._relation_type,

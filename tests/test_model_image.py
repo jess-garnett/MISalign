@@ -29,7 +29,7 @@ class TestMISImageFile():
             "image_filepath":test_img_a01,
         }
         test_image=MISImageFile(**test_image_data)
-        assert test_image.save_dict()=={"image_type":"file","image_filepath":test_img_a01,}
+        assert test_image.for_json()=={"image_type":"file","image_filepath":test_img_a01,}
     def test_image_save_note(self):
         test_img_a01="tests/test_files/model_image/test_image_a01.png"
         test_image_data={
@@ -38,7 +38,7 @@ class TestMISImageFile():
             "note":"Test Note"
         }
         test_image=MISImageFile(**test_image_data)
-        assert test_image.save_dict()=={"image_type":"file","image_filepath":test_img_a01,"note":"Test Note"}
+        assert test_image.for_json()=={"image_type":"file","image_filepath":test_img_a01,"note":"Test Note"}
     def test_image_save_change(self):
         test_img_a01="tests/test_files/model_image/test_image_a01.png"
         test_image_data={
@@ -48,7 +48,7 @@ class TestMISImageFile():
         change_test_img_a01="tests/test_files/model_image/test_image_a02.png"
         test_image=MISImageFile(**test_image_data)
         test_image.image_filepath=Path(change_test_img_a01)
-        assert test_image.save_dict()=={"image_type":"file","image_filepath":change_test_img_a01}
+        assert test_image.for_json()=={"image_type":"file","image_filepath":change_test_img_a01}
     def test_image_img_rect(self):
         test_img_a01="tests/test_files/model_image/test_image_a01.png"
         test_image_data={
@@ -91,7 +91,7 @@ class TestMISImageHDF5():
             image_type="hdf5",
             PIL_mode="RGB")
         test_image=MISImageHDF5(**test_image_data)
-        assert test_image.save_dict()==dict(
+        assert test_image.for_json()==dict(
             image_name="image_a01.jpg",
             hdf5_filepath="tests/test_files/test_hdf5/test-project_a-rel-cal-comp.hdf5",
             hdf5path="/MISContainer0/MISDataContainer0/image_a01.jpg",
@@ -106,7 +106,7 @@ class TestMISImageHDF5():
             PIL_mode="RGB",
             note="Test note")
         test_image=MISImageHDF5(**test_image_data)
-        assert test_image.save_dict()==dict(
+        assert test_image.for_json()==dict(
             image_name="image_a01.jpg",
             hdf5_filepath="tests/test_files/test_hdf5/test-project_a-rel-cal-comp.hdf5",
             hdf5path="/MISContainer0/MISDataContainer0/image_a01.jpg",
@@ -123,7 +123,7 @@ class TestMISImageHDF5():
         test_image=MISImageHDF5(**test_image_data)
         change_test_img_a01="tests/test_files/test_hdf5/test-project_a-rel-cal-comp-change.hdf5"
         test_image.hdf5_filepath=Path(change_test_img_a01)
-        assert test_image.save_dict()==dict(
+        assert test_image.for_json()==dict(
             image_name="image_a01.jpg",
             hdf5_filepath="tests/test_files/test_hdf5/test-project_a-rel-cal-comp-change.hdf5",
             hdf5path="/MISContainer0/MISDataContainer0/image_a01.jpg",
