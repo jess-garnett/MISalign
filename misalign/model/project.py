@@ -161,7 +161,7 @@ class MISProjectJSON(MISProject):
     - Calibration
     """
     @classmethod
-    def load(cls,mis_filepath):
+    def load(cls,mis_filepath)->'MISProjectJSON':
         with open(mis_filepath) as f:
             mis_data=json.load(f)
         if "relations" in mis_data.keys() and mis_data['relations'] is not None:
@@ -181,7 +181,7 @@ class MISProjectJSON(MISProject):
                 image_filepaths:list[Path]|list[str]|None=None,
                 calibration_filepath:Path|str|None=None,
                 project_filepath:Path|str|None=None,
-                **kwargs):
+                **kwargs)->'MISProjectJSON':
         mis_data=dict()
         if image_filepaths is not None:
             mis_data["images"]=[MISImageFile(image_filepath=x) for x in image_filepaths]
@@ -244,7 +244,10 @@ class MISProjectHDF5(MISProjectJSON):
         if project_hdf5path is not None:
             mis_data["hdf5_path"]=str(project_hdf5path)
         with h5py.File(mis_data["file_path"], "r+") as f:
-            del f[mis_data["hdf5_path"]]
+            try:
+                del f[mis_data["hdf5_path"]]
+            except KeyError:
+                pass
             f[mis_data["hdf5_path"]]=json.dumps(mis_data)
     @classmethod
     def build(cls,

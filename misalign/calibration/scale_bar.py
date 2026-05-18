@@ -36,7 +36,7 @@ def add_scale_bar(axes:axes.Axes,
 def image_with_scale_bar(image:str,
                   scale_measurement:str,
                   calibration:dict,
-                  **AnchoredSizeBar_kwargs:dict
+                  **AnchoredSizeBar_kwargs
                   ):
     
     if type(image) is str:
