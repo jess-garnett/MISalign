@@ -1,0 +1,79 @@
+{
+    "images": [
+        {
+            "image_type": "file",
+            "image_filepath": "tests/test_files/canvas_rectangular/test_image_a01_q_tl.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "tests/test_files/canvas_rectangular/test_image_a01_q_tr.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "tests/test_files/canvas_rectangular/test_image_a01_q_bl.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "tests/test_files/canvas_rectangular/test_image_a01_q_br.png"
+        }
+    ],
+    "relations": [
+        {
+            "image_pair": [
+                "test_image_a01_q_tl.png",
+                "test_image_a01_q_tr.png"
+            ],
+            "relation_type": "p",
+            "points": [
+                [
+                    [
+                        750,
+                        0
+                    ],
+                    [
+                        0,
+                        0
+                    ]
+                ]
+            ]
+        },
+        {
+            "image_pair": [
+                "test_image_a01_q_tr.png",
+                "test_image_a01_q_br.png"
+            ],
+            "relation_type": "p",
+            "points": [
+                [
+                    [
+                        0,
+                        550
+                    ],
+                    [
+                        0,
+                        0
+                    ]
+                ]
+            ]
+        },
+        {
+            "image_pair": [
+                "test_image_a01_q_tl.png",
+                "test_image_a01_q_bl.png"
+            ],
+            "relation_type": "p",
+            "points": [
+                [
+                    [
+                        0,
+                        550
+                    ],
+                    [
+                        0,
+                        0
+                    ]
+                ]
+            ]
+        }
+    ]
+}

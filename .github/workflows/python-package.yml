@@ -7,6 +7,7 @@ on:
   push:
     branches: [ "main", "develop"]
   pull_request:
+    types: [ready_for_review]
     branches: [ "main", "develop"]
 
 jobs:
@@ -16,17 +17,22 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.12","3.13","3.14"]
+        oldest-supported-python-version: ["3.12"]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install uv and set the Python version
       uses: astral-sh/setup-uv@v8.1.0
       with:
         enable-cache: true
         version: "0.11.8" # Install a specific version of uv.
         python-version: ${{ matrix.python-version }}
-    - name: Install the project
-      run: uv sync --locked --all-extras --dev
+    - name: Install the project (oldest with lowest dependencies)
+      if: ${{ matrix.python-version == matrix.oldest-supported-python-version}}
+      run: uv sync --all-extras --resolution lowest-direct
+    - name: Install the project (newer with locked dependencies)
+      if: ${{ matrix.python-version != matrix.oldest-supported-python-version}}
+      run: uv sync --locked --all-extras
     - name: Run tests
       run: uv run pytest tests

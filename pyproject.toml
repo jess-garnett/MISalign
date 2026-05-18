@@ -1,37 +1,40 @@
 [project]
-name = "MISalign"
-version = "1.1.0"
+name = "misalign"
+version = "2.0.0"
 description = "A Metallography Image Software for Alignment."
 readme = "README.md"
 authors = [
     { name = "Jessica Garnett", email = "jgarnett.pypi@protonmail.com" }
 ]
+
+# SPEC0 for supported versioning https://scientific-python.org/specs/spec-0000/
 requires-python = ">=3.12"
 dependencies = [
-    "matplotlib>=3.10.9",
-    "numpy>=2.4.4",
-    "pillow>=12.2.0",
-    "quantiphy>=2.21",
-]
-
-[project.optional-dependencies]
-relation-visualize = [
-    "networkx>=3.6.1",
-]
-ipy = [
-    "ipykernel>=7.2.0",
-    "ipympl>=0.10.0",
-    "ipython>=9.13.0",
-    "ipywidgets>=8.1.8",
-]
+    "numpy>=2.1.0", # SPEC0 Core Project
+    "matplotlib>=3.10.0", # SPEC0 Core Project
+    "h5py>=3.14.0", # https://pypi.org/project/h5py/#history
+    "pillow>=10.4.0", # https://pypi.org/project/pillow/#history
+    "quantiphy>=2.21", # https://pypi.org/project/quantiphy/#history #TODO add basic non-quantiphy conversion and make quantiphy optional
+    "ipython>=8.27.0", # SPEC0 Core Project 
+    "ipykernel>=6.29", # https://pypi.org/project/ipykernel/#history
+    "ipympl>=0.9.7", # https://pypi.org/project/ipympl/#history
+    "ipywidgets>=8.1.6", # https://pypi.org/project/ipywidgets/#history
+] #TODO revisit dependencies with respect to `PEP 771 - Default Extras for Python Software Packages`.
+    # Moving forward with all the dependencies needed to make all the examples work.
 
 [dependency-groups]
-dev = ["pytest>=9.0.3"]
+dev = [
+    "pytest>=9.0.3",
+    "ruff>=0.15.12",
+    "ty>=0.0.35",
+    "uv>=0.11.12",
+    "ipykernel<7", # freezing issue in VS Code
+]
 
 [build-system]
 requires = ["uv_build>=0.11.8,<0.12.0"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
-module-name = "MISalign"
+module-name = "misalign"
 module-root = ""

@@ -1,0 +1,77 @@
+{
+    "images": [
+        {
+            "hdf5_filepath": "project_a.nxs",
+            "image_name": "image_a01.jpg",
+            "hdf5path": "ENTRY[entry]/images/imageimage_a01.jpg[imageid]/image_3d/intensity",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "project_a.nxs",
+            "image_name": "image_a02.jpg",
+            "hdf5path": "ENTRY[entry]/images/imageimage_a02.jpg[imageid]/image_3d/intensity",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "project_a.nxs",
+            "image_name": "image_a03.jpg",
+            "hdf5path": "ENTRY[entry]/images/imageimage_a03.jpg[imageid]/image_3d/intensity",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "project_a.nxs",
+            "image_name": "image_a04.jpg",
+            "hdf5path": "ENTRY[entry]/images/imageimage_a04.jpg[imageid]/image_3d/intensity",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "project_a.nxs",
+            "image_name": "image_a05.jpg",
+            "hdf5path": "ENTRY[entry]/images/imageimage_a05.jpg[imageid]/image_3d/intensity",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "project_a.nxs",
+            "image_name": "image_a06.jpg",
+            "hdf5path": "ENTRY[entry]/images/imageimage_a06.jpg[imageid]/image_3d/intensity",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "project_a.nxs",
+            "image_name": "image_a07.jpg",
+            "hdf5path": "ENTRY[entry]/images/imageimage_a07.jpg[imageid]/image_3d/intensity",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "project_a.nxs",
+            "image_name": "image_a08.jpg",
+            "hdf5path": "ENTRY[entry]/images/imageimage_a08.jpg[imageid]/image_3d/intensity",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "project_a.nxs",
+            "image_name": "image_a09.jpg",
+            "hdf5path": "ENTRY[entry]/images/imageimage_a09.jpg[imageid]/image_3d/intensity",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        },
+        {
+            "hdf5_filepath": "project_a.nxs",
+            "image_name": "image_a10.jpg",
+            "hdf5path": "ENTRY[entry]/images/imageimage_a10.jpg[imageid]/image_3d/intensity",
+            "PIL_mode": "RGB",
+            "image_type": "hdf5"
+        }
+    ],
+    "relations": [],
+    "calibration": {},
+    "file_path": "project_a_nxs.mis.json"
+}
