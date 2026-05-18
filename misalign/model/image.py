@@ -33,7 +33,6 @@ class MISImageFile():
         self.image_filepath=Path(image_data["image_filepath"])
         self.name:str=self.image_filepath.name
         self._dict:dict=image_data
-        self._PIL_mode=None
     def __str__(self):
         return "Image '"+self.name+"' with shape:"+str(self.shape)
     def __array__(self)->np.ndarray:
@@ -85,7 +84,6 @@ class MISImageHDF5(MISImage):
         self.name:str=image_data["image_name"]
         self.hdf5path:str=image_data["hdf5path"]
         self._dict:dict=image_data
-        self._PIL_mode=image_data["PIL_mode"]
     def __str__(self):
         return "Image '"+self.name+"' with shape:"+str(self.shape)
     def __array__(self)->np.ndarray:

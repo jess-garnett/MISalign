@@ -2,6 +2,7 @@ from pathlib import Path
 from misalign.model.project import MISProject, MISProjectJSON, MISProjectHDF5
 from misalign.model.image import MISImageFile
 from misalign.model.relation import MISRelationReference
+import numpy as np
 
 
 class TestMISProjectJSON():
@@ -141,3 +142,235 @@ Calibration:
 Project Path:
     {Path(test_filepath)}"""
         assert str(mp)==expected_result
+    def test_build_empty(self):
+        test_filepath="tests/test_files/test_hdf5/temp-test-project-build-empty.hdf5"
+        try:
+            mis_project=MISProjectHDF5.build(mis_filepath=test_filepath)
+            assert mis_project.for_json()=={
+                'calibration': {},
+                'file_path': 'tests/test_files/test_hdf5/temp-test-project-build-empty.hdf5',
+                'hdf5_path': 'MISContainer0/project',
+                'images': [],
+                'relations': []}
+            test_mis_project=MISProjectHDF5.load(
+                mis_filepath=test_filepath)
+            assert mis_project.for_json()==test_mis_project.for_json()
+        finally:
+            Path(test_filepath).unlink()
+    def test_build_include_image_filepaths(self):
+        test_filepath="tests/test_files/test_hdf5/temp-test-project-build-include_image_filepaths.hdf5"
+        try:
+            mis_project=MISProjectHDF5.build(
+                mis_filepath=test_filepath,
+                include_image_filepaths=[
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_l.png',
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_r.png'])
+            assert mis_project.for_json()=={
+                'calibration': {},
+                'file_path': 'tests/test_files/test_hdf5/temp-test-project-build-include_image_filepaths.hdf5',
+                'hdf5_path': 'MISContainer0/project',
+                'images': [
+                    {'image_filepath': 'tests/test_files/canvas_rectangular/test_image_a01_h_l.png',
+                        'image_type': 'file'},
+                    {'image_filepath': 'tests/test_files/canvas_rectangular/test_image_a01_h_r.png',
+                        'image_type': 'file'}
+                    ],
+                'relations': []}
+            test_mis_project=MISProjectHDF5.load(mis_filepath=test_filepath)
+            assert mis_project.for_json()==test_mis_project.for_json()
+        finally:
+            Path(test_filepath).unlink()
+    def test_build_ingest_image_filepaths(self):
+        test_filepath="tests/test_files/test_hdf5/temp-test-project-build-ingest_image_filepaths.hdf5"
+        try:
+            mis_project=MISProjectHDF5.build(
+                mis_filepath=test_filepath,
+                ingest_image_filepaths=[
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_l.png',
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_r.png'])
+            assert mis_project.for_json()=={
+                'calibration': {},
+                'file_path': 'tests/test_files/test_hdf5/temp-test-project-build-ingest_image_filepaths.hdf5',
+                'hdf5_path': 'MISContainer0/project',
+                'images': [
+                    {'hdf5_filepath': 'tests/test_files/test_hdf5/temp-test-project-build-ingest_image_filepaths.hdf5',
+                        "hdf5path": 'MISContainer0/images/test_image_a01_h_l.png',
+                        'image_name': 'test_image_a01_h_l.png',
+                        'image_type': 'hdf5'},
+                    {'hdf5_filepath': 'tests/test_files/test_hdf5/temp-test-project-build-ingest_image_filepaths.hdf5',
+                        "hdf5path": 'MISContainer0/images/test_image_a01_h_r.png',
+                        'image_name': 'test_image_a01_h_r.png',
+                        'image_type': 'hdf5'}
+                    ],
+                'relations': []}
+            test_mis_project=MISProjectHDF5.load(mis_filepath=test_filepath)
+            assert mis_project.for_json()==test_mis_project.for_json()
+            assert test_mis_project.get_image(test_mis_project.get_image_names()[0]).shape==(1200,850,3)
+        finally:
+            Path(test_filepath).unlink()
+    def test_build_include_image_objects(self):
+        test_filepath="tests/test_files/test_hdf5/temp-test-project-build-ingest_image_objects.hdf5"
+        try:
+            mis_project=MISProjectHDF5.build(
+                mis_filepath=test_filepath,
+                include_image_objects=[MISImageFile(image_filepath=x) for x in [
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_l.png',
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_r.png']])
+            assert mis_project.for_json()=={
+                'calibration': {},
+                'file_path': 'tests/test_files/test_hdf5/temp-test-project-build-ingest_image_objects.hdf5',
+                'hdf5_path': 'MISContainer0/project',
+                'images': [
+                    {'image_filepath': 'tests/test_files/canvas_rectangular/test_image_a01_h_l.png',
+                        'image_type': 'file'},
+                    {'image_filepath': 'tests/test_files/canvas_rectangular/test_image_a01_h_r.png',
+                        'image_type': 'file'}
+                    ],
+                'relations': []}
+            test_mis_project=MISProjectHDF5.load(mis_filepath=test_filepath)
+            assert mis_project.for_json()==test_mis_project.for_json()
+        finally:
+            Path(test_filepath).unlink()
+    def test_build_ingest_image_objects(self):
+        test_filepath="tests/test_files/test_hdf5/temp-test-project-build-ingest_image_objects.hdf5"
+        try:
+            mis_project=MISProjectHDF5.build(
+                mis_filepath=test_filepath,
+                ingest_image_objects=[MISImageFile(image_filepath=x) for x in [
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_l.png',
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_r.png']])
+            assert mis_project.for_json()=={
+                'calibration': {},
+                'file_path': 'tests/test_files/test_hdf5/temp-test-project-build-ingest_image_objects.hdf5',
+                'hdf5_path': 'MISContainer0/project',
+                'images': [
+                    {'hdf5_filepath': 'tests/test_files/test_hdf5/temp-test-project-build-ingest_image_objects.hdf5',
+                        "hdf5path": 'MISContainer0/images/test_image_a01_h_l.png',
+                        'image_name': 'test_image_a01_h_l.png',
+                        'image_type': 'hdf5'},
+                    {'hdf5_filepath': 'tests/test_files/test_hdf5/temp-test-project-build-ingest_image_objects.hdf5',
+                        "hdf5path": 'MISContainer0/images/test_image_a01_h_r.png',
+                        'image_name': 'test_image_a01_h_r.png',
+                        'image_type': 'hdf5'}
+                    ],
+                'relations': []}
+            test_mis_project=MISProjectHDF5.load(mis_filepath=test_filepath)
+            assert mis_project.for_json()==test_mis_project.for_json()
+            assert test_mis_project.get_image(test_mis_project.get_image_names()[0]).shape==(1200,850,3)
+        finally:
+            Path(test_filepath).unlink()
+    def test_build_ingest_arrays(self):
+        test_filepath="tests/test_files/test_hdf5/temp-test-project-build-ingest_arrays.hdf5"
+        try:
+            mis_project=MISProjectHDF5.build(
+                mis_filepath=test_filepath,
+                ingest_arrays={x.split("/")[-1]:np.asarray(MISImageFile(image_filepath=x)) for x in [
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_l.png',
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_r.png']})
+            assert mis_project.for_json()=={
+                'calibration': {},
+                'file_path': 'tests/test_files/test_hdf5/temp-test-project-build-ingest_arrays.hdf5',
+                'hdf5_path': 'MISContainer0/project',
+                'images': [
+                    {'hdf5_filepath': 'tests/test_files/test_hdf5/temp-test-project-build-ingest_arrays.hdf5',
+                        "hdf5path": 'MISContainer0/images/test_image_a01_h_l.png',
+                        'image_name': 'test_image_a01_h_l.png',
+                        'image_type': 'hdf5'},
+                    {'hdf5_filepath': 'tests/test_files/test_hdf5/temp-test-project-build-ingest_arrays.hdf5',
+                        "hdf5path": 'MISContainer0/images/test_image_a01_h_r.png',
+                        'image_name': 'test_image_a01_h_r.png',
+                        'image_type': 'hdf5'}
+                    ],
+                'relations': []}
+            test_mis_project=MISProjectHDF5.load(mis_filepath=test_filepath)
+            assert mis_project.for_json()==test_mis_project.for_json()
+            assert test_mis_project.get_image(test_mis_project.get_image_names()[0]).shape==(1200,850,3)
+        finally:
+            Path(test_filepath).unlink()
+    def test_build_calibration_filepath(self):
+        test_filepath="tests/test_files/test_hdf5/temp-test-project-build-calibration_filepath.hdf5"
+        test_calibration_filepath="tests/test_files/test_data/test_calibration.miscal.json"
+        try:
+            mis_project=MISProjectHDF5.build(
+                mis_filepath=test_filepath,
+                calibration_filepath=test_calibration_filepath)
+            assert mis_project.for_json()=={
+                'calibration': {
+                            "pixel": 600,
+                            "length": 1,
+                            "length_unit": "mm"
+                            },
+                'file_path': 'tests/test_files/test_hdf5/temp-test-project-build-calibration_filepath.hdf5',
+                'hdf5_path': 'MISContainer0/project',
+                'images': [],
+                'relations': []}
+            test_mis_project=MISProjectHDF5.load(
+                mis_filepath=test_filepath)
+            assert mis_project.for_json()==test_mis_project.for_json()
+        finally:
+            Path(test_filepath).unlink()
+    def test_build_calibration_dict(self):
+        test_filepath="tests/test_files/test_hdf5/temp-test-project-build-calibration_dict.hdf5"
+        test_calibration={
+                            "pixel": 600,
+                            "length": 1,
+                            "length_unit": "mm"
+                        }
+        try:
+            mis_project=MISProjectHDF5.build(
+                mis_filepath=test_filepath,
+                calibration_dict=test_calibration)
+            assert mis_project.for_json()=={
+                'calibration': {
+                            "pixel": 600,
+                            "length": 1,
+                            "length_unit": "mm"
+                            },
+                'file_path': 'tests/test_files/test_hdf5/temp-test-project-build-calibration_dict.hdf5',
+                'hdf5_path': 'MISContainer0/project',
+                'images': [],
+                'relations': []}
+            test_mis_project=MISProjectHDF5.load(
+                mis_filepath=test_filepath)
+            assert mis_project.for_json()==test_mis_project.for_json()
+        finally:
+            Path(test_filepath).unlink()
+
+#TODO Consider checking the contents off ingested arrays.
+    # Currently shape is checked as a proxy for "correct data" but that doesn't validate the contents.
+
+    def test_save_added_relations(self):
+        test_filepath="tests/test_files/test_hdf5/temp-test-project-save-added_relations.hdf5"
+        try:
+            mis_project=MISProjectHDF5.build(
+                mis_filepath=test_filepath,
+                ingest_image_filepaths=[
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_l.png',
+                    'tests/test_files/canvas_rectangular/test_image_a01_h_r.png'])
+            mis_project.add_relation(
+                relation=MISRelationReference(
+                    image_pair=('test_image_a01_h_l.png','test_image_a01_h_r.png')))
+            assert mis_project.for_json()=={
+                'calibration': {},
+                'file_path': 'tests/test_files/test_hdf5/temp-test-project-save-added_relations.hdf5',
+                'hdf5_path': 'MISContainer0/project',
+                'images': [
+                    {'hdf5_filepath': 'tests/test_files/test_hdf5/temp-test-project-save-added_relations.hdf5',
+                        "hdf5path": 'MISContainer0/images/test_image_a01_h_l.png',
+                        'image_name': 'test_image_a01_h_l.png',
+                        'image_type': 'hdf5'},
+                    {'hdf5_filepath': 'tests/test_files/test_hdf5/temp-test-project-save-added_relations.hdf5',
+                        "hdf5path": 'MISContainer0/images/test_image_a01_h_r.png',
+                        'image_name': 'test_image_a01_h_r.png',
+                        'image_type': 'hdf5'}
+                    ],
+                'relations': [
+                    {'image_pair': ['test_image_a01_h_l.png','test_image_a01_h_r.png',],
+                    'relation_type': None,},
+                    ]}
+            mis_project.save()
+            test_mis_project=MISProjectHDF5.load(
+                mis_filepath=test_filepath)
+            assert mis_project.for_json()==test_mis_project.for_json()
+        finally:
+            Path(test_filepath).unlink()

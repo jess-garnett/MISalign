@@ -24,7 +24,7 @@ class MISRelation(Protocol):
         ...
     def for_json(self)->dict[str,Any]:
         """Returns a dictionary compatible with `json.JSONEncoder`.
-        - `relation_data["image_pair"]:tuple[str,str]`"""
+        - `relation_data["image_pair"]:list[str,str]`"""
         ...
 
 class MISRelationReference():
@@ -39,7 +39,7 @@ class MISRelationReference():
         return f"Image '{self._reference[1]}' is related to image '{self._reference[0]}'."
     def get_reference(self)->tuple[str,str]:
         """Get the images names of the pair of images that are related."""
-        return self._reference
+        return tuple(self._reference)
     def get_relation(self,relation_type):
         """Get the relation between the images in the specified relation type."""
         return None
@@ -48,7 +48,7 @@ class MISRelationReference():
         return {
             **self._dict,
             "relation_type":self._relation_type,
-            "image_pair":self._reference,
+            "image_pair":list(self._reference),
             }
 
 class MISRelationRectangular():
@@ -66,7 +66,7 @@ class MISRelationRectangular():
         return f"Image '{self._reference[1]}' is related to image '{self._reference[0]}' by {self._rect}."
     def get_reference(self)->tuple[str,str]:
         """Get the images names of the pair of images that are related."""
-        return self._reference
+        return tuple(self._reference)
     def get_relation(self,relation_type):
         """Get the relation between the images in the specified relation type."""
         if relation_type=='r':
@@ -80,7 +80,7 @@ class MISRelationRectangular():
         return {
             **self._dict,
             "relation_type":self._relation_type,
-            "image_pair":self._reference,
+            "image_pair":list(self._reference),
             "rectangular":self._rect,
             }
 
@@ -98,7 +98,7 @@ class MISRelationPoints():
         return f"Image '{self._reference[1]}' is related to image '{self._reference[0]}' by {self._points}."
     def get_reference(self)->tuple[str,str]:
         """Get the images names of the pair of images that are related."""
-        return self._reference
+        return tuple(self._reference)
     def get_relation(self,relation_type):
         """Get the relation between the images in the specified relation type."""
         if relation_type=='r':
@@ -117,7 +117,7 @@ class MISRelationPoints():
         return {
             **self._dict,
             "relation_type":self._relation_type,
-            "image_pair":self._reference,
+            "image_pair":list(self._reference),
             "points":self._points
             }
 

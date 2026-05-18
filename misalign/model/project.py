@@ -5,7 +5,7 @@
 
 from typing import Protocol, runtime_checkable, Any
 from misalign.model.relation import MISRelation, setup_relation
-from misalign.model.image import MISImage, MISImageFile,setup_image
+from misalign.model.image import MISImage, MISImageFile,setup_image, MISImageHDF5
 from misalign.calibration.calibrate import calibration_from_json
 import json
 from pathlib import Path
@@ -144,9 +144,9 @@ class MISProject(Protocol):
     
     # save methods
     def for_json(self):
-        try:
-            file_path=str(self._file_path)
-        except:
+        if self._file_path is not None:
+            file_path=Path(self._file_path).as_posix()
+        else:
             file_path=None
         return {**self.data,
                 "relations":[x.for_json() for x in self._relations],
@@ -220,10 +220,12 @@ def convert_mis_project_json(mis_fp)->MISProjectJSON:
 class MISProjectHDF5(MISProjectJSON):
     """Access image data and information from a HDF5."""
     @classmethod
-    def load(cls,mis_filepath,project_hdf5path)->'MISProjectHDF5':  # ty:ignore[invalid-method-override] # project path is needed
+    def load(cls,
+            mis_filepath:Path|str,
+            project_hdf5path:str="MISContainer0/project",)->'MISProjectHDF5':
         with h5py.File(mis_filepath) as f:
             mis_data=json.loads(f[project_hdf5path][()])
-            mis_data["file_path"]=mis_filepath
+            mis_data["file_path"]=Path(mis_filepath).as_posix()
             mis_data["hdf5_path"]=project_hdf5path
 
             if "relations" in mis_data.keys() and mis_data['relations'] is not None:
@@ -238,10 +240,11 @@ class MISProjectHDF5(MISProjectJSON):
              ):
         mis_data=self.for_json()
         if mis_filepath is not None:
-            mis_data["file_path"]=str(mis_filepath)
+            mis_data["file_path"]=Path(mis_filepath).as_posix()
         if project_hdf5path is not None:
             mis_data["hdf5_path"]=str(project_hdf5path)
         with h5py.File(mis_data["file_path"], "r+") as f:
+            del f[mis_data["hdf5_path"]]
             f[mis_data["hdf5_path"]]=json.dumps(mis_data)
     @classmethod
     def build(cls,
@@ -255,11 +258,11 @@ class MISProjectHDF5(MISProjectJSON):
                 ingest_arrays:dict[str,np.ndarray]|None=None,
                 calibration_filepath:Path|str|None=None,
                 calibration_dict:dict|None=None,
-                **kwargs):  # ty:ignore[invalid-method-override]
+                **kwargs)->'MISProjectHDF5':  # ty:ignore[invalid-method-override]
                 # Violates Liskov Substitution Principle - I am okay with that as signficantly different build args are possible.
                 #kwargs - `image_h5py_file_mode` h5py.File mode - Default: `x` Create file, fail if exists
         mis_data=dict()
-        mis_data["file_path"]=str(mis_filepath)
+        mis_data["file_path"]=Path(mis_filepath).as_posix()
         mis_data["hdf5_path"]=str(project_hdf5path)
 
         mis_data["images"]:list[MISImage]=list()
@@ -282,22 +285,40 @@ class MISProjectHDF5(MISProjectJSON):
                 if ingest_image_filepaths is not None:
                     for image_filepath in ingest_image_filepaths:
                         image_file=MISImageFile(image_filepath=image_filepath)
-                        image_name="/".join([images_hdf5path,image_file.name])
-                        f.create_dataset(image_name,
+                        image_hdf5path="/".join([images_hdf5path,image_file.name])
+                        f.create_dataset(image_hdf5path,
                                  data=np.asarray(image_file),
                                  compression="gzip", compression_opts=9)
+                        mis_data["images"].append(
+                            MISImageHDF5(
+                                hdf5_filepath=mis_data["file_path"],
+                                image_name=image_file.name,
+                                hdf5path=image_hdf5path
+                                ))
                 if ingest_image_objects is not None:
                     for image in ingest_image_objects:
-                        image_name="/".join([images_hdf5path,image.name])
-                        f.create_dataset(image_name,
+                        image_hdf5path="/".join([images_hdf5path,image.name])
+                        f.create_dataset(image_hdf5path,
                                  data=np.asarray(image),
                                  compression="gzip", compression_opts=9)
+                        mis_data["images"].append(
+                            MISImageHDF5(
+                                hdf5_filepath=mis_data["file_path"],
+                                image_name=image.name,
+                                hdf5path=image_hdf5path
+                                ))
                 if ingest_arrays is not None:
                     for name,array in ingest_arrays.items():
-                        image_name="/".join([images_hdf5path,name])
-                        f.create_dataset(image_name,
+                        image_hdf5path="/".join([images_hdf5path,name])
+                        f.create_dataset(image_hdf5path,
                                  data=np.asarray(array),
                                  compression="gzip", compression_opts=9)
+                        mis_data["images"].append(
+                            MISImageHDF5(
+                                hdf5_filepath=mis_data["file_path"],
+                                image_name=name,
+                                hdf5path=image_hdf5path
+                                ))
                 #TODO shift compression parameters to kwargs
 
         if calibration_filepath is not None:
@@ -314,38 +335,7 @@ class MISProjectHDF5(MISProjectJSON):
         
         new_project=cls(**mis_data)
         with h5py.File(mis_filepath,mode='a') as f:
-            f.create_dataset(project_hdf5path,(),data=json.dumps(new_project.for_json()))
+            f[mis_data["hdf5_path"]]=json.dumps(new_project.for_json())
         return new_project
-    #TODO create build method
-        # handle images as filepath images, filepath images to ingest into hdf5, or existing hdf5 images
-# def save_mis_project_hdf5(mis_fp,misfile:MISProjectHDF5) -> None:
-#     mis_data=misfile.for_json()
-#     #TODO update this save function to match the new MISProjectHDF5 format
-#         # Consider avoiding saving/modifying any datasets other than the project scalar without getting explicit direction to do so.
-#         # Plan around save method for saving an existing project(with some updates) and a build method for creating either a new project, and a new HDF5 if needed.
-#     with h5py.File(mis_fp,"a") as f:
-#         try:
-#             f.create_group("images")
-#         finally:
-#             for image_name in misfile.get_image_names():
-#                 if image_name not in f["images"]:  # type: ignore
-#                     f["images"].create_dataset(image_name,dtype="f") # type: ignore #empty placeholder 
-#                 for key,value in misfile.get_image(image_name).for_json().items():
-#                     f["images"][image_name].attrs[key]=value  # type: ignore
-#         try:
-#             f.create_dataset("relations")
-#         finally:
-#             f["relations"]=[json.dumps(x) for x in mis_data["relations"]]
-#         try:
-#             f.create_group("calibration")
-#         finally:
-#             for key,value in misfile.get_calibration().items():
-#                 f["calibration"].attrs[key]=value
-#         try:
-#             f.create_group("project")
-#         finally:
-#             for key in mis_data:
-#                 if key in ["images","relations","calibration"]: continue
-#                 f["project"].attrs[key]=json.dumps(mis_data[key])
 
 #TODO Add a project registry > uses file extension and/or keywords to identify project type when given file path.
