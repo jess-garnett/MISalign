@@ -125,7 +125,7 @@ class TestMISProjectHDF5():
     def test_load_str(self):
         test_filepath="tests/test_files/test_hdf5/test-project_a-rel-cal-comp.hdf5"
         project_hdf5path="MISContainer0/MISProjectJSON0"
-        mp=MISProjectHDF5.load(test_filepath,project_hdf5path)
+        mp=MISProjectHDF5.load(test_filepath,project_hdf5path=project_hdf5path)
         expected_result=f"""A misalign project with:
 Images:
     image_a01.jpg

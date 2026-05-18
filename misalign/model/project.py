@@ -11,6 +11,9 @@ import json
 from pathlib import Path
 import h5py
 
+# for runtime TYPE_CHECKING:
+import numpy as np
+
 @runtime_checkable
 class MISProject(Protocol):
     """Contains information about a set of images, relations, and a calibration"""
@@ -217,35 +220,102 @@ def convert_mis_project_json(mis_fp)->MISProjectJSON:
 class MISProjectHDF5(MISProjectJSON):
     """Access image data and information from a HDF5."""
     @classmethod
-    def load(cls,hdf5_filepath,project_hdf5path): # type: ignore
-        with h5py.File(hdf5_filepath) as f:
-            mis_data=json.loads(f[project_hdf5path][()]) # type: ignore
-            mis_data["file_path"]=hdf5_filepath
+    def load(cls,mis_filepath,project_hdf5path)->'MISProjectHDF5':  # ty:ignore[invalid-method-override] # project path is needed
+        with h5py.File(mis_filepath) as f:
+            mis_data=json.loads(f[project_hdf5path][()])
+            mis_data["file_path"]=mis_filepath
+            mis_data["hdf5_path"]=project_hdf5path
 
             if "relations" in mis_data.keys() and mis_data['relations'] is not None:
                 mis_data["relations"]=[setup_relation(**x) for x in mis_data["relations"]]
             if "images" in mis_data.keys() and mis_data['images'] is not None:
                 mis_data["images"]=[setup_image(**x) for x in mis_data['images']]
-            loaded_project=MISProjectHDF5(**mis_data)
-            return loaded_project
-        return cls(**mis_data)
-    def save(self, # type: ignore
-             hdf5_filepath:Path|str,
-             project_hdf5path:str,
+        loaded_project=cls(**mis_data)
+        return loaded_project
+    def save(self,
+             mis_filepath:Path|str|None=None,
+             project_hdf5path:str|None=None,
              ):
         mis_data=self.for_json()
-        mis_data["file_path"]=hdf5_filepath
-        with h5py.File(hdf5_filepath, "r+") as f:
-            f[project_hdf5path]=json.dumps(mis_data)
+        if mis_filepath is not None:
+            mis_data["file_path"]=str(mis_filepath)
+        if project_hdf5path is not None:
+            mis_data["hdf5_path"]=str(project_hdf5path)
+        with h5py.File(mis_data["file_path"], "r+") as f:
+            f[mis_data["hdf5_path"]]=json.dumps(mis_data)
     @classmethod
-    def build(cls,  # type: ignore
-                hdf5_filepath:Path|str,
-                project_hdf5path:str,
-                image_filepaths:list[Path|str]|None=None,
-                image_objects:list[MISImage]|None=None,
+    def build(cls,
+                mis_filepath:Path|str,
+                project_hdf5path:str="MISContainer0/project",
+                images_hdf5path:str="MISContainer0/images",
+                ingest_image_filepaths:list[Path|str]|None=None,
+                include_image_filepaths:list[Path|str]|None=None,
+                ingest_image_objects:list[MISImage]|None=None,
+                include_image_objects:list[MISImage]|None=None,
+                ingest_arrays:dict[str,np.ndarray]|None=None,
                 calibration_filepath:Path|str|None=None,
-                **kwargs):
-        ...
+                calibration_dict:dict|None=None,
+                **kwargs):  # ty:ignore[invalid-method-override]
+                # Violates Liskov Substitution Principle - I am okay with that as signficantly different build args are possible.
+                #kwargs - `image_h5py_file_mode` h5py.File mode - Default: `x` Create file, fail if exists
+        mis_data=dict()
+        mis_data["file_path"]=str(mis_filepath)
+        mis_data["hdf5_path"]=str(project_hdf5path)
+
+        mis_data["images"]:list[MISImage]=list()
+        if include_image_filepaths is not None:
+            [mis_data["images"].append(MISImageFile(image_filepath=x)) for x in include_image_filepaths]
+        if include_image_objects is not None:
+            [mis_data["images"].append(x) for x in include_image_objects]
+        
+        if any([ingest_image_filepaths is not None,
+                ingest_image_objects is not None,
+                ingest_arrays is not None]
+            ):
+            try:
+                image_h5py_file_mode:str=kwargs["image_h5py_file_mode"]
+                del kwargs["image_h5py_file_mode"]
+            except KeyError:
+                image_h5py_file_mode='x'
+            with h5py.File(mis_filepath,mode=image_h5py_file_mode) as f:
+                f.create_group(images_hdf5path)
+                if ingest_image_filepaths is not None:
+                    for image_filepath in ingest_image_filepaths:
+                        image_file=MISImageFile(image_filepath=image_filepath)
+                        image_name="/".join([images_hdf5path,image_file.name])
+                        f.create_dataset(image_name,
+                                 data=np.asarray(image_file),
+                                 compression="gzip", compression_opts=9)
+                if ingest_image_objects is not None:
+                    for image in ingest_image_objects:
+                        image_name="/".join([images_hdf5path,image.name])
+                        f.create_dataset(image_name,
+                                 data=np.asarray(image),
+                                 compression="gzip", compression_opts=9)
+                if ingest_arrays is not None:
+                    for name,array in ingest_arrays.items():
+                        image_name="/".join([images_hdf5path,name])
+                        f.create_dataset(image_name,
+                                 data=np.asarray(array),
+                                 compression="gzip", compression_opts=9)
+                #TODO shift compression parameters to kwargs
+
+        if calibration_filepath is not None:
+            mis_data["calibration"]=calibration_from_json(calibration_filepath)
+        if calibration_dict is not None:
+            # {"pixel":number,"length":number,"length_unit":str}
+            if set(calibration_dict.keys())=={"pixel","length","length_unit"}:
+                mis_data["calibration"]=calibration_dict
+            else:
+                raise KeyError(f"`calibration_dict` {calibration_dict} does not have expected keys `'pixel','length','length_unit'`")
+        
+        for key,value in kwargs.items():
+            mis_data[key]=value
+        
+        new_project=cls(**mis_data)
+        with h5py.File(mis_filepath,mode='a') as f:
+            f.create_dataset(project_hdf5path,(),data=json.dumps(new_project.for_json()))
+        return new_project
     #TODO create build method
         # handle images as filepath images, filepath images to ingest into hdf5, or existing hdf5 images
 # def save_mis_project_hdf5(mis_fp,misfile:MISProjectHDF5) -> None:
