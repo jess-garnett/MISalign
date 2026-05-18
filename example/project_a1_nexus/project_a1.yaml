@@ -1,0 +1,11 @@
+title: Project A for Image Stitching
+definition: NXoptical_microscopy
+instrument:
+  microscope:
+    description: Olympus GX41 Compact Inverted Metallurgical Microscope
+  detector:
+    description: PAXcam2 LM camera
+  objective:
+    description: 5x BF Mplan Achro 0.15NA
+    magnification: 5
+    numerical_aperture: 0.15
