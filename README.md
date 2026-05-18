@@ -1,14 +1,14 @@
 # MISalign
-[![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
-
 A Metallography Image Software for Alignment.
 
-## Still very much in development.
+[![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
+
+## How to use MISalign
 The `notebooks` folder has pre-configured Jupyter Notebooks that run through the process of using `misalign` on the example data in the `example` folder.
 
 The primary workflow is `setup.ipynb` > `align.ipynb` > `render.ipynb`
 
-As of 5/12/2026 `misalign` is close to version 2.0
+As of 5/18/2026 `misalign` is on version 2.0
 
 As of 5/14/2024 `misalign` is on version 1.0
 
@@ -19,11 +19,12 @@ In 2022 at the start of my PhD, I found the process of assembling images to be v
 
 One of the core issues I found with many existing alternatives is that they focused on automatic alignment and for the data sets I use that didn't work consistently. One of the core assumptions of `misalign` is that the user knows what they want in terms of alignment or image-image relationship and they should be able to efficiently communicate that to the program.
 ## How do I get started?
+We're in the process of getting on PyPi so for now you will need to download(or clone) a copy of this repository.
 We recommend using [uv](https://docs.astral.sh/uv/) for python package management. With uv installed you should be able to run `uv sync --all-extras` and then `misalign` will be installed in its own virtual environment and ready to use with the Jupyter Notebooks(`.ipynb`) in the `notebooks` folder which are configured with paths to the example data so you can explore how it works.
 ## Where can I get more help, if I need it?
 Feel free to share issues on the Github(https://github.com/jess-garnett/misalign/issues).
 
-Documentation is also being developed as part of the 2.0 release.
+Documentation is also being developed following 2.0 release.
 
 ## Python and Package Version Support
 This project follows [SPEC 0 — Minimum Supported Dependencies](https://scientific-python.org/specs/spec-0000/) for its Python version and package dependency support.
