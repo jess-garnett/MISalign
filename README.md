@@ -24,7 +24,7 @@ We recommend using [uv](https://docs.astral.sh/uv/) for python package managemen
 ## Where can I get more help, if I need it?
 Feel free to share issues on the Github(https://github.com/jess-garnett/misalign/issues).
 
-Documentation is also being developed following 2.0 release.
+Documentation is being developed following the 2.0 release: https://misalign.readthedocs.io/en/stable/
 
 ## Python and Package Version Support
 This project follows [SPEC 0 — Minimum Supported Dependencies](https://scientific-python.org/specs/spec-0000/) for its Python version and package dependency support.
