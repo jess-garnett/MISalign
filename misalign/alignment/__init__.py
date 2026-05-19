@@ -1,3 +1,3 @@
 """
-Alignment Modules
+Image Alignment - Tools & GUIs
 """
