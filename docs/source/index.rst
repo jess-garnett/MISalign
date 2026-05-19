@@ -7,19 +7,14 @@ Welcome to MISalign's documentation!
 
    This project is under active development.
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
 
-.. .. autosummary::
-..    :recursive:
-..    :toctree: _autosummary
-..    misalign
+.. autosummary::
+   :toctree: _autosummary
+   :recursive:
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-   
-   _autosummary/misalign
+   misalign.model
+   misalign.alignment
+   misalign.canvas
+   misalign.calibration
 
 MISalign hosts its documentation on Read the Docs.
