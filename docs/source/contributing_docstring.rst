@@ -6,14 +6,14 @@ misalign docstring guide
 ========================
 
 About docstrings
-==============================
+================
 
 A documentation string(docstring) is a string used to document a module, class, function or method, so users can get information about what it does and how to use it without needing to read and understand the implementation. See :ref:`docstrings_references` for more information about how they are used in other projects.
 
 `Sphinx <https://www.sphinx-doc.org>`_ is used to extract and convert docstrings into documentation HTML.
 
 Template Function/Method Docstring
----------------------------
+----------------------------------
 
 .. code-block:: python
 
@@ -86,14 +86,14 @@ Additional details on what the object does. Excludes parameters or implementatio
 3. Parameters
 --------------
 
-The details of the parameters go in this section. Generally, the pandas docstring guide for `parameters<https://pandas.pydata.org/docs/development/contributing_docstring.html#section-3-parameters>`_ should be followed.
+The details of the parameters go in this section. Generally, the pandas docstring guide for `parameters <https://pandas.pydata.org/docs/development/contributing_docstring.html#section-3-parameters>`_ should be followed.
 
 Class `__init__` parameters should go into the class description with the title `Initialization`
 
 4. Returns Or Yields
 ---------------------
 
-If a function or method returns(or yields) a value it should be document in this section. Generally, the pandas docstring guide for `returns or yields<https://pandas.pydata.org/docs/development/contributing_docstring.html#section-4-returns-or-yields>`_ should be followed.
+If a function or method returns(or yields) a value it should be document in this section. Generally, the pandas docstring guide for `returns or yields <https://pandas.pydata.org/docs/development/contributing_docstring.html#section-4-returns-or-yields>`_ should be followed.
 
 5. Notes
 ---------
@@ -103,7 +103,7 @@ This is an optional section for additional information about the object. This co
 6. Examples
 ------------
 
-This section is for examples illustration the use of the object. Generally, the pandas docstring guide for `returns or yields<https://pandas.pydata.org/docs/development/contributing_docstring.html#section-7-examples>`_ should be followed.
+This section is for examples illustration the use of the object. Generally, the pandas docstring guide for `examples <https://pandas.pydata.org/docs/development/contributing_docstring.html#section-7-examples>`_ should be followed.
 
 .. _docstrings_references:
 
