@@ -19,9 +19,13 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
+    'numpydoc'
 ]
 
 autosummary_generate = True
+numpydoc_show_class_members = False 
+
 
 templates_path = ['_templates']
 exclude_patterns = []
