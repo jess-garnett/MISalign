@@ -17,4 +17,7 @@ Welcome to MISalign's documentation!
    misalign.canvas
    misalign.calibration
 
+.. toctree::
+   contributing_docstring
+
 MISalign hosts its documentation on Read the Docs.

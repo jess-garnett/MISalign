@@ -26,8 +26,30 @@ class MISImage(Protocol):
         ...
 
 class MISImageFile():
-    """Access image data and information for an image file.
-    - Expects image_filepath:str|Path"""
+    """
+    Access image data and information from an image file.
+    
+    Initialization
+    --------------
+    **image_data : kwargs
+        image_filepath : Path | str
+            File path to an image file.
+        Any other passed kwargs will be kept in `self._dict`.
+
+    Attributes
+    ----------
+    shape : tuple[int, ...]
+        Numpy shape of the image.
+    name : str
+        Name of the image.
+
+    Methods
+    -------
+    __array__() : numpy.ndarray
+        Get the array of the image.
+    for_json() : dict
+        Get a JSON compatible dict.
+    """
     _image_type="file"
     def __init__(self,**image_data)->None:
         self.image_filepath=Path(image_data["image_filepath"])

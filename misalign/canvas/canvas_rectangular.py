@@ -1,4 +1,5 @@
-""" Canvas Rectangular
+"""
+Canvas Rectangular
 - Canvas Solve: Converts a set of relations into relative positions.
 - Canvas Render: Renders combined images.
 """
@@ -10,7 +11,8 @@ from misalign.model.image import MISImage
 from misalign.model.relation import MISRelation
 
 def rectangular_solve(relations:list[dict[str,tuple[str|int]]],image_names:list,origin:str):
-    """Solves a set of relations rectangularly
+    """
+    Solves a set of relations rectangularly
     - Input is a list of rectangular relations[{'ref':(image_a,image_b),'rel':(x_offset,y_offset)}], a list of image names, and the image name of the origin.
     - Output is a dictionary of the form "image_name":(origin-relative x, origin-relative y)
     - Origin-relative x and y may be negative values.
@@ -38,7 +40,8 @@ def rectangular_solve_project(
         project:MISProject,
         image_names:list[str]|None=None,
         origin:str|None=None):
-    """Solves a set of relations rectangularly given a MISProject
+    """
+    Solves a set of relations rectangularly given a MISProject
     - Input is a MISProject, optional: a list of image names(otherwise all images in project used), and optional: the image name of the origin(otherwise first image used).
     - Output is a dictionary of the form "image_name":(origin-relative x, origin-relative y)
     - Origin-relative x and y may be negative values.
@@ -56,7 +59,8 @@ def rectangular_solve_project(
     )
 
 def _relation_map(relations:list[dict[str,tuple[str|int]]],image_names:list,origin:str):
-    """Identify a map from origin to other images in a list of relations.
+    """
+    Identify a map from origin to other images in a list of relations.
     - Input is a list of relations, a list of image names, and the image name of the origin.
     - Output is a dictionary of the form "image_name":[(image_name,relation) that reference to this image]
     """
@@ -99,12 +103,14 @@ def find_relative_extents(
         image_names:list,
         origin_relative_offsets:dict,
         image_shapes:dict):
-    """ Gets minimum and maximum x and y extents relative to the origin.
+    """
+    Gets minimum and maximum x and y extents relative to the origin.
     - Takes:
-        - A list of image names
-        - A dictionary of origin relative offsets {image_name:(x-offset,y-offset)}
-        - A dictionary of image sizes: {image_name:(width,height)}
-    - Returns a dictionary of origin relative extents with keys `minx`,`maxx`,`miny`, and `maxy`"""
+    - A list of image names
+    - A dictionary of origin relative offsets {image_name:(x-offset,y-offset)}
+    - A dictionary of image sizes: {image_name:(width,height)}
+    - Returns a dictionary of origin relative extents with keys `minx`,`maxx`,`miny`, and `maxy`
+    """
     x=[]
     y=[]
     for img in image_names:
@@ -131,12 +137,14 @@ def find_relative_extents_project(project:MISProject,origin_relative_offsets:dic
         origin_relative_offsets=origin_relative_offsets)
     ### Resolve Extents
 def resolve_extents(origin_relative_extents:dict[str,int]):
-    """ Gets canvas extents and offsets from origin relative extents.
+    """
+    Gets canvas extents and offsets from origin relative extents.
     - Takes:
-        - A dictionary of origin relative extents with keys `minx`,`maxx`,`miny`, and `maxy`.
+    - A dictionary of origin relative extents with keys `minx`,`maxx`,`miny`, and `maxy`.
     - Returns:
-        - A dictionary of canvas extents with keys `width` and `height`
-        - A dictionary of offsets with keys `x` and `y`."""
+    - A dictionary of canvas extents with keys `width` and `height`
+    - A dictionary of offsets with keys `x` and `y`.
+    """
     canvas_extents={
         "width":origin_relative_extents["maxx"]-origin_relative_extents["minx"],
         "height":origin_relative_extents["maxy"]-origin_relative_extents["miny"]}
@@ -150,13 +158,15 @@ def place_in_canvas(
         origin_relative_offsets:dict,
         canvas_extents:dict,
         canvas_offsets:dict):
-    """ Converts origin relative offsets to canvas relative offsets.
+    """
+    Converts origin relative offsets to canvas relative offsets.
     - Takes:
-        - A list of image names
-        - A dictionary of origin relative offsets {image_name:(x-offset,y-offset)}
-        - A dictionary of canvas extents with keys `width` and `height`
-        - A dictionary of offsets with keys `x` and `y`
-    - Returns a dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}"""
+    - A list of image names
+    - A dictionary of origin relative offsets {image_name:(x-offset,y-offset)}
+    - A dictionary of canvas extents with keys `width` and `height`
+    - A dictionary of offsets with keys `x` and `y`
+    - Returns a dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}
+    """
     canvas_relative_offsets={name:
         (-origin_relative_offsets[name][0]+canvas_offsets["x"],
         canvas_extents["height"]-(origin_relative_offsets[name][1]+canvas_offsets["y"])) 
@@ -178,12 +188,14 @@ def render_unblended(
         image_arrays:dict[str, array_like],
         canvas_relative_offsets:dict,
         canvas_extents:dict):
-    """ Renders a canvas without blending.
+    """
+    Renders a canvas without blending.
     - Takes:
-        - A dictionary of image names/array likes {image_name:array_like}
-        - A dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}
-        - A dictionary of canvas extents with keys `width` and `height`
-    - Returns a PIL Image of the canvas."""
+    - A dictionary of image names/array likes {image_name:array_like}
+    - A dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}
+    - A dictionary of canvas extents with keys `width` and `height`
+    - Returns a PIL Image of the canvas.
+    """
     canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
     for image_name,image_arraylike in image_arrays.items():
         image_shape: tuple[int, ...]=image_arraylike.shape
@@ -215,18 +227,22 @@ def render_unblended_project(
     ### Distance-From-Edge Weight
 #TODO add weight protocol
 def weight_dfe(image_shape):
-    """ Generates a distance-from-edge weight array for the given image shape.
+    """
+    Generates a distance-from-edge weight array for the given image shape.
     - Takes a tuple: (rows,columns)
-    - Returns a numpy array of distance-from-edge values"""
+    - Returns a numpy array of distance-from-edge values
+    """
     img_width=image_shape[1]
     img_height=image_shape[0]
     dfe_array=np.fromfunction(function=lambda y,x: np.min([x+1,y+1,img_width-x,img_height-y],axis=0),shape=(img_height,img_width))
     return dfe_array
     ### Flat Weight
 def weight_flat(image_shape):
-    """ Generates a flat weight array for the given image size.
+    """
+    Generates a flat weight array for the given image size.
     - Takes a tuple: (rows,columns)
-    - Returns a numpy array of flat values"""
+    - Returns a numpy array of flat values
+    """
     img_width=image_shape[1]
     img_height=image_shape[0]
     flat_array=np.full(shape=(img_height,img_width),fill_value=1)
@@ -240,13 +256,15 @@ def build_normalization(
         canvas_relative_offsets:dict,
         canvas_extents:dict,
         weight)->np.ndarray:
-    """ Builds a normalization array.
+    """
+    Builds a normalization array.
     - Takes:
-        - A dictionary of image names/array likes {image_name:array_like}
-        - A dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}
-        - A dictionary of canvas extents with keys `width` and `height`
-        - A weight array function `weight(img_size)`
-    - Returns a numpy array of the normalization values."""
+    - A dictionary of image names/array likes {image_name:array_like}
+    - A dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}
+    - A dictionary of canvas extents with keys `width` and `height`
+    - A weight array function `weight(img_size)`
+    - Returns a numpy array of the normalization values.
+    """
     normalization_array=np.zeros((canvas_extents["height"],canvas_extents["width"]))
     for image_name,image_arraylike in image_arrays.items():
         image_shape: tuple[int, ...]=image_arraylike.shape
@@ -271,16 +289,18 @@ def render_blended(
         canvas_extents:dict,
         weight,
         normalizer:np.ndarray):
-    """ Renders a canvas without blending.
+    """
+    Renders a canvas without blending.
     - Takes:
-        - A list of image names
-        - A dictionary of image filepaths {image_name:image_filepath}
-        - A dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}
-        - A dictionary of canvas extents with keys `width` and `height`
-        - A dictionary of image sizes {image_name:(width,height)}
-        - A weight array function `weight(img_size)`
-        - A numpy array of the normalization values
-    - Returns a PIL Image of the canvas."""
+    - A list of image names
+    - A dictionary of image filepaths {image_name:image_filepath}
+    - A dictionary of canvas relative offsets {image_name:(x-offset,y-offset)}
+    - A dictionary of canvas extents with keys `width` and `height`
+    - A dictionary of image sizes {image_name:(width,height)}
+    - A weight array function `weight(img_size)`
+    - A numpy array of the normalization values
+    - Returns a PIL Image of the canvas.
+    """
     canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
     for image_name,image_arraylike in image_arrays.items():
         image_shape: tuple[int, ...]=image_arraylike.shape
