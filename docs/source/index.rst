@@ -9,6 +9,7 @@ Explore the Documentation
    :maxdepth: 2
 
    api
+   examples
    contributing
 
 MISalign hosts its documentation on Read the Docs.

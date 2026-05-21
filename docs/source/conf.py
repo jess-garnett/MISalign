@@ -21,11 +21,17 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'numpydoc',
-    'myst_parser'
+    'myst_nb'
 ]
 
 autosummary_generate = True
 numpydoc_show_class_members = False 
+
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.ipynb': 'myst-nb',
+    '.myst': 'myst-nb',
+}
 
 
 templates_path = ['_templates']
