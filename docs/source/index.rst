@@ -1,23 +1,14 @@
-Welcome to MISalign's documentation!
-=====================================
 
-`misalign` is a Python library to simplify, streamline, and accelerate metallographic image alignment and montaging.
+.. include:: ../../README.md
+   :parser: myst_parser.sphinx_
 
-.. note::
-
-   This project is under active development.
-
-
-.. autosummary::
-   :toctree: _autosummary
-   :recursive:
-
-   misalign.model
-   misalign.alignment
-   misalign.canvas
-   misalign.calibration
+Explore the Documentation
+=========================
 
 .. toctree::
-   contributing_docstring
+   :maxdepth: 2
+
+   api
+   contributing
 
 MISalign hosts its documentation on Read the Docs.
