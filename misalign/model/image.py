@@ -38,6 +38,11 @@ class MISImage(Protocol):
         -------
         shape : tuple[int]
             Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
+
+        Notes
+        -----
+        Shape should behave cache-like.
+        It may be expensive the first time a `MISImage` has to get the shape but after that it should be very fast.
         """
         ...
     def for_json(self)->dict:
@@ -112,6 +117,11 @@ class MISImageFile():
         -------
         shape : tuple[int]
             Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
+
+        Notes
+        -----
+        `shape` only opens the image once, and then only if the image hasn't already been accessed.
+        It acts cache-like and can be accessed on-demand without needing to store it separately.
         """
         try: # if image has already been opened just get the size that was stored.
             return self._shape
@@ -220,6 +230,10 @@ class MISImageHDF5():
         -------
         shape : tuple[int]
             Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
+
+        Notes
+        -----
+        `shape` is taken from the hdf5 dataset shape attribute and does not require accessing the full array.
         """
         with h5py.File(self.hdf5_filepath, "r") as f:
             shape=tuple([int(dimension) for dimension in f[self.hdf5path].shape if dimension!=1])
