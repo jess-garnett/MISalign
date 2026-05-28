@@ -78,8 +78,6 @@ Additional details on what the object does. Excludes parameters or implementatio
 
 The details of the parameters go in this section. Generally, the pandas docstring guide for `parameters <https://pandas.pydata.org/docs/development/contributing_docstring.html#section-3-parameters>`_ should be followed.
 
-Class `__init__` parameters should go into the class description with the title `Initialization`
-
 4. Returns Or Yields
 ---------------------
 
