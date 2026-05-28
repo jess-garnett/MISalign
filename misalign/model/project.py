@@ -26,30 +26,41 @@ class MISProject(Protocol):
     _relations:list[MISRelation]
     _calibration:dict[str,Any]
     _file_path:Path|None
-    def __init__(self,**mis_data)->None:
+    def __init__(self,
+        images:list[MISImage]|None = None,
+        relations:list[MISRelation]|None = None,
+        calibration:dict[str,Any]|None = None,
+        file_path:Path|str|None = None,
+        **mis_data)->None:
+        """
+        Initialize MISProject
+        """
         self.data=mis_data
-        if 'images' in mis_data:
-            self._images=mis_data['images']#list of image objects
-        else:
+        
+        if images is None:
             self._images=list()
-        
-        if 'relations' in mis_data:
-            self._relations=mis_data['relations']#list of relation objects
         else:
-            self._relations=list()
+            self._images=images
 
-        if 'calibration' in mis_data:
-            self._calibration=mis_data['calibration']#dictionary with 'pixel', 'length', and 'length_unit'
+        if relations is None:
+            self._relations=list()
         else:
+            self._relations=relations
+
+        if calibration is None:
             self._calibration=dict()
-        
-        if "file_path" in mis_data:
-            self._file_path=Path(mis_data['file_path'])
+            #dictionary with 'pixel', 'length', and 'length_unit'
         else:
+            self._calibration=calibration
+
+        if file_path is None:
             self._file_path=None
+            #dictionary with 'pixel', 'length', and 'length_unit'
+        else:
+            self._file_path=Path(file_path)
 
     def __str__(self)->str:
-        if len(self._images)==0 and len(self._relations)==0 and len(self._calibration)==0 and self.get_project_path()==None:
+        if len(self._images)==0 and len(self._relations)==0 and len(self._calibration)==0 and self.get_project_path() is None:
             return "An empty misalign project."
         else:
             return "A misalign project with:\n"+"\n".join([
@@ -143,7 +154,7 @@ class MISProject(Protocol):
         - Returns `None` if project does not currently have save file."""
         try:
             return self._file_path
-        except:
+        except AttributeError:
             return None
     
     # save methods
@@ -182,17 +193,17 @@ class MISProjectJSON(MISProject):
             f.write(json.dumps(mis_data,indent=4))
     @classmethod
     def build(cls,
+                mis_filepath:Path|str|None=None,
                 image_filepaths:list[Path]|list[str]|None=None,
                 calibration_filepath:Path|str|None=None,
-                project_filepath:Path|str|None=None,
                 **kwargs)->'MISProjectJSON':
         mis_data=dict()
         if image_filepaths is not None:
             mis_data["images"]=[MISImageFile(image_filepath=x) for x in image_filepaths]
         if calibration_filepath is not None:
             mis_data["calibration"]=calibration_from_json(calibration_filepath)
-        if project_filepath is not None:
-            mis_data["file_path"]=project_filepath
+        if mis_filepath is not None:
+            mis_data["file_path"]=mis_filepath
         for key,value in kwargs.items():
             mis_data[key]=value
         new_project=cls(**mis_data)
@@ -208,11 +219,11 @@ def convert_mis_project_json(mis_fp)->MISProjectJSON:
     build_relations=list()
     for x in mis_load["relations"]:
         try:
-            if type(x[2][0])==int: # relation data is most likely rectangular offset
+            if type(x[2][0]) is int: # relation data is most likely rectangular offset
                 relation_data=dict(rectangular=x[2])
             else: #relation data is most likely points
                 relation_data=dict(points=x[2])
-        except: # relation data is most likely None
+        except IndexError: # relation data is most likely None
             relation_data=dict()
         build_relations.append(setup_relation(
                 image_pair=x[0],
@@ -267,7 +278,10 @@ class MISProjectHDF5(MISProjectJSON):
                 calibration_dict:dict|None=None,
                 **kwargs)->'MISProjectHDF5':  # ty:ignore[invalid-method-override]
                 # Violates Liskov Substitution Principle - I am okay with that as signficantly different build args are possible.
-                #kwargs - `image_h5py_file_mode` h5py.File mode - Default: `x` Create file, fail if exists
+                #kwargs
+                # `image_h5py_file_mode` h5py.File mode - Default: `'x'` Create file, fail if exists
+                # `image_h5py_compression` h5py.File.create_dataset kwarg - Default: `'gzip'` compression algorithm.
+                # `image_h5py_compression_opts` h5py.File.create_dataset kwarg - Default: `9` maximum compression.
         mis_data=dict()
         mis_data["file_path"]=Path(mis_filepath).as_posix()
         mis_data["hdf5_path"]=str(project_hdf5path)
@@ -287,6 +301,18 @@ class MISProjectHDF5(MISProjectJSON):
                 del kwargs["image_h5py_file_mode"]
             except KeyError:
                 image_h5py_file_mode='x'
+
+            try:
+                image_h5py_compression:str=kwargs["image_h5py_compression"]
+                del kwargs["image_h5py_compression"]
+            except KeyError:
+                image_h5py_compression='gzip'
+
+            try:
+                image_h5py_compression_opts:int=kwargs["image_h5py_compression_opts"]
+                del kwargs["image_h5py_compression_opts"]
+            except KeyError:
+                image_h5py_compression_opts=9
             with h5py.File(mis_filepath,mode=image_h5py_file_mode) as f:
                 f.create_group(images_hdf5path)
                 if ingest_image_filepaths is not None:
@@ -295,7 +321,8 @@ class MISProjectHDF5(MISProjectJSON):
                         image_hdf5path="/".join([images_hdf5path,image_file.name])
                         f.create_dataset(image_hdf5path,
                                  data=np.asarray(image_file),
-                                 compression="gzip", compression_opts=9)
+                                 compression=image_h5py_compression,
+                                 compression_opts=image_h5py_compression_opts)
                         mis_data["images"].append(
                             MISImageHDF5(
                                 hdf5_filepath=mis_data["file_path"],
@@ -307,7 +334,8 @@ class MISProjectHDF5(MISProjectJSON):
                         image_hdf5path="/".join([images_hdf5path,image.name])
                         f.create_dataset(image_hdf5path,
                                  data=np.asarray(image),
-                                 compression="gzip", compression_opts=9)
+                                 compression=image_h5py_compression,
+                                 compression_opts=image_h5py_compression_opts)
                         mis_data["images"].append(
                             MISImageHDF5(
                                 hdf5_filepath=mis_data["file_path"],
@@ -319,7 +347,8 @@ class MISProjectHDF5(MISProjectJSON):
                         image_hdf5path="/".join([images_hdf5path,name])
                         f.create_dataset(image_hdf5path,
                                  data=np.asarray(array),
-                                 compression="gzip", compression_opts=9)
+                                 compression=image_h5py_compression,
+                                 compression_opts=image_h5py_compression_opts)
                         mis_data["images"].append(
                             MISImageHDF5(
                                 hdf5_filepath=mis_data["file_path"],
