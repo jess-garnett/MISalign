@@ -14,8 +14,10 @@ from typing import Protocol, runtime_checkable, Any
 @runtime_checkable
 class MISRelation(Protocol):
     """Protocol - Contains information relating an image pair."""
-    def __init__(self,**relation_data)->None:
-        """Initialize Relation"""
+    def __init__(self,
+        image_pair:list[str]|None=None,
+        **relation_data):
+        """Initialize a MISRelation"""
     def __str__(self)->str:
         """String Representation of the Relation."""
         ...
@@ -34,10 +36,18 @@ class MISRelationReference():
     """Image pair that is related but no specific relation is known.
     - `relation_type=None`"""
     _relation_type=None
-    def __init__(self,**relation_data):
+    def __init__(self,
+        image_pair:tuple[str,str]|None=None,
+        **relation_data):
         """Initialize a MISRelationReference"""
+
+        if image_pair is None:
+            raise ValueError("`image_pair` cannot be None.")
+        self._reference: tuple[str,str]=tuple(image_pair)
+            # Note: When importing from JSON this will be a list of length 2.
+
         self._dict=relation_data
-        self._reference=relation_data["image_pair"]
+
     def __str__(self)->str:
         """String Representation of the Relation."""
         return f"Image '{self._reference[1]}' is related to image '{self._reference[0]}'."
@@ -60,11 +70,23 @@ class MISRelationRectangular():
     - `relation_type='r'`
     - rectilinear relationship A(0,0)->B(0,0)"""
     _relation_type='r'
-    def __init__(self,**relation_data):
+    def __init__(self,
+        image_pair:tuple[str,str]|None=None,
+        rectangular:tuple[int|float,int|float]|None=None,
+        **relation_data):
         """Initialize a MISRelationRectangular"""
+
+        if image_pair is None:
+            raise ValueError("`image_pair` cannot be None.")
+        self._reference: tuple[str,str]=tuple(image_pair)
+            # Note: When importing from JSON this will be a list of length 2.
+
+        if rectangular is None:
+            raise ValueError("`rectangular` cannot be None.")
+        self._rect=tuple(rectangular)
+            # Note: When importing from JSON this will be a list of length 2.
+
         self._dict=relation_data
-        self._reference=relation_data["image_pair"]
-        self._rect=relation_data["rectangular"]
 
     def __str__(self)->str:
         """String Representation of the Relation."""
@@ -86,7 +108,7 @@ class MISRelationRectangular():
             **self._dict,
             "relation_type":self._relation_type,
             "image_pair":list(self._reference),
-            "rectangular":self._rect,
+            "rectangular":list(self._rect),
             }
 
 class MISRelationPoints():
@@ -94,11 +116,22 @@ class MISRelationPoints():
     - `relation_type='p'`
     - point-based relation Ai->Bi"""
     _relation_type='p'
-    def __init__(self,**relation_data):
+    def __init__(self,
+        image_pair:tuple[str,str]|None=None,
+        points:list[tuple[tuple[int,int],tuple[int,int]]]|None=None,
+        **relation_data):
         """Initialize a MISRelationPoints"""
+
+        if image_pair is None:
+            raise ValueError("`image_pair` cannot be None.")
+        self._reference: tuple[str,str]=tuple(image_pair)
+            # Note: When importing from JSON this will be a list of length 2.
+
+        if points is None:
+            raise ValueError("`points` cannot be None.")
+        self._points: list[tuple[tuple[int,int],tuple[int,int]]]=list(points)
+
         self._dict=relation_data
-        self._reference=tuple(relation_data["image_pair"])
-        self._points=relation_data["points"]
     def __str__(self)->str:
         """String Representation of the Relation."""
         return f"Image '{self._reference[1]}' is related to image '{self._reference[0]}' by {self._points}."
@@ -108,6 +141,7 @@ class MISRelationPoints():
     def get_relation(self,relation_type):
         """Get the relation between the images in the specified relation type."""
         if relation_type=='r':
+            #TODO rework this as numpy array operation.
             points_a=[x[0] for x in self._points]
             points_b=[x[1] for x in self._points]
             shift=[[b[0]-a[0],b[1]-a[1]] for a,b in zip(points_a,points_b)]
