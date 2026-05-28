@@ -14,6 +14,15 @@ import h5py
 class MISImage(Protocol):
     """Protocol - Access image data and information."""
     def __init__(self,**image_data)->None:
+        """
+        Initialize a MISImage.
+
+        Parameters
+        ----------
+        **image_data : kwargs
+            Required kwargs vary depending on class of MISImage.
+            Any other passed kwargs will be kept in `self._dict` and should be JSON dump-able objects.
+        """
         self.name:str
     def __str__(self)->str:
         ...
@@ -21,26 +30,51 @@ class MISImage(Protocol):
         """Get a ndarray of the image."""
         ...
     @property
-    def shape(self)->tuple[int, ...]:
-        """Get the size of the image."""
+    def shape(self)->tuple[int]:
+        """
+        Get the shape of the image.
+        
+        Returns
+        -------
+        shape : tuple[int]
+            Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
+        """
         ...
     def for_json(self)->dict:
-        """Returns a dictionary compatible with JSON.dump()"""
+        """
+        Returns a dictionary compatible with JSON.dump().
+        
+        Returns
+        -------
+        image_data : dict
+            JSON dump-able representation of image information.
+        """
         ...
-    def find_image_path(self,mis_fp,update=True)->Path|None:
-        """Find path to the image either in its original file path or in the same folder as the mis filepath."""
-        ...
+    def find_image_path(self,
+            mis_fp:Path|str,
+            update:bool=True
+            )->Path|None:
+        """
+        Find, and optionally update, filepaths.
+        
+        Checks stored location. Checks mis filepath folder for matching name.
+
+        Parameters
+        ----------
+        mis_fp:Path|str,
+            Filepath to MISProject, expected to be in the same folder as the file with the image data.
+        update:bool=True
+            If true when a matching file is found it will update the filepath property.
+
+        Returns
+        -------
+        return_path : Path | None
+            If a matching path is found it is returned, else `None` is returned.
+        """
 
 class MISImageFile():
     """
     Access image data and information from an image file.
-
-    Attributes
-    ----------
-    shape : tuple[int, ...]
-        Numpy shape of the image.
-    name : str
-        Name of the image.
     """
     _image_type="file"
     def __init__(self,
@@ -71,14 +105,28 @@ class MISImageFile():
         return array
     @property
     def shape(self)->tuple[int, ...]:
-        """Get the size of the image."""
+        """
+        Get the shape of the image.
+        
+        Returns
+        -------
+        shape : tuple[int]
+            Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
+        """
         try: # if image has already been opened just get the size that was stored.
             return self._shape
         except AttributeError: # if image hasn't been opened then open it and grab the size.
             self.__array__()
             return self._shape
     def for_json(self)->dict:
-        """Returns a dictionary compatible with JSON.dump()"""
+        """
+        Returns a dictionary compatible with JSON.dump().
+        
+        Returns
+        -------
+        image_data : dict
+            JSON dump-able representation of image information.
+        """
         return {
             **self._dict, # loaded dict first and then get the current values
             "image_type":"file",
@@ -87,10 +135,27 @@ class MISImageFile():
     def check_image_path(self)->bool:
         """Checks if image filepath is a file."""
         return self.image_filepath.is_file()
-    def find_image_path(self,mis_fp,update=True)->Path|None:
-        """Find, and optionally update, image paths.
-        - Checks stored location.
-        - Checks mis filepath folder for matching name."""
+    def find_image_path(self,
+            mis_fp:Path|str,
+            update:bool=True
+            )->Path|None:
+        """
+        Find, and optionally update, image filepaths.
+        
+        Checks stored location. Checks mis filepath folder for matching name.
+
+        Parameters
+        ----------
+        mis_fp:Path|str,
+            Filepath to MISProject, expected to be in the same folder as the image file.
+        update:bool=True
+            If true when a matching file is found it will replace `self.image_filepath`.
+
+        Returns
+        -------
+        return_path : Path | None
+            If a matching path is found it is returned, else `None` is returned.
+        """
         filepath=Path(mis_fp)
         if self.check_image_path():
             return_path=self.image_filepath
@@ -148,12 +213,26 @@ class MISImageHDF5():
         #TODO option for passing a currently open h5py.File rather than requiring opening a new one.
     @property
     def shape(self)->tuple[int, ...]:
-        """Get the size of the image."""
+        """
+        Get the shape of the image.
+        
+        Returns
+        -------
+        shape : tuple[int]
+            Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
+        """
         with h5py.File(self.hdf5_filepath, "r") as f:
             shape=tuple([int(dimension) for dimension in f[self.hdf5path].shape if dimension!=1])
         return shape
     def for_json(self)->dict:
-        """Returns a dictionary compatible with JSON.dump()"""
+        """
+        Returns a dictionary compatible with JSON.dump().
+        
+        Returns
+        -------
+        image_data : dict
+            JSON dump-able representation of image information.
+        """
         return {
             **self._dict, # loaded dict first and then get the current values
             "image_type":self._image_type,
@@ -211,4 +290,20 @@ image_types:dict[str,Any]={
     MISImageHDF5._image_type:MISImageHDF5
 }
 def setup_image(**image_data)->MISImage:
+    """
+    Construct `MISImage` from image data.
+
+    Uses the `image_type` field in `image_data` to select the correct MISImage implementation to initialize.
+
+    Parameters
+    ----------
+    image_data : dict
+        JSON dump-able representation of image information. Must include `image_type`.
+
+    Returns
+    -------
+    image : MISImage
+        Returns a MISImage initialized from `image_data`. 
+        MISImage implementation selection is based on `image_type` lookup in the `image_types` dictionary.
+    """
     return image_types[image_data["image_type"]](**image_data)

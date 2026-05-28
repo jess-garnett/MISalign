@@ -3,6 +3,8 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
+   :members:
+   :special-members: __array__
 
    {% block methods %}
    .. automethod:: __init__
@@ -11,11 +13,13 @@
    .. rubric:: {{ _('Methods') }}
 
    .. autosummary::
-      :toctree:
-   {% for item in methods %}
-      {% if not item.endswith('__init__') %}
+   {% for item in all_methods %}
+      {%- if not item.startswith('_')
+         or item in ['__init__',
+                     '__array__'
+                     ] %}
       ~{{ name }}.{{ item }}
-      {% endif %}
+      {%- endif -%}
    {%- endfor %}
    {% endif %}
    {% endblock %}
