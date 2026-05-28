@@ -1,6 +1,10 @@
-"""MIS Project Module
-- MIS Projects contain information about a set of images, relations, and a calibration.
-- Implements a ProjectJSON which contains image filepath, relations description, and calibration and can be saved to/loaded from JSON.
+"""
+Models for project data organization, data access, and file I/O.
+
+Includes `Protocol` model: `MISProject`
+
+MISProjects contain information about a set of images, relations, calibration.
+MISProjects can also have additional JSON-dumpable information stored in them.
 """
 
 from typing import Protocol, runtime_checkable, Any
@@ -16,7 +20,7 @@ import numpy as np
 
 @runtime_checkable
 class MISProject(Protocol):
-    """Contains information about a set of images, relations, and a calibration"""
+    """Protocol - Contains information about a set of images, relations, and a calibration"""
     data:dict[str,Any]
     _images:list[MISImage]
     _relations:list[MISRelation]

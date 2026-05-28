@@ -17,16 +17,27 @@ Template Function/Method Docstring
 
 .. code-block:: python
 
-    def rectangular_solve_project(
-        project:MISProject,
-        image_names:list[str]|None=None,
-        origin:str|None=None):
-    """
-    Solves a set of relations rectangularly given a MISProject
-    - Input is a MISProject, optional: a list of image names(otherwise all images in project used), and optional: the image name of the origin(otherwise first image used).
-    - Output is a dictionary of the form "image_name":(origin-relative x, origin-relative y)
-    - Origin-relative x and y may be negative values.
-    """
+    def find_image_path(self,
+            mis_fp:Path|str,
+            update:bool=True
+            )->Path|None:
+        """
+        Find, and optionally update, hdf5 filepaths.
+        
+        Checks stored location. Checks mis filepath folder for matching name.
+
+        Parameters
+        ----------
+        mis_fp:Path|str,
+            Filepath to MISProject, expected to be in the same folder as the hdf5 file.
+        update:bool=True
+            If true when a matching file is found it will replace `self.hdf5_filepath`.
+
+        Returns
+        -------
+        return_path : Path | None
+            If a matching path is found it is returned, else `None` is returned.
+        """
 
 Template Class Docstring
 ------------------------
@@ -36,27 +47,6 @@ Template Class Docstring
     class MISImageFile():
         """
         Access image data and information from an image file.
-        
-        Initialization
-        --------------
-        **image_data : kwargs
-            image_filepath : Path | str
-                File path to an image file.
-            Any other passed kwargs will be kept in `self._dict`.
-
-        Attributes
-        ----------
-        shape : tuple[int, ...]
-            Numpy shape of the image.
-        name : str
-            Name of the image.
-
-        Methods
-        -------
-        __array__() : numpy.ndarray
-            Get the array of the image.
-        for_json() : dict
-            Get a JSON compatible dict.
         """
 
 Template Module Docstring
@@ -67,7 +57,7 @@ Template Module Docstring
     """
     Models for handling data organization, data access, and file I/O.
 
-    Includes `Protocol` models: MISProject, MISImage, and MISRelation.
+    Includes `Protocol` models: `MISProject`, `MISImage`, and `MISRelation`.
     """
 
 Sections
@@ -107,8 +97,13 @@ This section is for examples illustration the use of the object. Generally, the 
 
 .. _docstrings_references:
 
+Notes
+=====
+
+`__init__` class methods are currently only documented on their respective class pages rather than in their own dedicated page.
+
 References
-==============================
+==========
 
 This guide draws upon existing projects & documentation for direction including:
 

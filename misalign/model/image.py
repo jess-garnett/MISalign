@@ -1,3 +1,9 @@
+"""
+Models for image data access.
+
+Includes `Protocol` model: `MISImage`
+"""
+
 from PIL import Image as PILImage
 import numpy as np
 from typing import Protocol, runtime_checkable, Any
@@ -6,7 +12,7 @@ import h5py
 
 @runtime_checkable
 class MISImage(Protocol):
-    """Access image data and information."""
+    """Protocol - Access image data and information."""
     def __init__(self,**image_data)->None:
         self.name:str
     def __str__(self)->str:
@@ -28,13 +34,6 @@ class MISImage(Protocol):
 class MISImageFile():
     """
     Access image data and information from an image file.
-    
-    Initialization
-    --------------
-    **image_data : kwargs
-        image_filepath : Path | str
-            File path to an image file.
-        Any other passed kwargs will be kept in `self._dict`.
 
     Attributes
     ----------
@@ -42,17 +41,24 @@ class MISImageFile():
         Numpy shape of the image.
     name : str
         Name of the image.
-
-    Methods
-    -------
-    __array__() : numpy.ndarray
-        Get the array of the image.
-    for_json() : dict
-        Get a JSON compatible dict.
     """
     _image_type="file"
-    def __init__(self,**image_data)->None:
-        self.image_filepath=Path(image_data["image_filepath"])
+    def __init__(self,
+        image_filepath:Path|str|None=None,
+        **image_data):
+        """
+        Initialize a MISImageFile from an image filepath.
+
+        Parameters
+        ----------
+        image_filepath : Path | str | None
+            File path to an image file.
+        **image_data : kwargs
+            Any other passed kwargs will be kept in `self._dict` and should be JSON dump-able objects.
+        """
+        if image_filepath is None:
+            raise ValueError("`image_filepath` cannot be None.")
+        self.image_filepath=Path(image_filepath)
         self.name:str=self.image_filepath.name
         self._dict:dict=image_data
     def __str__(self):
@@ -98,13 +104,40 @@ class MISImageFile():
         else:
             return None
 
-class MISImageHDF5(MISImage):
+class MISImageHDF5():
+    """
+    Access image data and information from an HDF5 file.
+    """
     _image_type="hdf5"
     """Access image data and information from a HDF5."""
-    def __init__(self,**image_data)->None:
-        self.hdf5_filepath=Path(image_data["hdf5_filepath"])
-        self.name:str=image_data["image_name"]
-        self.hdf5path:str=image_data["hdf5path"]
+    def __init__(self,
+        hdf5_filepath:Path|str|None=None,
+        hdf5path:str|None=None,
+        image_name:str|None=None,
+        **image_data)->None:
+        """
+        Initialize a MISImageHDF5 from a HDF5 filepath, HDF5 path, and image name.
+
+        Parameters
+        ----------
+        hdf5_filepath : Path | str | None
+            File path to an HDF5 file.
+        hdf5path : str | None
+            Path inside the hdf5 to the image dataset.
+        image_name : str | None
+            Name for the image.
+        **image_data : kwargs
+            Any other passed kwargs will be kept in `self._dict` and should be JSON dump-able objects.
+        """
+        if hdf5_filepath is None:
+            raise ValueError("`hdf5_filepath` cannot be None.")
+        if hdf5path is None:
+            raise ValueError("`hdf5path` cannot be None.")
+        if image_name is None:
+            raise ValueError("`image_name` cannot be None.")
+        self.hdf5_filepath=Path(hdf5_filepath)
+        self.hdf5path:str=hdf5path
+        self.name:str=image_name
         self._dict:dict=image_data
     def __str__(self):
         return "Image '"+self.name+"' with shape:"+str(self.shape)
@@ -129,12 +162,36 @@ class MISImageHDF5(MISImage):
             "image_name":self.name
             }
     def check_image_path(self)->bool:
-        """Checks if image filepath is a file."""
+        """
+        Checks if hdf5 filepath is a file.
+
+        Returns
+        -------
+        bool
+            True if `self.hdf5_filepath` is a file.
+        """
         return self.hdf5_filepath.is_file()
-    def find_image_path(self,mis_fp,update=True)->Path|None:
-        """Find, and optionally update, image paths.
-        - Checks stored location.
-        - Checks mis filepath folder for matching name."""
+    def find_image_path(self,
+            mis_fp:Path|str,
+            update:bool=True
+            )->Path|None:
+        """
+        Find, and optionally update, hdf5 filepaths.
+        
+        Checks stored location. Checks mis filepath folder for matching name.
+
+        Parameters
+        ----------
+        mis_fp:Path|str,
+            Filepath to MISProject, expected to be in the same folder as the hdf5 file.
+        update:bool=True
+            If true when a matching file is found it will replace `self.hdf5_filepath`.
+
+        Returns
+        -------
+        return_path : Path | None
+            If a matching path is found it is returned, else `None` is returned.
+        """
         filepath=Path(mis_fp)
         return_path=Path("")
         if self.check_image_path():

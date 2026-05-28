@@ -1,16 +1,19 @@
-"""Relations Model
-- Relate two images
-- Can store None relation i.e. these two images are related but it is not known what the relationship is.
-- Can store simple rectangular relation A(0,0) maps to B(X,Y)
-- Can store point match pairs Point A(X,Y) maps to points B(X,Y)
-- TODO Can generate a relation tree graphic/table/something showing relation chains
+"""
+Models for relation data.
+
+Includes `Protocol` model: `MISRelation`
+
+MISRelations describe the relation between two images.
+This can range from "Related but no known specific relation" to "Related by these sets of points".
+
+TODO Generate a relation tree graphic/table/something showing relation chains
 """
 from statistics import mean
 from typing import Protocol, runtime_checkable, Any
 
 @runtime_checkable
 class MISRelation(Protocol):
-    """Contains information relating an image pair."""
+    """Protocol - Contains information relating an image pair."""
     def __init__(self,**relation_data)->None:
         """Initialize Relation"""
     def __str__(self)->str:
@@ -32,6 +35,7 @@ class MISRelationReference():
     - `relation_type=None`"""
     _relation_type=None
     def __init__(self,**relation_data):
+        """Initialize a MISRelationReference"""
         self._dict=relation_data
         self._reference=relation_data["image_pair"]
     def __str__(self)->str:
@@ -57,6 +61,7 @@ class MISRelationRectangular():
     - rectilinear relationship A(0,0)->B(0,0)"""
     _relation_type='r'
     def __init__(self,**relation_data):
+        """Initialize a MISRelationRectangular"""
         self._dict=relation_data
         self._reference=relation_data["image_pair"]
         self._rect=relation_data["rectangular"]
@@ -90,6 +95,7 @@ class MISRelationPoints():
     - point-based relation Ai->Bi"""
     _relation_type='p'
     def __init__(self,**relation_data):
+        """Initialize a MISRelationPoints"""
         self._dict=relation_data
         self._reference=tuple(relation_data["image_pair"])
         self._points=relation_data["points"]

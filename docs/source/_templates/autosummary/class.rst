@@ -11,8 +11,11 @@
    .. rubric:: {{ _('Methods') }}
 
    .. autosummary::
+      :toctree:
    {% for item in methods %}
+      {% if not item.endswith('__init__') %}
       ~{{ name }}.{{ item }}
+      {% endif %}
    {%- endfor %}
    {% endif %}
    {% endblock %}

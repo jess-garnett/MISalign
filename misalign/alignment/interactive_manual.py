@@ -75,7 +75,16 @@ class InteractiveManualRelation():
         return MISRelationPoints(image_pair=(self._imga.name,self._imgb.name),points=self.points)
 
 class IMRControls():
+    "Widget assembly for controlling `InteractiveManualRelation`."
     def __init__(self,mis_project:MISProject):
+        """
+        Initialize IMRControls object from MISProject.
+
+        Parameters
+        ----------
+        mis_project : MISProject
+            Source project for images.
+        """
         self._project=mis_project
         # self._images=mis_project.get_image_names()
         self.names=mis_project.get_image_names()
