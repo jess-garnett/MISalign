@@ -98,7 +98,7 @@ This section is for examples illustration the use of the object. Generally, the 
 Notes
 =====
 
-`__init__` class methods are currently only documented on their respective class pages rather than in their own dedicated page.
+Standard relation notation is from `image a` to `image b`.
 
 References
 ==========
