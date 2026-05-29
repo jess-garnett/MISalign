@@ -20,7 +20,9 @@ import numpy as np
 
 @runtime_checkable
 class MISProject(Protocol):
-    """Protocol - Contains information about a set of images, relations, and a calibration"""
+    """Protocol - Contains information about a set of images, relations, and a calibration
+    
+    MISProject implements primary project methods excluding build/save/load."""
     data:dict[str,Any]
     _images:list[MISImage]
     _relations:list[MISRelation]
@@ -33,10 +35,23 @@ class MISProject(Protocol):
         file_path:Path|str|None = None,
         **mis_data)->None:
         """
-        Initialize MISProject
+        Initialize MISProject.
+
+        Parameters
+        ----------
+        images : list[MISImage] | None
+            list of `MISImage` or `None` by default.
+        relations : list[MISRelation] | None
+            list of `MISRelation` or `None` by default.
+        calibration : dict[str,Any] | None
+            calibration dictionary of form `{"pixel":number,"length":number,"length_unit":str}` or `None` by default.
+        file_path : Path | str | None
+            `Path` or path-like string to `.mis` file or `None` by default.
+        **mis_data : kwargs
+            Any other passed kwargs will be kept in `self._dict` and should be JSON dump-able objects.
         """
-        self.data=mis_data
-        
+        self._dict=mis_data
+
         if images is None:
             self._images=list()
         else:
@@ -60,6 +75,14 @@ class MISProject(Protocol):
             self._file_path=Path(file_path)
 
     def __str__(self)->str:
+        """
+        String representation of the Project.
+
+        Returns
+        -------
+        str
+            Description of the project.
+        """
         if len(self._images)==0 and len(self._relations)==0 and len(self._calibration)==0 and self.get_project_path() is None:
             return "An empty misalign project."
         else:
@@ -71,31 +94,110 @@ class MISProject(Protocol):
             ])
     # relation methods
     def get_relations(self)->list[MISRelation]:
-        """Get the list of MISRelations."""
+        """
+        Get the list of `MISRelation`.
+        
+        Returns
+        -------
+        relations : list[MISRelation]
+            List of relations.
+        """
         return self._relations
-    def set_relations(self,relations:list[MISRelation]):
-        """Set the list of relations."""
+    def set_relations(self,relations:list[MISRelation])->None:
+        """
+        Set the list of `MISRelation`.
+
+        Overrides any existing relations.
+        
+        Parameters
+        ----------
+        relations : list[MISRelation]
+            List of relations.
+        """
         self._relations=relations
-    def set_relation(self,relation_index:int,relation:MISRelation):
-        """Set a specific relation based on its index in the list of relations.
-        - Replaces existing relation."""
+    def set_relation(self,relation_index:int,relation:MISRelation)->None:
+        """
+        Replace an existing relation based on its index in the list of relations.
+
+        Parameters
+        ----------
+        relation_index : int
+            Index of the relation to replace.
+        relation : MISRelation
+            A relation.
+        """
         self._relations[relation_index]=relation
     def index_relation(self,relation:MISRelation)->int:
-        """Get the index of a relation."""
+        """
+        Get the index of a relation.
+
+        Parameters
+        ----------
+        relation : MISRelation
+            A relation.
+
+        Returns
+        -------
+        relation_index : int
+            Index of the relation.
+        """
         return [i for i,x in enumerate(self._relations) if x==relation][0]
     def add_relation(self,relation:MISRelation)->int:
-        """Append a relation to the list of relations and return it's index."""
+        """
+        Append a relation to the list of relations and get its index.
+
+        Parameters
+        ----------
+        relation : MISRelation
+            A relation.
+
+        Returns
+        -------
+        relation_index : int
+            Index of the relation.
+        """
         self._relations.append(relation)
         return len(self._relations)-1
-    def remove_relation(self,relation:MISRelation):
-        """Remove a relation from the list of relations."""
+    def remove_relation(self,relation:MISRelation)->None:
+        """
+        Remove a relation from the list of relations.
+
+        Parameters
+        ----------
+        relation : MISRelation
+            A relation.
+        """
         self._relations.remove(relation)
     def find_relations(self,image_name:str)->list[MISRelation]:
-        """Find all relations which include a specific image."""
+        """
+        Find all relations which include a specific image.
+
+        Parameters
+        ----------
+        image_name : str
+            An image name.
+
+        Returns
+        -------
+        relations : list[MISRelation]
+            List of relations that include the image.
+        """
         return [x for x in self._relations if image_name in x.get_reference()]
-    def rename_image_relations(self, old_image_name:str,new_image_name:str):
-        """Rename an image in all relations.
-        - Does not modify images."""
+    def rename_image_relations(self, old_image_name:str,new_image_name:str)->None:
+        """
+        Rename an image in all relations.
+
+        Parameters
+        ----------
+        old_image_name : str
+            The image name to replace.
+        new_image_name : str
+            The new image name.
+        
+        Notes
+        -----
+        Does not modify images.
+        """
         for i,r in enumerate(self._relations):
             if old_image_name in r.get_reference():
                 relation_data=r.for_json()
@@ -107,15 +209,47 @@ class MISProject(Protocol):
     
     # image methods
     def get_image_names(self)->list[str]:
-        """Get the list of image names."""
+        """
+        Get the list of image names.
+
+        Returns
+        -------
+        images : list[str]
+            List of image names.
+        """
         return [x.name for x in self._images]
     def get_image(self,image_name:str)->MISImage:
-        """Get the image for an image name."""
+        """
+        Get the image for an image name.
+
+        Parameters
+        ----------
+        image_name : str
+            An image name.
+
+        Returns
+        -------
+        image : MISImage
+            An image.
+        """
         return [x for x in self._images if x.name==image_name][0]
-    def set_image(self,image_name:str,image:MISImage):
-        """Set the image for an image name.
-        - If `image_name` is already in images, replaces.
-        - If `image_name` is not in images, appends."""
+    def set_image(self,image_name:str,image:MISImage)->None:
+        """
+        Get the image for an image name.
+
+        Parameters
+        ----------
+        image_name : str
+            An image name.
+        image : MISImage
+            An image.
+        
+        Notes
+        -----
+        If `image_name` is already in images, replaces.
+        If `image_name` is not in images, appends.
+
+        """
         if image_name in self.get_image_names():
             # replace an image
             image_index=[i for i,name in enumerate(self.get_image_names()) if name==image_name][0]
@@ -123,35 +257,97 @@ class MISProject(Protocol):
         else:
             # add the image
             self._images.append(image)
-    def set_images(self,images:list[MISImage]):
-        """Replaces all the current images with the given images."""
+    def set_images(self,images:list[MISImage])->None:
+        """
+        Set the list of `MISImage`.
+
+        Overrides any existing images.
+        
+        Parameters
+        ----------
+        images : list[MISImage]
+            List of images.
+        """
         self._images=images
-    def remove_image(self, image_name:str):
-        """Remove the image for an image name.
-        - Does not modify/delete the image file.
-        - Does not modify/delete relations."""
+    def remove_image(self, image_name:str)->None:
+        """
+        Remove an image from the list of images by image name.
+
+        Parameters
+        ----------
+        image_name : str
+            An image name.
+
+        Notes
+        -----
+        Does not modify/delete the image file.
+        Does not modify/delete relations.
+        """
         for name in self.get_image_names():
             if name==image_name:
                 self._images.remove(self.get_image(image_name=name))
-    def find_image_paths(self,mis_filepath,update=True):
-        """Finds and optionally updates all image names using stored paths and mis_filepath."""
+    def find_image_paths(self,mis_filepath:Path|str,update=True)->dict:
+        """
+        Find and optionally update all image paths.
+
+        Checks stored location. Checks mis filepath folder for matching name.
+
+        Parameters
+        ----------
+        mis_fp : Path | str,
+            Filepath to MISProject, expected to be in the same folder as the image files.
+        update : bool = True
+            If true when a matching file is found it will replace the stored filepath with the found filepath.
+
+        Returns
+        -------
+        results : dict[str,Path|None]
+            Returns a dictionary of image names and either the found `Path` or `None` if no file is found.
+        """
         return {image.name:image.find_image_path(mis_fp=mis_filepath,update=update) for image in self._images}
 
     # calibration methods
-    def set_calibration(self,calibration:dict):
-        """Set the calibration."""
+    def set_calibration(self,calibration:dict)->None:
+        """
+        Set the calibration.
+
+        Parameters
+        ----------
+        calibration : dict[str,Any]
+            calibration dictionary of form `{"pixel":number,"length":number,"length_unit":str}`
+        """
         self._calibration=calibration
     def get_calibration(self)->dict:
-        """Get the calibration."""
+        """
+        Get the calibration.
+
+        Returns
+        -------
+        calibration : dict[str,Any]
+            calibration dictionary of form `{"pixel":number,"length":number,"length_unit":str}`
+        """
         return self._calibration
     
     # project methods
-    def set_project_path(self,project_file_path:str|Path):
-        """Set path for project save file."""
-        self._file_path=Path(project_file_path)
+    def set_project_path(self,mis_filepath:Path|str):
+        """
+        Set the path for project save file.
+
+        Parameters
+        ----------
+        mis_filepath : Path | str
+            `Path` or path-like string to `.mis` file
+        """
+        self._file_path=Path(mis_filepath)
     def get_project_path(self)->Path|None:
-        """Get path for project save file.
-        - Returns `None` if project does not currently have save file."""
+        """
+        Get path for project save file.
+
+        Returns
+        -------
+        mis_filepath : Path | None
+            `Path` to `.mis` file or `None` if project does not currently have save file.
+        """
         try:
             return self._file_path
         except AttributeError:
@@ -159,21 +355,27 @@ class MISProject(Protocol):
     
     # save methods
     def for_json(self):
+        """
+        Returns a dictionary compatible with JSON.dump().
+        
+        Returns
+        -------
+        mis_data : dict
+            JSON dump-able representation of project information.
+        """
         if self._file_path is not None:
             file_path=Path(self._file_path).as_posix()
         else:
             file_path=None
-        return {**self.data,
+        return {**self._dict,
                 "relations":[x.for_json() for x in self._relations],
                 "images":[x.for_json() for x in self._images],
                 "calibration":self._calibration,
                 "file_path":file_path}
 
 class MISProjectJSON(MISProject):
-    """MISProject compatible with loading from/saving to JSON. Contains:
-    - Image Filepaths
-    - Relations
-    - Calibration
+    """
+    MISProject for JSON.
     """
     @classmethod
     def load(cls,mis_filepath)->'MISProjectJSON':
@@ -233,7 +435,9 @@ def convert_mis_project_json(mis_fp)->MISProjectJSON:
     return mp
 
 class MISProjectHDF5(MISProjectJSON):
-    """Access image data and information from a HDF5."""
+    """
+    MISProject for HDF5.
+    """
     @classmethod
     def load(cls,
             mis_filepath:Path|str,

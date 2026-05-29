@@ -60,10 +60,10 @@ class MISRelation(Protocol):
         Returns
         -------
         relation : Any|None
-            `'r'` > tuple[int,int]
-                `(x,y)`
-            `'p'` > list[tuple[tuple[int,int],tuple[int,int]]]
-                `[((xi,yi),(xj,yj)),...]`
+            `'r'` > tuple[int,int] > `(x,y)`
+
+            `'p'` > list[tuple[tuple[int,int],tuple[int,int]]] > `[((xi,yi),(xj,yj)),...]`
+
             other > None
 
         Notes
@@ -233,10 +233,10 @@ class MISRelationRectangular():
         Returns
         -------
         relation : Any|None
-            'r' > tuple[int,int]
-                `(x,y)`
-            'p' > list[tuple[tuple[int,int],tuple[int,int]]]
-                `[((x,y),(0,0))]`
+            'r' > tuple[int,int] > `(x,y)`
+
+            'p' > list[tuple[tuple[int,int],tuple[int,int]]] > `[((x,y),(0,0))]`
+
             other > None
         """
         if relation_type=='r':
@@ -263,7 +263,7 @@ class MISRelationRectangular():
 
 class MISRelationPoints():
     """
-    Contains information relating an image pair in terms of matching points.
+    Relation of an image pair in terms of matching points.
 
     Matching point relationship: `A(xi,yi)=B(xj,yj)`.
     
@@ -329,10 +329,10 @@ class MISRelationPoints():
         Returns
         -------
         relation : Any|None
-            `'r'` > tuple[int,int]
-                `(x,y)`
-            `'p'` > list[tuple[tuple[int,int],tuple[int,int]]]
-                `[((xi,yi),(xj,yj)),...]`
+            `'r'` > tuple[int,int] > `(x,y)`
+
+            `'p'` > list[tuple[tuple[int,int],tuple[int,int]]] > `[((xi,yi),(xj,yj)),...]`
+            
             other > None
 
         Notes
