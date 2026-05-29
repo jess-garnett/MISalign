@@ -379,6 +379,19 @@ class MISProjectJSON(MISProject):
     """
     @classmethod
     def load(cls,mis_filepath)->'MISProjectJSON':
+        """
+        Load a MISProjectJSON from `.mis.json` file.
+
+        Parameters
+        ----------
+        mis_filepath : Path | str
+            `Path` or path-like string to `.mis.json` file.
+        
+        Returns
+        -------
+        loaded_project : MISProjectJSON
+            MISProjectJSON initialized from the data in the `.mis.json` file.
+        """
         with open(mis_filepath) as f:
             mis_data=json.load(f)
         if "relations" in mis_data.keys() and mis_data['relations'] is not None:
@@ -388,7 +401,15 @@ class MISProjectJSON(MISProject):
         mis_data["file_path"]=mis_filepath
         loaded_project=cls(**mis_data)
         return loaded_project
-    def save(self,mis_filepath):
+    def save(self,mis_filepath)->None:
+        """
+        Save the MISProjectJSON to a `.mis.json` file.
+
+        Parameters
+        ----------
+        mis_filepath : Path | str
+            `Path` or path-like string to `.mis.json` file.
+        """
         mis_data=self.for_json()
         mis_data["file_path"]=str(mis_filepath)
         with open(mis_filepath,"w") as f:
@@ -396,9 +417,32 @@ class MISProjectJSON(MISProject):
     @classmethod
     def build(cls,
                 mis_filepath:Path|str|None=None,
-                image_filepaths:list[Path]|list[str]|None=None,
+                image_filepaths:list[Path|str]|None=None,
                 calibration_filepath:Path|str|None=None,
                 **kwargs)->'MISProjectJSON':
+        """
+        Build a MISProjectJSON.
+
+        Parameters
+        ----------
+        mis_filepath : Path | str | None
+            `Path` or path-like string for `.mis.json` file or `None` by default.
+        image_filepaths : list[Path | str] | None
+            List of `Path` or path-like strings or `None` by default.
+        calibration_filepath : Path | str | None
+            `Path` or path-like string for `.miscal.json` file or `None` by default.
+        **kwargs
+            Any other passed kwargs will be kept in `self._dict` and should be JSON dump-able objects.
+        
+        Returns
+        -------
+        new_project : MISProjectJSON
+            MISProjectJSON initialized from the provided parameters.
+
+        Notes
+        -----
+        This method does not create a file, that must be done with the `save` method.
+        """
         mis_data=dict()
         if image_filepaths is not None:
             mis_data["images"]=[MISImageFile(image_filepath=x) for x in image_filepaths]
@@ -411,8 +455,29 @@ class MISProjectJSON(MISProject):
         new_project=cls(**mis_data)
         return new_project
 
-def convert_mis_project_json(mis_fp)->MISProjectJSON:
-    """Convert an old `.mis` format file into a MISProjectJSON."""
+def convert_mis_project_json(mis_fp:Path|str)->MISProjectJSON:
+    """
+    Convert an old `.mis` format file into a MISProjectJSON.
+
+    Converts from pre-2.0 `.mis` style JSON files to 2.0+ style `MISProjectJSON` / `.mis.json`.
+
+    Parameters
+    ----------
+    mis_fp : Path | str
+        `Path` or path-like string for `.mis` file.
+    
+    Returns
+    -------
+    converted_project : MISProjectJSON
+        MISProjectJSON initialized from the data in the `.mis` file.
+
+    Notes
+    -----
+    This function does not create a file, that must be done with the `save` method.
+
+    This function includes some guesses as to what the most likely structure of the `.mis` file is.
+    For `.mis` that weren't modified outside MISalign it should be quite straight forward to use.
+    """
     with open(mis_fp) as infile:
         mis_load = json.load(infile)
     mp=MISProjectJSON.build(
@@ -442,6 +507,22 @@ class MISProjectHDF5(MISProjectJSON):
     def load(cls,
             mis_filepath:Path|str,
             project_hdf5path:str="MISContainer0/project",)->'MISProjectHDF5':
+        """
+        Load a MISProjectHDF5 from `.mis.hdf5` file.
+
+        Parameters
+        ----------
+        mis_filepath : Path | str
+            `Path` or path-like string to `.mis.hdf5` file.
+        project_hdf5path : str
+            HDF5 path to project dataset.
+            Default: `"MISContainer0/project"`
+        
+        Returns
+        -------
+        loaded_project : MISProjectHDF5
+            MISProjectHDF5 initialized from the data in the `.mis.hdf5` file.
+        """
         with h5py.File(mis_filepath) as f:
             mis_data=json.loads(f[project_hdf5path][()])
             mis_data["file_path"]=Path(mis_filepath).as_posix()
@@ -454,9 +535,24 @@ class MISProjectHDF5(MISProjectJSON):
         loaded_project=cls(**mis_data)
         return loaded_project
     def save(self,
-             mis_filepath:Path|str|None=None,
-             project_hdf5path:str|None=None,
+             mis_filepath : Path | str,
+             project_hdf5path : str = "MISContainer0/project",
              ):
+        """
+        Save the MISProjectHDF5 to a `.mis.hdf5` file.
+
+        Parameters
+        ----------
+        mis_filepath : Path | str
+            `Path` or path-like string to a `.mis.hdf5` file.
+        project_hdf5path : str
+            HDF5 path for project dataset.
+            Default: `"MISContainer0/project"`
+        
+        Notes
+        -----
+        HDF5 file is opened in  "`r+` Read/write, file must exist" mode so the file must exist, however new HDF5 paths can be used inside existing files.
+        """
         mis_data=self.for_json()
         if mis_filepath is not None:
             mis_data["file_path"]=Path(mis_filepath).as_posix()
@@ -481,7 +577,59 @@ class MISProjectHDF5(MISProjectJSON):
                 calibration_filepath:Path|str|None=None,
                 calibration_dict:dict|None=None,
                 **kwargs)->'MISProjectHDF5':  # ty:ignore[invalid-method-override]
-                # Violates Liskov Substitution Principle - I am okay with that as signficantly different build args are possible.
+                # Violates Liskov Substitution Principle - I am okay with that as signficantly different build args are really needed.
+            
+        """
+        Build a MISProjectHDF5.
+
+        Parameters
+        ----------
+        mis_filepath : Path | str | None
+            `Path` or path-like string for `.mis.json` file or `None` by default.
+        project_hdf5path : str
+            HDF5 path for project dataset.
+            Default: `"MISContainer0/project"`
+        images_hdf5path : str
+            HDF5 path for project dataset.
+            Default: `"MISContainer0/images"`
+            Note: Only used if `ingest_...` parameters are used.
+        ingest_image_filepaths : list[Path | str] | None
+            List of `Path` or path-like strings or `None` by default.
+            Images will be added to the HDF5 as datasets and added to the project as MISImageHDF5.
+        include_image_filepaths : list[Path | str] | None
+            List of `Path` or path-like strings or `None` by default.
+            Images will be included in the project but not added as an HDF5 dataset.
+        ingest_image_objects : list[MISImage] | None
+            List of `MISImage` or `None` by default.
+            Images will be added to the HDF5 as datasets and added to the project as MISImageHDF5.
+        include_image_objects : list[MISImage] | None
+            List of `MISImage` or `None` by default.
+            Images will be included in the project but not added as an HDF5 dataset.
+        ingest_arrays : dict[str,array-like] | None
+            Dictionary of `str:array-like` or `None` by default.
+            Arrays will be added to the HDF5 as datasets and added to the project as MISImageHDF5.
+            Array objects need to support `numpy.asarray()`
+        calibration_filepath : Path | str | None
+            `Path` or path-like string for `.miscal.json` file or `None` by default.
+        calibration_dict : dict | None
+            calibration dictionary of form `{"pixel":number,"length":number,"length_unit":str}` or `None` by default.
+        **kwargs
+            `image_h5py_file_mode` h5py.File mode - Default: `'x'` Create file, fail if exists
+            `image_h5py_compression` h5py.File.create_dataset kwarg - Default: `'gzip'` compression algorithm.
+            `image_h5py_compression_opts` h5py.File.create_dataset kwarg - Default: `9` maximum compression.
+            Any other passed kwargs will be kept in `self._dict` and should be JSON dump-able objects.
+        
+        Returns
+        -------
+        new_project : MISProjectHDF5
+            MISProjectHDF5 initialized from the provided parameters.
+
+        Notes
+        -----
+        This method, by default, will create a new file.
+        To modify an existing file `image_h5py_file_mode` kwarg must be prodivided.
+        Building a MISProjectHDF5 without an actual HDF5 file is not currently implemented.
+        """
                 #kwargs
                 # `image_h5py_file_mode` h5py.File mode - Default: `'x'` Create file, fail if exists
                 # `image_h5py_compression` h5py.File.create_dataset kwarg - Default: `'gzip'` compression algorithm.
