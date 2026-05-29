@@ -16,6 +16,7 @@
    {% for item in all_methods %}
       {%- if not item.startswith('_')
          or item in ['__init__',
+                     '__str__'
                      '__array__'
                      ] %}
       ~{{ name }}.{{ item }}

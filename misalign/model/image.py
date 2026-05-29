@@ -25,9 +25,24 @@ class MISImage(Protocol):
         """
         self.name:str
     def __str__(self)->str:
+        """
+        String Representation of the Image.
+
+        Returns
+        -------
+        str
+            Description including image name and shape.
+        """
         ...
     def __array__(self)->np.ndarray:
-        """Get a ndarray of the image."""
+        """
+        Get image array.
+        
+        Returns
+        -------
+        array : np.ndarray
+            Numpy array of the image.
+        """
         ...
     @property
     def shape(self)->tuple[int]:
@@ -101,9 +116,24 @@ class MISImageFile():
         self.name:str=self.image_filepath.name
         self._dict:dict=image_data
     def __str__(self):
+        """
+        String Representation of the Image.
+
+        Returns
+        -------
+        str
+            Description including image name and shape.
+        """
         return "Image '"+self.name+"' with shape:"+str(self.shape)
     def __array__(self)->np.ndarray:
-        """Get a ndarray of the image."""
+        """
+        Get image array.
+        
+        Returns
+        -------
+        array : np.ndarray
+            Numpy array of the image file.
+        """
         PIL_image=PILImage.open(self.image_filepath)
         array=np.asarray(PIL_image)
         self._shape:tuple[int, ...]=array.shape
@@ -143,7 +173,14 @@ class MISImageFile():
             "image_filepath":self.image_filepath.as_posix(),
             }
     def check_image_path(self)->bool:
-        """Checks if image filepath is a file."""
+        """
+        Checks if image filepath is a file.
+
+        Returns
+        -------
+        bool
+            True if `self.image_filepath` is a file.
+        """
         return self.image_filepath.is_file()
     def find_image_path(self,
             mis_fp:Path|str,
@@ -215,9 +252,24 @@ class MISImageHDF5():
         self.name:str=image_name
         self._dict:dict=image_data
     def __str__(self):
+        """
+        String Representation of the Image.
+
+        Returns
+        -------
+        str
+            Description including image name and shape.
+        """
         return "Image '"+self.name+"' with shape:"+str(self.shape)
     def __array__(self)->np.ndarray:
-        """Get a nparray of the image."""
+        """
+        Get image array.
+        
+        Returns
+        -------
+        array : np.ndarray
+            Numpy array of the hdf5 dataset with 1-length axes squeezed.
+        """
         with h5py.File(self.hdf5_filepath, "r") as f:
             return np.squeeze(f[self.hdf5path][()])
         #TODO option for passing a currently open h5py.File rather than requiring opening a new one.
@@ -254,7 +306,7 @@ class MISImageHDF5():
             "hdf5path":self.hdf5path,
             "image_name":self.name
             }
-    def check_image_path(self)->bool:
+    def check_hdf5_path(self)->bool:
         """
         Checks if hdf5 filepath is a file.
 
@@ -287,7 +339,7 @@ class MISImageHDF5():
         """
         filepath=Path(mis_fp)
         return_path=Path("")
-        if self.check_image_path():
+        if self.check_hdf5_path():
             return_path=self.hdf5_filepath
         else:
             check_path=filepath.parent.joinpath(self.hdf5_filepath.name)
