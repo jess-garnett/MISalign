@@ -26,7 +26,7 @@ class MISImage(Protocol):
         self.name:str
     def __str__(self)->str:
         """
-        String Representation of the Image.
+        String representation of the Image.
 
         Returns
         -------
@@ -117,7 +117,7 @@ class MISImageFile():
         self._dict:dict=image_data
     def __str__(self):
         """
-        String Representation of the Image.
+        String representation of the Image.
 
         Returns
         -------
@@ -253,7 +253,7 @@ class MISImageHDF5():
         self._dict:dict=image_data
     def __str__(self):
         """
-        String Representation of the Image.
+        String representation of the Image.
 
         Returns
         -------

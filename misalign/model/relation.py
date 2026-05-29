@@ -30,7 +30,7 @@ class MISRelation(Protocol):
         """
     def __str__(self)->str:
         """
-        String Representation of the Relation.
+        String representation of the Relation.
 
         Returns
         -------
@@ -114,7 +114,7 @@ class MISRelationReference():
 
     def __str__(self)->str:
         """
-        String Representation of the Relation.
+        String representation of the Relation.
 
         Returns
         -------
@@ -203,7 +203,7 @@ class MISRelationRectangular():
 
     def __str__(self)->str:
         """
-        String Representation of the Relation.
+        String representation of the Relation.
 
         Returns
         -------
@@ -299,7 +299,7 @@ class MISRelationPoints():
         self._dict=relation_data
     def __str__(self)->str:
         """
-        String Representation of the Relation.
+        String representation of the Relation.
 
         Returns
         -------
