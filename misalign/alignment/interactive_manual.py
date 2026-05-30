@@ -64,16 +64,13 @@ class InteractiveManualRelation():
         self._image_a=image_a
         self._image_b=image_b
         self._height=image_a.shape[0]
-        # clear current axis/data
-        self._ax.clear()
+        # clear current points/lines on axis
+        [x.remove() for x in self._ax.get_lines()]
         # set new images and add provided points.
         self._image_stack=np.vstack([np.asarray(image_a),np.asarray(image_b)])
         try:
             self._image_axes.set_data(self._image_stack)
-            self._ax.add_artist(self._image_axes)
-            self._ax.autoscale()
-            self._ax.set_xlim(0,self._image_axes.get_shape()[1])
-            self._ax.set_ylim(self._image_axes.get_shape()[0],0,)
+            self._fig.canvas.draw_idle()
         except AttributeError:
             self._image_axes=self._ax.imshow(self._image_stack)
         if points is not None:
