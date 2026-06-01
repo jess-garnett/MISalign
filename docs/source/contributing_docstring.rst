@@ -2,7 +2,7 @@
 
 
 ========================
-misalign docstring guide
+Docstring guide
 ========================
 
 About docstrings

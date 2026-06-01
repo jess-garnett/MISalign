@@ -6,8 +6,9 @@ Explore the Documentation
 =========================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   self
    api
    examples
    contributing

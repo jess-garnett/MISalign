@@ -1,7 +1,7 @@
 
-============
-MISalign API
-============
+======================
+MISalign API Reference
+======================
 
 .. autosummary::
    :toctree: _autosummary

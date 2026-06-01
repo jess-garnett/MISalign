@@ -1,16 +1,12 @@
 .. _contribute:
 
+.. include:: ../../CONTRIBUTING.md
+   :parser: myst_parser.sphinx_
 
-========================
-Contributing to MISalign
-========================
-
-Placeholder for contributing guide.
-Most likely inserting contributing.md.
-
-TODO Adding new relations & images guide.
+TODO Adding new relations & images guide(Protocol implementation).
 
 .. toctree::
-   :maxdepth: 2
-   
+   :maxdepth: 1
+   :caption: contributing
+
    contributing_docstring

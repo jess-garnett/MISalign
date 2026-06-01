@@ -32,6 +32,7 @@ source_suffix = {
     '.ipynb': 'myst-nb',
     '.myst': 'myst-nb',
 }
+nb_execution_mode = "off"
 
 
 templates_path = ['_templates']
