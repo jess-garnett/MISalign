@@ -1,8 +1,6 @@
+# MISalign API Reference
 
-======================
-MISalign API Reference
-======================
-
+```{eval-rst}
 .. autosummary::
    :toctree: _autosummary
    :recursive:
@@ -11,3 +9,4 @@ MISalign API Reference
    misalign.alignment
    misalign.canvas
    misalign.calibration
+```
