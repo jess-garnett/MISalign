@@ -9,4 +9,5 @@ TODO Adding new relations & images guide(Protocol implementation).
 :maxdepth: 1
 
 contributing/docstring
+contributing/code_of_conduct
 ```

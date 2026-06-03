@@ -4,7 +4,7 @@ version = "2.0.0"
 description = "A Metallography Image Software for Alignment."
 readme = "README.md"
 authors = [
-    { name = "Jessica Garnett", email = "jgarnett.pypi@protonmail.com" }
+    { name = "Jessica Garnett", email = "jgarnett.dev@protonmail.com" }
 ]
 
 # SPEC0 for supported versioning https://scientific-python.org/specs/spec-0000/
