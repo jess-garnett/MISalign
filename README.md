@@ -36,6 +36,12 @@ In 2022 at the start of my PhD, I found the process of assembling microscopy ima
 One of the core issues I found with many existing alternatives is that they focused on automatic alignment and for the data sets I use that didn't work consistently. One of the core assumptions of `misalign` is that the user knows what they want in terms of alignment or image-image relationship and they should be able to efficiently communicate that to the program.
 
 Image alignment and montaging is useful both for qualitative communication of microscopy results, as it can make it easier to illustrate large scale phenomena or behavior, as well as for quantitative processing of microscopy results by enabling fusion of positional data sets.
+
+### Core Assumption of MISalign
+An important thing to note about MISalign, and something that separates it from many other image montaging programs, is it's very simple core assumption: **Your images do actually line up without distortions.** Microscopes are generally intended to produce images with orthographic projections so, in general, this works out however specific techniques, configurations, or other factors may result in images that have noticeable warp or distortions. MISalign does not have any specific way of handling these images beyond a recommendation to resolve the distortions, and then use MISalign on the distortion-corrected images. 
+
+A secondary assumption of MISalign, in its current state, is that all images are taken at the same rotation, or put another way: all images can be aligned by only translating in X and Y. That being said, the data models, alignment tools, and solving approach should be possible to extend to handle images with rotation.
+
 ## How do I get started?
 We're in the process of getting on PyPi so for now you will need to download(or clone) a copy of this repository.
 We recommend using [uv](https://docs.astral.sh/uv/) for python package management. With uv installed you should be able to run `uv sync` and then `misalign` will be installed in its own virtual environment and ready to use with the Jupyter Notebooks(`.ipynb`) in the `notebooks` folder which are configured with paths to the example data so you can explore how it works.
