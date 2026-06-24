@@ -17,3 +17,10 @@ _notebooks/calibrate
 _notebooks/align
 _notebooks/render
 ```
+
+
+```{toctree}
+:caption: Example Notebooks
+:maxdepth: 2
+examples/hdf5_examples
+```
