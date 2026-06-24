@@ -54,3 +54,6 @@ Documentation is being developed following the 2.0 release: https://misalign.rea
 This project follows [SPEC 0 — Minimum Supported Dependencies](https://scientific-python.org/specs/spec-0000/) for its Python version and package dependency support.
 
 Note: Automated testing uses the `--resolution lowest-direct` option only on the oldest version of python supported. This gives some coverage of the specified oldest compatible packages while avoiding the issues that arise with using a python version released after a package version(i.e. missing wheels causing failed builds).
+
+## Acknowledgments
+This project's development has been funded by the University of Maryland through Jessica Garnett's graduate research assistantship. Special thanks to Ji-Cheng Zhao, Wei Zhong, Stephanie Turner, and Out in Tech U’s Mentorship Program which helped get it started.
