@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Primarily docstring and documentation development but during that process some code fixes, or renamings for clarity, were done.
 
 ### Added
 ### Changed
@@ -14,6 +13,17 @@ Primarily docstring and documentation development but during that process some c
 ### Removed
 ### Fixed
 ### Security
+
+
+## [2.1.0] - 2026-06-26
+Primarily docstring and documentation development but during that process some code fixes, or renamings for clarity, were done.
+
+### Added
+- Documentation with Sphinx and Read the Docs.
+- Code of Conduct.
+- Changelog.
+- Contributing Guide.
+- Added docstrings for modules, classes, and functions. Updated the few that were previously present but out of date.
 
 ## [2.0.0] - 2026-05-18
 A major refactor of MISalign to decouple modules and make it easier to extend. Many of the refactors involved creating a standard interface/Protocol for an aspect of MISalign and then splitting previously interlinked functionality into separate implementations of the interface.
