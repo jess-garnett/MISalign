@@ -24,10 +24,6 @@ The primary workflow is:
 - `align.ipynb` - Select matching points in image pairs to relate the images.
 - `render.ipynb` - Render image montages with and without blending and add scale bar overlays.
 
-`misalign` - 2.1.0 - 2026-06-26
-`misalign` - 2.0.0 - 2026-05-18
-`misalign` - 1.0.0 - 2024-05-14
-
 ## What does this project do?
 This project seeks to make the process of going from many metallography images to a single sample image simpler. The two primary steps in this process is alignment and rendering(also known as montaging, stitching, or compositing).
 ## Why is this project useful?
