@@ -368,7 +368,7 @@ Project Path:
                     {'image_pair': ['test_image_a01_h_l.png','test_image_a01_h_r.png',],
                     'relation_type': None,},
                     ]}
-            mis_project.save()
+            mis_project.save(mis_filepath=test_filepath)
             test_mis_project=MISProjectHDF5.load(
                 mis_filepath=test_filepath)
             assert mis_project.for_json()==test_mis_project.for_json()
