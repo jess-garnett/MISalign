@@ -16,7 +16,7 @@ class Test_setup_relation():
         assert type(setup_relation(
             image_pair=["test_a","test_b"],
             relation_type='p',
-            points=(((0,0),(100,100)),((0,10),(100,115)))
+            points=[((0,0),(100,100)),((0,10),(100,115))]
             ))==MISRelationPoints
 class TestMISRelationReference():
     def test_protocol_isinstance(self):
@@ -24,13 +24,13 @@ class TestMISRelationReference():
     def test_init(self):
         test_img_a="test_a"
         test_img_b="test_b"
-        test_relation=MISRelationReference(image_pair=[test_img_a,test_img_b])
+        test_relation=MISRelationReference(image_pair=(test_img_a,test_img_b))
         assert str(test_relation)=="Image 'test_b' is related to image 'test_a'."
     def test_get_reference(self):
         test_img_a="test_a"
         test_img_b="test_b"
         expected_reference=("test_a","test_b")
-        test_relation=MISRelationReference(image_pair=[test_img_a,test_img_b])
+        test_relation=MISRelationReference(image_pair=(test_img_a,test_img_b))
         assert test_relation.get_reference()==expected_reference
     def test_for_json(self):
         test_img_a="test_a"
@@ -38,7 +38,7 @@ class TestMISRelationReference():
         expected_save=dict(
             image_pair=[test_img_a,test_img_b],
             relation_type=None)
-        test_relation=MISRelationReference(image_pair=[test_img_a,test_img_b])
+        test_relation=MISRelationReference(image_pair=(test_img_a,test_img_b))
         assert test_relation.for_json()==expected_save
 class TestMISRelationRectangular():
     def test_protocol_isinstance(self):
@@ -48,7 +48,7 @@ class TestMISRelationRectangular():
         test_img_b="test_b"
         test_data=(100,100)
         test_relation=MISRelationRectangular(
-            image_pair=[test_img_a,test_img_b],
+            image_pair=(test_img_a,test_img_b),
             rectangular=test_data)
         assert str(test_relation)=="Image 'test_b' is related to image 'test_a' by (100, 100)."
     def test_get_reference(self):
@@ -57,7 +57,7 @@ class TestMISRelationRectangular():
         test_data=(100,100)
         expected_reference=("test_a","test_b")
         test_relation=MISRelationRectangular(
-            image_pair=[test_img_a,test_img_b],
+            image_pair=(test_img_a,test_img_b),
             rectangular=test_data)
         assert test_relation.get_reference()==expected_reference
     def test_get_relation_rectangular(self):
@@ -66,7 +66,7 @@ class TestMISRelationRectangular():
         test_data=(100,100)
         expected_relation=(100,100)
         test_relation=MISRelationRectangular(
-            image_pair=[test_img_a,test_img_b],
+            image_pair=(test_img_a,test_img_b),
             rectangular=test_data)
         assert test_relation.get_relation('r')==expected_relation
     def test_get_relation_points(self):
@@ -75,16 +75,16 @@ class TestMISRelationRectangular():
         test_data=(100,100)
         expected_relation=(((100,100),(0,0)))
         test_relation=MISRelationRectangular(
-            image_pair=[test_img_a,test_img_b],
+            image_pair=(test_img_a,test_img_b),
             rectangular=test_data)
         assert test_relation.get_relation('p')==expected_relation
     def test_save_relation(self):
         test_img_a="test_a"
         test_img_b="test_b"
         test_data=(100,100)
-        expected_save=dict(image_pair=["test_a","test_b"],relation_type='r',rectangular=(100,100))
+        expected_save=dict(image_pair=["test_a","test_b"],relation_type='r',rectangular=[100,100])
         test_relation=MISRelationRectangular(
-            image_pair=[test_img_a,test_img_b],
+            image_pair=(test_img_a,test_img_b),
             rectangular=test_data)
         assert test_relation.for_json()==expected_save
 class TestMISRelationPoints():
@@ -93,44 +93,44 @@ class TestMISRelationPoints():
     def test_init(self):
         test_img_a="test_a"
         test_img_b="test_b"
-        test_data=(((0,0),(100,100)),((0,10),(100,115)))
+        test_data=[((0,0),(100,100)),((0,10),(100,115))]
         test_relation=MISRelationPoints(
-            image_pair=[test_img_a,test_img_b],
+            image_pair=(test_img_a,test_img_b),
             points=test_data)
-        assert str(test_relation)=="Image 'test_b' is related to image 'test_a' by (((0, 0), (100, 100)), ((0, 10), (100, 115)))."
+        assert str(test_relation)=="Image 'test_b' is related to image 'test_a' by [((0, 0), (100, 100)), ((0, 10), (100, 115))]."
     def test_get_reference(self):
         test_img_a="test_a"
         test_img_b="test_b"
-        test_data=(((0,0),(100,100)),((0,10),(100,115)))
+        test_data=[((0,0),(100,100)),((0,10),(100,115))]
         expected_reference=("test_a","test_b")
         test_relation=MISRelationPoints(
-            image_pair=[test_img_a,test_img_b],
+            image_pair=(test_img_a,test_img_b),
             points=test_data)
         assert test_relation.get_reference()==expected_reference
     def test_get_relation_rectangular(self):
         test_img_a="test_a"
         test_img_b="test_b"
-        test_data=(((0,0),(100,100)),((0,10),(100,115)))
+        test_data=[((0,0),(100,100)),((0,10),(100,115))]
         expected_relation=(100,102)
         test_relation=MISRelationPoints(
-            image_pair=[test_img_a,test_img_b],
+            image_pair=(test_img_a,test_img_b),
             points=test_data)
         assert test_relation.get_relation('r')==expected_relation
     def test_get_relation_points(self):
         test_img_a="test_a"
         test_img_b="test_b"
-        test_data=(((0,0),(100,100)),((0,10),(100,115)))
-        expected_relation=(((0,0),(100,100)),((0,10),(100,115)))
+        test_data=[((0,0),(100,100)),((0,10),(100,115))]
+        expected_relation=[((0,0),(100,100)),((0,10),(100,115))]
         test_relation=MISRelationPoints(
-            image_pair=[test_img_a,test_img_b],
+            image_pair=(test_img_a,test_img_b),
             points=test_data)
         assert test_relation.get_relation('p')==expected_relation
     def test_save_relation(self):
         test_img_a="test_a"
         test_img_b="test_b"
-        test_data=(((0,0),(100,100)),((0,10),(100,115)))
-        expected_save=dict(image_pair=["test_a","test_b"],relation_type='p',points=(((0,0),(100,100)),((0,10),(100,115))))
+        test_data=[((0,0),(100,100)),((0,10),(100,115))]
+        expected_save=dict(image_pair=["test_a","test_b"],relation_type='p',points=[((0,0),(100,100)),((0,10),(100,115))])
         test_relation=MISRelationPoints(
-            image_pair=[test_img_a,test_img_b],
+            image_pair=(test_img_a,test_img_b),
             points=test_data)
         assert test_relation.for_json()==expected_save

@@ -1,10 +1,10 @@
 [project]
 name = "misalign"
-version = "2.0.0"
+version = "2.1.0"
 description = "A Metallography Image Software for Alignment."
 readme = "README.md"
 authors = [
-    { name = "Jessica Garnett", email = "jgarnett.pypi@protonmail.com" }
+    { name = "Jessica Garnett", email = "jgarnett.dev@protonmail.com" }
 ]
 
 # SPEC0 for supported versioning https://scientific-python.org/specs/spec-0000/
@@ -15,7 +15,7 @@ dependencies = [
     "h5py>=3.14.0", # https://pypi.org/project/h5py/#history
     "pillow>=10.4.0", # https://pypi.org/project/pillow/#history
     "quantiphy>=2.21", # https://pypi.org/project/quantiphy/#history #TODO add basic non-quantiphy conversion and make quantiphy optional
-    "ipython>=8.27.0", # SPEC0 Core Project 
+    "ipython>=8.27.0", # SPEC0 Core Project
     "ipykernel>=6.29", # https://pypi.org/project/ipykernel/#history
     "ipympl>=0.9.7", # https://pypi.org/project/ipympl/#history
     "ipywidgets>=8.1.6", # https://pypi.org/project/ipywidgets/#history
@@ -31,6 +31,9 @@ dev = [
     "ipykernel<7", # freezing issue in VS Code
 ]
 docs = [
+    "myst-nb>=1.4.0",
+    "myst-parser>=5.1.0",
+    "numpydoc>=1.10.0",
     "sphinx>=9.1.0",
     "sphinx-rtd-theme>=3.1.0",
 ]

@@ -57,7 +57,7 @@ class TestMISImageFile():
         }
         test_image=MISImageFile(**test_image_data)
         test_img_arr_fp="tests/test_files/model_image/test_image_a01.npy"
-        assert np.all(np.array(test_image)==np.load(test_img_arr_fp))
+        assert np.all(np.asarray(test_image)==np.load(test_img_arr_fp))
 
     #TODO add tests for `check_image_path` and `find_image_path`
 
@@ -138,4 +138,4 @@ class TestMISImageHDF5():
             PIL_mode="RGB")
         test_image=MISImageHDF5(**test_image_data)
         test_img_arr_fp="tests/test_files/model_image/test_image_a01.npy"
-        assert np.all(np.array(test_image)==np.load(test_img_arr_fp))
+        assert np.all(np.asarray(test_image)==np.load(test_img_arr_fp))
