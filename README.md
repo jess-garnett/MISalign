@@ -1,6 +1,6 @@
 <h1 align="center">
 
-<img src="https://github.com/jess-garnett/MISalign/blob/DOC-module-docstrings-templates/develop/misalign_logo/misalign_logo_r2_wide.png?raw=true" width="300">
+<img src="https://github.com/jess-garnett/MISalign/blob/main/develop/misalign_logo/misalign_logo_r2_wide.png?raw=true" width="300">
 
 </h1><br>
 
