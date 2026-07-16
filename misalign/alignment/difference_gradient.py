@@ -29,21 +29,37 @@ def axis_span(OVn:int,an_max:int,bn_max:int):
         an_span=(-OVn,bn_max)
         bn_span=(0,bn_max+OVn)
     else:
-        ValueError()
+        raise ValueError()
     return an_span,bn_span
 
-def overlap_spans(offset_vector:tuple,a_shape:tuple,b_shape:tuple):
-    """Takes an offset vector and shape of image a and image b. Returns the overlapping spans."""
-    if not all([offset_vector[0]>-b_shape[0],offset_vector[0]<a_shape[0],offset_vector[1]>-b_shape[1],offset_vector[1]<a_shape[1]]):
-        ValueError("These images do not overlap")
+def overlap_spans(offset_vector:tuple|np.ndarray,a_shape:tuple,b_shape:tuple):
+    """Takes an offset vector and shape of image a and image b. Returns the overlapping spans.
+    - Offset vector x,y
+    - Shapes row,column (y,x)"""
+    if not all([offset_vector[0]>-b_shape[1], # valid in -x (b to the left of a)
+                offset_vector[0]<a_shape[1], # valid in +x (a to the left of b)
+                offset_vector[1]>-b_shape[0], # valid in -y (b above a)
+                offset_vector[1]<a_shape[0]]): # valid in +y (a above b)
+        raise ValueError("These images do not overlap")
     ax_span,bx_span=axis_span(offset_vector[0],a_shape[1],b_shape[1])
     ay_span,by_span=axis_span(offset_vector[1],a_shape[0],b_shape[0])
+
+    # # All values in spans must be greater than 0
+    # if np.any(np.concat([ax_span,bx_span,ay_span,by_span])<0):
+    #     raise ValueError("These images do not overlap")
+    # Each value in span cannot be greater than or equal to the shape size.
+    # if np.any([max(ax_span)>=a_shape[1],
+    #                 max(ay_span)>=a_shape[0],
+    #                 max(bx_span)>=b_shape[1],
+    #                 max(by_span)>=b_shape[0],]):
+    #     raise ValueError("These images do not overlap")
+
     return (ax_span,ay_span),(bx_span,by_span)
 
 def difference_compare(
         image_a_array:np.ndarray,
         image_b_array:np.ndarray,
-        offset_ab:tuple,
+        offset_ab:tuple|np.ndarray,
         metric:Callable[[np.ndarray],float],
         return_difference=False)->float|tuple[float,np.ndarray]:
     """Compares difference of Image A and Image B using specified A-to-B relation and comparison metric.
@@ -54,7 +70,10 @@ def difference_compare(
     - `return_difference` changes output to (difference_value,difference_array)
     """
     ## Find overlap spans
-    a_spans,b_spans=overlap_spans(offset_ab,image_a_array.shape,image_b_array.shape)
+    try:
+        a_spans,b_spans=overlap_spans(offset_ab,image_a_array.shape,image_b_array.shape)
+    except ValueError:
+        return float('nan')
     ## Take difference of overlaps
     difference_array=image_a_array[a_spans[1][0]:a_spans[1][1],a_spans[0][0]:a_spans[0][1]] - image_b_array[b_spans[1][0]:b_spans[1][1],b_spans[0][0]:b_spans[0][1]]
     ## Get difference metric
@@ -65,20 +84,58 @@ def difference_compare(
     else:
         return difference_metric
 
+def strategy_scaled_grid(
+        image_a_array:np.ndarray,
+        image_b_array:np.ndarray,
+        rectangular_relation:tuple[int,int]|None,
+        strategy_grid_scale:int,
+        strategy_max_size:int=5,
+        metric:Callable[[np.ndarray],float]=metric_squared_mean,)->dict:
+    if rectangular_relation is None:
+        raise ValueError("Starting rectangular relation cannot be None.")
+    grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
+    grid=np.fromfunction(lambda x,y: np.array([rectangular_relation[0]+(strategy_grid_scale*(x-strategy_max_size)),
+                                                                                            rectangular_relation[1]+(strategy_grid_scale*(y-strategy_max_size))]),
+                                                                                            shape=grid_shape,dtype=int)
+    grid_results=np.full(grid_shape,np.nan)
+    grid_indeces=np.fromfunction(lambda row,col: np.array([row,col]),shape=grid_shape,dtype=int).reshape(2,-1)
+
+    for i,grid_index in enumerate(grid_indeces.T):
+        check_offset=grid[:,grid_index[0],grid_index[1]]
+        grid_results[grid_index[0],grid_index[1]]=difference_compare(image_a_array,image_b_array,
+            offset_ab=check_offset,
+            metric=metric)
+    optimized_location=grid_results.reshape(-1).argmin()
+    optimized_offset=tuple([int(value) for value in grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]])
+    return {"grid":grid,"grid_results":grid_results,"optimized_offset":optimized_offset}
+def strategy_full_grid(
+        image_a_array:np.ndarray,
+        image_b_array:np.ndarray,
+        rectangular_relation:tuple[int,int],
+        strategy_max_size:int=5,
+        metric:Callable[[np.ndarray],float]=metric_squared_mean,)->dict:
+    return strategy_scaled_grid(image_a_array=image_a_array,
+                                image_b_array=image_b_array,
+                                rectangular_relation=rectangular_relation,
+                                strategy_grid_scale=1,
+                                strategy_max_size=strategy_max_size,
+                                metric=metric)
+
 def difference_gradient_analysis(
         image_a:MISImage,
         image_b:MISImage,
         relation:MISRelation,
-        strategy:str="full_grid", #TODO Could be a function?/Could have options for more complex strategies that plug in here.
-        strategy_max_size:int=5,
-        metric:Callable[[np.ndarray],float]=metric_squared_mean
-        )->dict:
+        strategy:Callable=strategy_full_grid,
+        metric:Callable[[np.ndarray],float]=metric_squared_mean,
+        **kwargs)->dict:
     """Compares differences of Images at multiple offsets to identify the best offset.
     - `strategy` includes `full_grid`, `local_minima`, and `gaussian_minimization`.
         - `full_grid` - search is performed from `relation`-`strategy_max` to `relation`+`strategy_max` > example: `strategy_max=3` will search a 7x7 offset space around the current offset.
         - TODO - `local_minima` - search starts with +1/-1 around `relation` and then moves to the observed minima and another +1/-1 is searched until a local minima is found.
         - TODO - `gaussian_minimization` - gaussian process regression is used to fit the minimization trend and efficiently reach the minimum value.
     - `metric` is pass-through parameter to `difference_compare`
+    
+    TODO rebuild docstring around "strategy" functions > all `strategy_` kwargs get passed to strategy, any `metric_` kwargs get passed to metric. etc.
     """
     ## Get image arrays
     image_a_array:np.ndarray=np.asarray(image_a).astype(np.int32)
@@ -86,23 +143,44 @@ def difference_gradient_analysis(
 
     ## Get initial relation
     initial_rectangular_relation=relation.get_relation('r')
-    if initial_rectangular_relation is None:
-        raise ValueError("Initial MISRelation missing rectangular relation.")
-    ## `full_grid` strategy
-    if strategy=="full_grid":
-        grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
-        grid=np.fromfunction(lambda x,y: np.array([x-strategy_max_size,y-strategy_max_size]),shape=grid_shape,dtype=int)
-        grid_results=np.full(grid_shape,np.nan)
-        grid_indeces=np.fromfunction(lambda x,y: np.array([x,y]),shape=grid_shape,dtype=int).reshape(2,-1)
+    # Moved checking for None into the strategy > some strategies will be able to handle a none value.
 
-        for i,grid_index in enumerate(grid_indeces.T):
-            check_offset_grid_shift=grid[:,grid_index[0],grid_index[1]]
-            check_offset=initial_rectangular_relation+check_offset_grid_shift
-            grid_results[grid_index[0],grid_index[1]]=difference_compare(image_a_array,image_b_array,
-                offset_ab=check_offset,
-                metric=metric)
-        optimized_location=grid_results.reshape(-1).argmin()
-        optimized_offset_shift=grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]
-        optimized_offset=tuple((initial_rectangular_relation+optimized_offset_shift).astype(int))
+    
+    ## `full_grid` strategy
+    # if strategy=="full_grid":
+    #     grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
+    #     grid=np.fromfunction(lambda x,y: np.array([x-strategy_max_size,y-strategy_max_size]),shape=grid_shape,dtype=int)
+    #     grid_results=np.full(grid_shape,np.nan)
+    #     grid_indeces=np.fromfunction(lambda x,y: np.array([x,y]),shape=grid_shape,dtype=int).reshape(2,-1)
+
+    #     for i,grid_index in enumerate(grid_indeces.T):
+    #         check_offset_grid_shift=grid[:,grid_index[0],grid_index[1]]
+    #         check_offset=initial_rectangular_relation+check_offset_grid_shift
+    #         grid_results[grid_index[0],grid_index[1]]=difference_compare(image_a_array,image_b_array,
+    #             offset_ab=check_offset,
+    #             metric=metric)
+    #     optimized_location=grid_results.reshape(-1).argmin()
+    #     optimized_offset_shift=grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]
+    #     optimized_offset=tuple((initial_rectangular_relation+optimized_offset_shift).astype(int))
+    # ## `scaled_grid` strategy > Checks an offset every n pixels where n is kwargs["grid_scale"]
+    # elif strategy=="scaled_grid":
+    #     grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
+    #     grid=np.fromfunction(lambda x,y: np.array([initial_rectangular_relation[0]+(kwargs["grid_scale"]*(x-strategy_max_size)),
+    #                                                                                             initial_rectangular_relation[1]+(kwargs["grid_scale"]*(y-strategy_max_size))]),
+    #                                                                                             shape=grid_shape,dtype=int)
+    #     grid_results=np.full(grid_shape,np.nan)
+    #     grid_indeces=np.fromfunction(lambda row,col: np.array([row,col]),shape=grid_shape,dtype=int).reshape(2,-1)
+
+    #     for i,grid_index in enumerate(grid_indeces.T):
+    #         check_offset=grid[:,grid_index[0],grid_index[1]]
+    #         grid_results[grid_index[0],grid_index[1]]=difference_compare(image_a_array,image_b_array,
+    #             offset_ab=check_offset,
+    #             metric=metric)
+    #     optimized_location=grid_results.reshape(-1).argmin()
+    #     optimized_offset=grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]
     ## Return values
-    return {"grid_results":grid_results,"optimized_offset":optimized_offset}
+    return strategy(image_a_array=image_a_array,
+            image_b_array=image_b_array,
+            rectangular_relation=initial_rectangular_relation,
+            metric=metric,
+            **kwargs)
