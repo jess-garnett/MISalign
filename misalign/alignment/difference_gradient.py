@@ -5,6 +5,9 @@ import numpy as np
 from collections.abc import Callable
 from misalign.model.image import MISImage
 from misalign.model.relation import MISRelation
+import misalign.canvas.canvas_rectangular as cr
+from matplotlib import pyplot as plt
+from matplotlib import colors
 
 #DONE transfer past work from `feature_diff_grad_alignment` branch
 #DONE update past work to be compatible with misalign 2
@@ -87,12 +90,10 @@ def difference_compare(
 def strategy_scaled_grid(
         image_a_array:np.ndarray,
         image_b_array:np.ndarray,
-        rectangular_relation:tuple[int,int]|None,
+        rectangular_relation:tuple[int,int],
         strategy_grid_scale:int,
         strategy_max_size:int=5,
         metric:Callable[[np.ndarray],float]=metric_squared_mean,)->dict:
-    if rectangular_relation is None:
-        raise ValueError("Starting rectangular relation cannot be None.")
     grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
     grid=np.fromfunction(lambda x,y: np.array([rectangular_relation[0]+(strategy_grid_scale*(x-strategy_max_size)),
                                                                                             rectangular_relation[1]+(strategy_grid_scale*(y-strategy_max_size))]),
@@ -107,7 +108,12 @@ def strategy_scaled_grid(
             metric=metric)
     optimized_location=grid_results.reshape(-1).argmin()
     optimized_offset=tuple([int(value) for value in grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]])
-    return {"grid":grid,"grid_results":grid_results,"optimized_offset":optimized_offset}
+    return {
+        "grid":grid,
+        "grid_results":grid_results,
+        "optimized_offset":optimized_offset,
+        "initial_offset":rectangular_relation
+        }
 def strategy_full_grid(
         image_a_array:np.ndarray,
         image_b_array:np.ndarray,
@@ -127,6 +133,7 @@ def difference_gradient_analysis(
         relation:MISRelation,
         strategy:Callable=strategy_full_grid,
         metric:Callable[[np.ndarray],float]=metric_squared_mean,
+        filter:Callable[[np.ndarray],np.ndarray]=lambda arr:arr,
         **kwargs)->dict:
     """Compares differences of Images at multiple offsets to identify the best offset.
     - `strategy` includes `full_grid`, `local_minima`, and `gaussian_minimization`.
@@ -138,49 +145,177 @@ def difference_gradient_analysis(
     TODO rebuild docstring around "strategy" functions > all `strategy_` kwargs get passed to strategy, any `metric_` kwargs get passed to metric. etc.
     """
     ## Get image arrays
-    image_a_array:np.ndarray=np.asarray(image_a).astype(np.int32)
-    image_b_array:np.ndarray=np.asarray(image_b).astype(np.int32)
+    image_a_array:np.ndarray=filter(np.asarray(image_a).astype(np.int32))
+    image_b_array:np.ndarray=filter(np.asarray(image_b).astype(np.int32))
 
     ## Get initial relation
     initial_rectangular_relation=relation.get_relation('r')
-    # Moved checking for None into the strategy > some strategies will be able to handle a none value.
 
-    
-    ## `full_grid` strategy
-    # if strategy=="full_grid":
-    #     grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
-    #     grid=np.fromfunction(lambda x,y: np.array([x-strategy_max_size,y-strategy_max_size]),shape=grid_shape,dtype=int)
-    #     grid_results=np.full(grid_shape,np.nan)
-    #     grid_indeces=np.fromfunction(lambda x,y: np.array([x,y]),shape=grid_shape,dtype=int).reshape(2,-1)
-
-    #     for i,grid_index in enumerate(grid_indeces.T):
-    #         check_offset_grid_shift=grid[:,grid_index[0],grid_index[1]]
-    #         check_offset=initial_rectangular_relation+check_offset_grid_shift
-    #         grid_results[grid_index[0],grid_index[1]]=difference_compare(image_a_array,image_b_array,
-    #             offset_ab=check_offset,
-    #             metric=metric)
-    #     optimized_location=grid_results.reshape(-1).argmin()
-    #     optimized_offset_shift=grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]
-    #     optimized_offset=tuple((initial_rectangular_relation+optimized_offset_shift).astype(int))
-    # ## `scaled_grid` strategy > Checks an offset every n pixels where n is kwargs["grid_scale"]
-    # elif strategy=="scaled_grid":
-    #     grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
-    #     grid=np.fromfunction(lambda x,y: np.array([initial_rectangular_relation[0]+(kwargs["grid_scale"]*(x-strategy_max_size)),
-    #                                                                                             initial_rectangular_relation[1]+(kwargs["grid_scale"]*(y-strategy_max_size))]),
-    #                                                                                             shape=grid_shape,dtype=int)
-    #     grid_results=np.full(grid_shape,np.nan)
-    #     grid_indeces=np.fromfunction(lambda row,col: np.array([row,col]),shape=grid_shape,dtype=int).reshape(2,-1)
-
-    #     for i,grid_index in enumerate(grid_indeces.T):
-    #         check_offset=grid[:,grid_index[0],grid_index[1]]
-    #         grid_results[grid_index[0],grid_index[1]]=difference_compare(image_a_array,image_b_array,
-    #             offset_ab=check_offset,
-    #             metric=metric)
-    #     optimized_location=grid_results.reshape(-1).argmin()
-    #     optimized_offset=grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]
-    ## Return values
     return strategy(image_a_array=image_a_array,
             image_b_array=image_b_array,
             rectangular_relation=initial_rectangular_relation,
             metric=metric,
             **kwargs)
+
+# Plotting & visualizing of DGA results
+
+def plot_grid_result(
+        dga_grid_results:dict,
+        overlays=True):
+    plt.imshow(dga_grid_results["grid_results"].T,
+        norm=colors.LogNorm(vmin=np.nanmin(dga_grid_results["grid_results"]),
+                            vmax=np.nanmax(dga_grid_results["grid_results"])),
+        extent=(np.min(dga_grid_results["grid"][0])-0.5,
+                np.max(dga_grid_results["grid"][0])+0.5,
+                np.max(dga_grid_results["grid"][1])+0.5,
+                np.min(dga_grid_results["grid"][1])-0.5,), #xmin,xmax,ymin,ymax
+        )
+    plt.xlabel("Rectangular X-offset")
+    plt.ylabel("Rectangular Y-offset")
+    plt.colorbar(label="Difference Gradient Analysis Metric")
+
+    if overlays:
+        legend=False
+        if "initial_offset" in dga_grid_results:
+            plt.scatter(
+                x=dga_grid_results["initial_offset"][0],
+                y=dga_grid_results["initial_offset"][1],
+                marker="o",
+                color="tab:red",
+                label=f'Initial: {dga_grid_results["initial_offset"]}')
+            legend=True
+        if "optimized_offset" in dga_grid_results:
+            plt.scatter(
+                x=dga_grid_results["optimized_offset"][0],
+                y=dga_grid_results["optimized_offset"][1],
+                marker="X",
+                color="tab:pink",
+                label=f'Optimized: {dga_grid_results["optimized_offset"]}')
+            legend=True
+        if "initial_offset" in dga_grid_results and "optimized_offset" in dga_grid_results:
+            plt.annotate("", 
+                xytext=dga_grid_results["initial_offset"],
+                xy=dga_grid_results["optimized_offset"],
+                arrowprops=dict(arrowstyle="->",color="w"),)
+        if legend:
+            plt.legend()
+
+def render_rectangular_pair(
+        image_a:MISImage,
+        image_b:MISImage,
+        relation:tuple[int,int],
+        weight=cr.weight_flat,
+        return_canvas_relative_offsets=False
+        ):
+    origin_relative_offsets=cr.rectangular_solve(
+        relations=[{"ref":(image_a.name,image_b.name),"rel":relation}],
+        image_names=[image_a.name,image_b.name],
+        origin=image_a.name
+        )
+
+    origin_relative_extents=cr.find_relative_extents(
+        image_names=[image_a.name,image_b.name],
+        origin_relative_offsets=origin_relative_offsets,
+        image_shapes={image_a.name:image_a.shape,image_b.name:image_b.shape}
+        )
+
+    canvas_extents, canvas_offsets=cr.resolve_extents(origin_relative_extents)
+
+    canvas_relative_offsets=cr.place_in_canvas(
+        image_names=[image_a.name,image_b.name],
+        origin_relative_offsets=origin_relative_offsets,
+        canvas_extents=canvas_extents,
+        canvas_offsets=canvas_offsets)
+
+    normalizer=cr.build_normalization(
+        image_arrays={image_a.name:image_a,image_b.name:image_b},
+        canvas_relative_offsets=canvas_relative_offsets,
+        canvas_extents=canvas_extents,
+        weight=cr.weight_flat,
+        )
+    render=cr.render_blended(
+        image_arrays={image_a.name:image_a,image_b.name:image_b},
+        canvas_relative_offsets=canvas_relative_offsets,
+        canvas_extents=canvas_extents,
+        weight=cr.weight_flat,
+        normalizer=normalizer,
+        )
+
+    if return_canvas_relative_offsets:
+        return render, canvas_relative_offsets
+    else:
+        return render
+
+
+def plot_rectangular_pair(
+        image_a:MISImage,
+        image_b:MISImage,
+        relation:tuple[int,int],
+        weight=cr.weight_flat,
+        focus_overlap=False,
+        focus_expand=50
+        ):
+    render, canvas_relative_offsets=render_rectangular_pair(
+        image_a=image_a,
+        image_b=image_b,
+        relation=relation,
+        weight=weight,
+        return_canvas_relative_offsets=True)
+    plt.imshow(render)
+    if focus_overlap:
+        a_spans,b_spans=overlap_spans(
+            offset_vector=relation,
+            a_shape=image_a.shape,
+            b_shape=image_b.shape)
+        plt.xlim(
+            left=canvas_relative_offsets[image_a.name][0]+a_spans[0][0]-focus_expand,
+            right=canvas_relative_offsets[image_a.name][0]+a_spans[0][1]+focus_expand)
+        plt.ylim(
+            top=canvas_relative_offsets[image_a.name][1]+a_spans[1][0]-focus_expand,
+            bottom=canvas_relative_offsets[image_a.name][1]+a_spans[1][1]+focus_expand)
+
+def plot_grid_difference_gradient_analysis(
+        image_a:MISImage,
+        image_b:MISImage,
+        dga_grid_result:dict,
+        figwidth=12,
+        figheight=4,
+        overlays=True
+        ):
+    if "initial_offset" in dga_grid_result:
+        fig,axs=plt.subplot_mosaic(
+            mosaic=[
+                ["dga_map","initial"],
+                ["dga_map","optimized"]])
+    else:
+        fig,axs=plt.subplot_mosaic(
+            mosaic=[
+                ["dga_map","optimized"]])
+    fig.set_figwidth(figwidth)
+    fig.set_figheight(figheight)
+    plt.tight_layout(pad=1.5,h_pad=2,w_pad=2)
+
+    plt.sca(axs["dga_map"])
+    plt.title("Difference Gradient Analysis")
+    plot_grid_result(
+        dga_grid_results=dga_grid_result,
+        overlays=overlays)
+
+    if "initial_offset" in dga_grid_result:
+        plt.sca(axs["initial"])
+        plt.title("Initial Flat Blend")
+        plot_rectangular_pair(
+            image_a=image_a,
+            image_b=image_b,
+            relation=dga_grid_result["initial_offset"],
+            weight=cr.weight_dfe,
+            focus_overlap=True)
+
+    plt.sca(axs["optimized"])
+    plt.title("Optimized Flat Blend")
+    plot_rectangular_pair(
+        image_a=image_a,
+        image_b=image_b,
+        relation=dga_grid_result["optimized_offset"],
+        weight=cr.weight_dfe,
+        focus_overlap=True)
