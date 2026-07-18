@@ -127,13 +127,18 @@ def strategy_full_grid(
                                 strategy_max_size=strategy_max_size,
                                 metric=metric)
 
+def filter_simple(image:cr.array_like)->np.ndarray:
+    return np.asarray(image).astype(np.int16)
+def filter_rgb_gray(image:cr.array_like)->np.ndarray:
+    return np.mean(image,axis=-1).astype(np.int16)
+
 def difference_gradient_analysis(
         image_a:MISImage,
         image_b:MISImage,
         relation:MISRelation,
         strategy:Callable=strategy_full_grid,
         metric:Callable[[np.ndarray],float]=metric_squared_mean,
-        filter:Callable[[np.ndarray],np.ndarray]=lambda arr:arr,
+        filter:Callable[[cr.array_like],np.ndarray]=filter_simple,
         **kwargs)->dict:
     """Compares differences of Images at multiple offsets to identify the best offset.
     - `strategy` includes `full_grid`, `local_minima`, and `gaussian_minimization`.
@@ -145,8 +150,8 @@ def difference_gradient_analysis(
     TODO rebuild docstring around "strategy" functions > all `strategy_` kwargs get passed to strategy, any `metric_` kwargs get passed to metric. etc.
     """
     ## Get image arrays
-    image_a_array:np.ndarray=filter(np.asarray(image_a).astype(np.int32))
-    image_b_array:np.ndarray=filter(np.asarray(image_b).astype(np.int32))
+    image_a_array:np.ndarray=filter(image_a)
+    image_b_array:np.ndarray=filter(image_b)
 
     ## Get initial relation
     initial_rectangular_relation=relation.get_relation('r')
