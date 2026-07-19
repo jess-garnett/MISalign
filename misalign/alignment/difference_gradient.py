@@ -15,10 +15,11 @@ from matplotlib import colors
 #TODO add DGA example to notebooks
 #TODO create relation/project interfaces as well as raw interfaces
 
-def metric_squared_mean(difference_array:np.ndarray)->float:
-    return np.mean(difference_array**2)
-def metric_absolute_mean(difference_array:np.ndarray)->float:
-    return np.mean(np.abs(difference_array,out=difference_array))
+def metric_squared_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+    return np.mean((overlap_a-overlap_b)**2)
+def metric_absolute_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+    diff=overlap_a-overlap_b
+    return np.mean(np.abs(diff,out=diff))
 
 def axis_span(OVn:int,an_max:int,bn_max:int):
     """Takes the offset vector of axis n, image a max value for axis n, and image b max value for axis n. Returns image a and image b overlap spans for axis n."""
@@ -59,11 +60,11 @@ def overlap_spans(offset_vector:tuple|np.ndarray,a_shape:tuple,b_shape:tuple):
 
     return (ax_span,ay_span),(bx_span,by_span)
 
-def difference_compare(
+def overlap_compare(
         image_a_array:np.ndarray,
         image_b_array:np.ndarray,
         offset_ab:tuple|np.ndarray,
-        metric:Callable[[np.ndarray],float],
+        metric:Callable[[np.ndarray,np.ndarray],float],
         return_difference=False)->float|tuple[float,np.ndarray]:
     """Compares difference of Image A and Image B using specified A-to-B relation and comparison metric.
     - `image_a` and `image_b` are numpy arrays from PIL images converted to type `int`
@@ -77,15 +78,16 @@ def difference_compare(
         a_spans,b_spans=overlap_spans(offset_ab,image_a_array.shape,image_b_array.shape)
     except ValueError:
         return float('nan')
-    ## Take difference of overlaps
-    difference_array=image_a_array[a_spans[1][0]:a_spans[1][1],a_spans[0][0]:a_spans[0][1]] - image_b_array[b_spans[1][0]:b_spans[1][1],b_spans[0][0]:b_spans[0][1]]
-    ## Get difference metric
-    difference_metric=metric(difference_array)
+    ## Take metric of overlaps
+    overlap_a=image_a_array[a_spans[1][0]:a_spans[1][1],a_spans[0][0]:a_spans[0][1]]
+    overlap_b=image_b_array[b_spans[1][0]:b_spans[1][1],b_spans[0][0]:b_spans[0][1]]
+    ## Get overlap metric
+    overlap_metric=metric(overlap_a,overlap_b)
     ## Return of values
     if return_difference:
-        return difference_metric, difference_array
+        return overlap_metric, overlap_a-overlap_b
     else:
-        return difference_metric
+        return overlap_metric
 
 def strategy_scaled_grid(
         image_a_array:np.ndarray,
@@ -93,7 +95,7 @@ def strategy_scaled_grid(
         rectangular_relation:tuple[int,int],
         strategy_grid_scale:int,
         strategy_max_size:int=5,
-        metric:Callable[[np.ndarray],float]=metric_squared_mean,)->dict:
+        metric:Callable[[np.ndarray,np.ndarray],float]=metric_squared_mean,)->dict:
     grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
     grid=np.fromfunction(lambda x,y: np.array([rectangular_relation[0]+(strategy_grid_scale*(x-strategy_max_size)),
                                                                                             rectangular_relation[1]+(strategy_grid_scale*(y-strategy_max_size))]),
@@ -103,7 +105,7 @@ def strategy_scaled_grid(
 
     for i,grid_index in enumerate(grid_indeces.T):
         check_offset=grid[:,grid_index[0],grid_index[1]]
-        grid_results[grid_index[0],grid_index[1]]=difference_compare(image_a_array,image_b_array,
+        grid_results[grid_index[0],grid_index[1]]=overlap_compare(image_a_array,image_b_array,
             offset_ab=check_offset,
             metric=metric)
     optimized_location=grid_results.reshape(-1).argmin()
@@ -119,7 +121,7 @@ def strategy_full_grid(
         image_b_array:np.ndarray,
         rectangular_relation:tuple[int,int],
         strategy_max_size:int=5,
-        metric:Callable[[np.ndarray],float]=metric_squared_mean,)->dict:
+        metric:Callable[[np.ndarray,np.ndarray],float]=metric_squared_mean,)->dict:
     return strategy_scaled_grid(image_a_array=image_a_array,
                                 image_b_array=image_b_array,
                                 rectangular_relation=rectangular_relation,
@@ -137,7 +139,7 @@ def difference_gradient_analysis(
         image_b:MISImage,
         relation:MISRelation,
         strategy:Callable=strategy_full_grid,
-        metric:Callable[[np.ndarray],float]=metric_squared_mean,
+        metric:Callable[[np.ndarray,np.ndarray],float]=metric_squared_mean,
         filter:Callable[[cr.array_like],np.ndarray]=filter_simple,
         **kwargs)->dict:
     """Compares differences of Images at multiple offsets to identify the best offset.
