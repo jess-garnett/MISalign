@@ -18,7 +18,7 @@ from matplotlib import colors
 def metric_squared_mean(difference_array:np.ndarray)->float:
     return np.mean(difference_array**2)
 def metric_absolute_mean(difference_array:np.ndarray)->float:
-    return np.mean(np.abs(difference_array))
+    return np.mean(np.abs(difference_array,out=difference_array))
 
 def axis_span(OVn:int,an_max:int,bn_max:int):
     """Takes the offset vector of axis n, image a max value for axis n, and image b max value for axis n. Returns image a and image b overlap spans for axis n."""
@@ -154,7 +154,10 @@ def difference_gradient_analysis(
     image_b_array:np.ndarray=filter(image_b)
 
     ## Get initial relation
-    initial_rectangular_relation=relation.get_relation('r')
+    try:
+        initial_rectangular_relation=relation.get_relation('r')
+    except ValueError:
+        initial_rectangular_relation=None
 
     return strategy(image_a_array=image_a_array,
             image_b_array=image_b_array,
