@@ -6,8 +6,13 @@ from collections.abc import Callable
 from misalign.model.image import MISImage
 from misalign.model.relation import MISRelation
 import misalign.canvas.canvas_rectangular as cr
+
 from matplotlib import pyplot as plt
 from matplotlib import colors
+
+from scipy.interpolate import NearestNDInterpolator
+from skimage.morphology import skeletonize, dilation
+import logging
 
 #DONE transfer past work from `feature_diff_grad_alignment` branch
 #DONE update past work to be compatible with misalign 2
@@ -329,3 +334,253 @@ def plot_grid_difference_gradient_analysis(
         relation=dga_grid_result["optimized_offset"],
         weight=cr.weight_dfe,
         focus_overlap=True)
+
+# DGA Full Search
+
+def metric_inverse_std_adjusted_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+    """High value when standard deviation of image is low > weights against low-feature regions"""
+    def adjusted_inverse_std(overlap):
+        return (1/(np.max((np.std(overlap)-20,1))))**0.5
+    return (adjusted_inverse_std(overlap_a)+adjusted_inverse_std(overlap_b))/2
+
+def metric_squared_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+    """High value when misaligned features in overlap."""
+    return np.mean((overlap_a-overlap_b)**2)/(255**2)
+    
+def metric_difference_max_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+    """High value when not perfectly aligned"""
+    diff=(overlap_a-overlap_b).astype(np.int32)
+    np.abs(diff,out=diff)
+    return np.max(diff)/(255)
+
+def metric_combined_balanced(overlap_a:np.ndarray,overlap_b:np.ndarray):
+    return np.sum([
+        metric_difference_max_norm(overlap_a,overlap_b),
+        metric_squared_mean_norm(overlap_a,overlap_b)**0.1,
+        metric_inverse_std_adjusted_norm(overlap_a,overlap_b),
+    ])
+
+def interpolate_nearest_neighbor(
+    grid:np.ndarray,
+    grid_results:np.ndarray,
+    ):
+    interp=NearestNDInterpolator(
+        np.array([
+            grid[0].flatten()[~np.isnan(grid_results.flatten())],
+            grid[1].flatten()[~np.isnan(grid_results.flatten())]]).T,
+        grid_results.flatten()[~np.isnan(grid_results.flatten())])
+    interp_results=interp(grid[0].flatten(),grid[1].flatten()).reshape(grid_results.shape)
+    return interp_results
+
+def strategy_full_search_grid(
+        image_a_array:np.ndarray,
+        image_b_array:np.ndarray,
+        metric,
+        strategy_interpolate=interpolate_nearest_neighbor,
+        strategy_initial_grid_number=20,
+        strategy_edge_avoid=20,
+        strategy_logger:logging.Logger=logging.getLogger(),
+        **kwargs)->dict:
+
+    # Calculate full search size
+    x_min=-image_b_array.shape[1]+1+strategy_edge_avoid
+    x_max=image_a_array.shape[1]-strategy_edge_avoid
+    y_min=-image_b_array.shape[0]+1+strategy_edge_avoid
+    y_max=+image_a_array.shape[0]-strategy_edge_avoid
+
+    # Generate grid of offsets
+    grid: np.ndarray=np.stack(
+        arrays=np.meshgrid(
+            np.arange(x_min,x_max),
+            np.arange(y_min,y_max)
+            )
+        )
+    # Get column and row indices for grid of offsets
+    grid_columns,grid_rows=np.meshgrid(
+            np.arange(0,grid.shape[2]),
+            np.arange(0,grid.shape[1]),
+            )
+    # Create `nan`-filled array for results of checking offsets
+    grid_results=np.full(grid.shape[1:],np.nan)
+
+
+    # Define function that applies metric at iy,ix and updates grid_results[iy,ix]
+    def check_offset(iy,ix):
+        grid_results[iy,ix]=overlap_compare(
+                    image_a_array=image_a_array,
+                    image_b_array=image_b_array,
+                    offset_ab=grid[:,iy,ix],
+                    metric=metric)
+    
+
+    # Offsets that match grid columns.
+    match_col:np.ndarray=np.isin(
+        element=grid_columns,
+        test_elements=np.linspace(start=0,stop=grid.shape[2]-1,num=strategy_initial_grid_number).astype(int))
+
+    # Offsets that match grid rows.
+    match_row:np.ndarray=np.isin(
+        element=grid_rows,
+        test_elements=np.linspace(start=0,stop=grid.shape[1]-1,num=strategy_initial_grid_number).astype(int))
+
+    # Positions that match initial grid spacing.
+    match_all:np.ndarray=np.all([match_col,match_row],axis=0)
+
+    # Log initial check.
+    strategy_logger.info(f"Initial Number: {strategy_initial_grid_number} Checking: {np.sum(match_all):,} / {grid_results.size:,}")
+    # print(f"Initial Number: {strategy_initial_grid_number} Checking: {np.sum(match_all)} / {grid_results.size:,}")
+
+    # Check initial set of offsets.
+    for iy,ix in zip(grid_rows[match_all].flatten(),grid_columns[match_all].flatten()):
+        check_offset(iy,ix)
+
+    # Interpolate on initial set of offset results.
+    interp_results=strategy_interpolate(grid=grid,grid_results=grid_results)
+
+    # Define function that does quantile and grid filtering and checking.
+    def quantile_filter_check(
+        interp_results:np.ndarray,
+        quantile:float,
+        number:int|None=None,
+        spacing:int|None=None,
+        skeleton:bool=False,
+        check_all=1000):
+        #TODO could add a maximum number here so if this is selecting i.e. 10,000 points it reduce to 1000.
+
+        # Quantile for threshold.
+        quantile_cutoff=np.quantile(interp_results,quantile)
+
+        # Interpolation results within quantile threshold.
+        match_quantile:np.ndarray=interp_results<=quantile_cutoff
+
+        # Offsets that have not been checked.
+        match_unchecked:np.ndarray=np.isnan(grid_results)
+
+        # Offsets that have not been checked and are within quantile threshold.
+        match_remaining=np.all([match_quantile,match_unchecked],axis=0)
+
+        # If the total remaining positions are less than the `check_all` threshold, just check all of them.
+        if np.sum(match_remaining)<=check_all:
+            match_all=match_remaining
+            strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Checking all: {np.sum(match_all):,} / {np.sum(match_remaining):,}")
+        
+        # Otherwise, apply reducing filter and then check.
+        else:
+            # Reducing filter based on an evenly spaced grid with a certain number of points.
+        
+            #TODO consider splitting this into grid matching function > take a row array and a col array to match against > would also integrate initial grid
+            if number is not None:
+                # Offsets that match grid columns.
+                match_col=np.isin(element=grid_columns,
+                    test_elements=np.linspace(start=0,stop=grid.shape[2]-1,num=number).astype(int))
+
+                # Offsets that match grid rows.
+                match_row=np.isin(element=grid_rows,
+                    test_elements=np.linspace(start=0,stop=grid.shape[1]-1,num=number).astype(int))
+
+                # Offsets that match grid search positions.
+                match_all=np.all([match_col,match_row,match_remaining],axis=0)
+                
+                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Checking: {np.sum(match_all):,} / {np.sum(match_remaining):,}")
+            elif spacing is not None:
+                # Offsets that match grid columns.
+                match_col=np.isin(element=grid_columns,
+                    test_elements=np.arange(0,stop=grid.shape[2]-1,step=spacing).astype(int))
+
+                # Offsets that match grid rows.
+                match_row=np.isin(element=grid_rows,
+                    test_elements=np.arange(0,stop=grid.shape[1]-1,step=spacing).astype(int))
+
+                # Offsets that match grid search positions.
+                match_all=np.all([match_col,match_row,match_remaining],axis=0)
+
+                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} Spacing: {spacing} Checking: {np.sum(match_all)} / {np.sum(match_remaining):,}")
+            elif skeleton:
+                # Get spine of quantile filtered region(s).
+                match_skeleton=skeletonize(dilation(match_quantile,np.ones((81,81))))
+                    #dilation(skeletonize(match_quantile))
+
+                # # Overlay spacing 3 on 3 wide line to get point every 3 spots along line
+                # spacing=3
+                # # Offsets that match grid columns.
+                # match_col=np.isin(element=grid_columns,
+                #     test_elements=np.arange(0,stop=grid.shape[2]-1,step=spacing).astype(int))
+
+                # # Offsets that match grid rows.
+                # match_row=np.isin(element=grid_rows,
+                #     test_elements=np.arange(0,stop=grid.shape[1]-1,step=spacing).astype(int))
+
+                # Offsets in spine without repeats
+                match_all=np.all([match_skeleton,match_remaining],axis=0) #match_col,match_row,
+                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Skeleton - Checking: {np.sum(match_all)} / {np.sum(match_remaining):,}")
+            else:
+                #TODO decide if this should be check all behavior implicitely or should be an error for not including number/spacing
+                # If neighter number or spacing are given then brute force check all remaining offsets.
+                match_all=match_remaining
+                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Checking all: {np.sum(match_all)} / {np.sum(match_remaining):,}")
+        
+        # Check set of offsets
+        for iy,ix in zip(grid_rows[match_all].flatten(),grid_columns[match_all].flatten()):
+            check_offset(iy,ix)
+
+        # Return Interpolation
+        return strategy_interpolate(
+            grid=grid,
+            grid_results=grid_results
+            )
+    
+    # Strategy to use for full search.
+    strategy_full_search_progression: list[dict]=[
+        dict(quantile=0.1,spacing=32,), #number=100
+        dict(quantile=0.01,spacing=16,), #number=200
+        dict(quantile=0.001,spacing=8,), #number=400
+        dict(quantile=0.0001,spacing=4,), #number=800
+        dict(compare=1), #number=800
+        dict(quantile=0.05,skeleton=True,),
+        dict(compare=1), #number=800
+        dict(quantile=0.05,spacing=16,), #number=200
+        dict(quantile=0.005,spacing=8,), #number=400
+        dict(quantile=0.0005,spacing=4,), #number=800
+        dict(compare=1), #number=800
+        dict(quantile=0.001,spacing=4,check_all=10000), #number=800
+        ]
+
+    # Looping through full search progression
+    for step in strategy_full_search_progression:
+
+        # If `compare` not in `step` then pass `step` as kwargs to quantile filter check.
+        if "compare" not in step:
+            interp_results:np.ndarray=quantile_filter_check(
+                interp_results=interp_results,
+                **step
+                )
+        
+        # Otherwise (i.e. `compare` in `step`) check if minimum metric is lower than comparison threshold.
+        else:
+            # If minimum metric is less than compare threshold, a near-true-solution has probably been found.
+                # Do any final search and then break the progression.
+                # If not then continue.
+            if np.nanmin(grid_results)<=step["compare"]:
+                #TODO potentially a final search to make sure area near minimum point has been checked.
+                strategy_logger.info(f"Metric: {np.nanmin(grid_results):0.3f} is below threshold {step["compare"]} - Stopping.")
+                break
+            else:
+                strategy_logger.info(f"Metric: {np.nanmin(grid_results):0.3f} is above threshold {step["compare"]} - Continuing.")
+                pass
+
+    # Get indeces of optimized offset
+    optimized_location:tuple=np.unravel_index(np.nanargmin(grid_results), grid_results.shape)
+        # `tolist` also does conversion into python integer
+    # Get optimized offset
+    optimized_offset:tuple[int,int]=tuple(grid[:,optimized_location[0],optimized_location[1]].tolist())
+
+    strategy_logger.info(f"Optimized metric: {np.nanmin(grid_results):0.3f}")
+
+    #TODO add option for including initial regular relation in initial grid OR in interpolation at the very end.
+
+    return {
+        "grid":grid,
+        "grid_results":grid_results,
+        "interp_results":interp_results,
+        "optimized_offset":optimized_offset,
+        }
