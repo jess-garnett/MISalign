@@ -11,7 +11,8 @@ from matplotlib import pyplot as plt
 from matplotlib import colors
 
 from scipy.interpolate import NearestNDInterpolator
-from skimage.morphology import skeletonize, dilation
+from skimage.morphology import skeletonize, dilation, footprints
+from skimage.filters import gaussian
 import logging
 
 #DONE transfer past work from `feature_diff_grad_alignment` branch
@@ -497,22 +498,24 @@ def strategy_full_search_grid(
                 strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} Spacing: {spacing} Checking: {np.sum(match_all)} / {np.sum(match_remaining):,}")
             elif skeleton:
                 # Get spine of quantile filtered region(s).
-                match_skeleton=skeletonize(dilation(match_quantile,np.ones((81,81))))
-                    #dilation(skeletonize(match_quantile))
+                skeleton_smooth=gaussian(interp_results,sigma=10) # Smooth out interpolation to avoid excess branches.
+                skeleton_binary=skeleton_smooth<quantile_cutoff # Smooth interpolation results within quantile threshold.
+                skeleton_spine=skeletonize(skeleton_binary) # Spine of skeleton
+                match_skeleton=dilation(skeleton_spine,footprints.disk(1)) #expanded
 
-                # # Overlay spacing 3 on 3 wide line to get point every 3 spots along line
-                # spacing=3
-                # # Offsets that match grid columns.
-                # match_col=np.isin(element=grid_columns,
-                #     test_elements=np.arange(0,stop=grid.shape[2]-1,step=spacing).astype(int))
+                # Overlay spacing 3 on 3 wide line to sparse out line slightly
+                spacing=3
+                # Offsets that match grid columns.
+                match_col=np.isin(element=grid_columns,
+                    test_elements=np.arange(0,stop=grid.shape[2]-1,step=spacing).astype(int))
 
-                # # Offsets that match grid rows.
-                # match_row=np.isin(element=grid_rows,
-                #     test_elements=np.arange(0,stop=grid.shape[1]-1,step=spacing).astype(int))
+                # Offsets that match grid rows.
+                match_row=np.isin(element=grid_rows,
+                    test_elements=np.arange(0,stop=grid.shape[1]-1,step=spacing).astype(int))
 
                 # Offsets in spine without repeats
-                match_all=np.all([match_skeleton,match_remaining],axis=0) #match_col,match_row,
-                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Skeleton - Checking: {np.sum(match_all)} / {np.sum(match_remaining):,}")
+                match_all=np.all([match_col,match_row,match_skeleton,match_remaining],axis=0) #match_col,match_row,
+                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Skeleton - Checking: {np.sum(match_all)} / {np.sum(match_skeleton):,}")
             else:
                 #TODO decide if this should be check all behavior implicitely or should be an error for not including number/spacing
                 # If neighter number or spacing are given then brute force check all remaining offsets.
@@ -537,6 +540,7 @@ def strategy_full_search_grid(
         dict(quantile=0.0001,spacing=4,), #number=800
         dict(compare=1), #number=800
         dict(quantile=0.05,skeleton=True,),
+        dict(quantile=0.0001,spacing=4,), #number=800
         dict(compare=1), #number=800
         dict(quantile=0.05,spacing=16,), #number=200
         dict(quantile=0.005,spacing=8,), #number=400
@@ -562,6 +566,7 @@ def strategy_full_search_grid(
                 # If not then continue.
             if np.nanmin(grid_results)<=step["compare"]:
                 #TODO potentially a final search to make sure area near minimum point has been checked.
+                    # possible use full grid 5x5 on optimized location and inject into the grid results.
                 strategy_logger.info(f"Metric: {np.nanmin(grid_results):0.3f} is below threshold {step["compare"]} - Stopping.")
                 break
             else:
