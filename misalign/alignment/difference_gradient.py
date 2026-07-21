@@ -178,7 +178,7 @@ def difference_gradient_analysis(
 def plot_grid_result(
         dga_grid_results:dict,
         overlays=True):
-    plt.imshow(dga_grid_results["grid_results"].T,
+    plt.imshow(dga_grid_results["grid_results"],
         norm=colors.LogNorm(vmin=np.nanmin(dga_grid_results["grid_results"]),
                             vmax=np.nanmax(dga_grid_results["grid_results"])),
         extent=(np.min(dga_grid_results["grid"][0])-0.5,
@@ -343,6 +343,13 @@ def metric_inverse_std_adjusted_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)-
     def adjusted_inverse_std(overlap):
         return (1/(np.max((np.std(overlap)-20,1))))**0.5
     return (adjusted_inverse_std(overlap_a)+adjusted_inverse_std(overlap_b))/2
+    
+def metric_highlow_inverse_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+    """High value when difference of maximum and minimum intensity of overlap region is low > weights against low-feature regions"""
+    def metric(overlap):
+        return  np.min([1/((np.max(overlap)-np.min(overlap))/16),1])
+        # variation of 16 > value of 1 > variation of 32 > value of 1/2 > etc. variation of 80 > 0.2
+    return np.max([metric(overlap_a),metric(overlap_b)])
 
 def metric_squared_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
     """High value when misaligned features in overlap."""
@@ -381,6 +388,7 @@ def strategy_full_search_grid(
         strategy_initial_grid_number=20,
         strategy_edge_avoid=20,
         strategy_logger:logging.Logger=logging.getLogger(),
+        strategy_metric_comparison:float=1,
         **kwargs)->dict:
 
     # Calculate full search size
@@ -533,21 +541,24 @@ def strategy_full_search_grid(
             )
     
     # Strategy to use for full search.
-    strategy_full_search_progression: list[dict]=[
-        dict(quantile=0.1,spacing=32,), #number=100
-        dict(quantile=0.01,spacing=16,), #number=200
-        dict(quantile=0.001,spacing=8,), #number=400
-        dict(quantile=0.0001,spacing=4,), #number=800
-        dict(compare=1), #number=800
-        dict(quantile=0.05,skeleton=True,),
-        dict(quantile=0.0001,spacing=4,), #number=800
-        dict(compare=1), #number=800
-        dict(quantile=0.05,spacing=16,), #number=200
-        dict(quantile=0.005,spacing=8,), #number=400
-        dict(quantile=0.0005,spacing=4,), #number=800
-        dict(compare=1), #number=800
-        dict(quantile=0.001,spacing=4,check_all=10000), #number=800
-        ]
+    if "strategy_full_search_progression" in kwargs:
+        strategy_full_search_progression=kwargs["strategy_full_search_progression"]
+    else:
+        strategy_full_search_progression: list[dict]=[
+            dict(quantile=0.1,spacing=32,), #number=100
+            dict(quantile=0.01,spacing=16,), #number=200
+            dict(quantile=0.001,spacing=8,), #number=400
+            dict(quantile=0.0001,spacing=4,), #number=800
+            dict(compare=strategy_metric_comparison),
+            dict(quantile=0.05,skeleton=True,),
+            dict(quantile=0.0001,spacing=4,), #number=800
+            dict(compare=strategy_metric_comparison),
+            dict(quantile=0.05,spacing=16,), #number=200
+            dict(quantile=0.005,spacing=8,), #number=400
+            dict(quantile=0.0005,spacing=4,), #number=800
+            dict(compare=strategy_metric_comparison),
+            dict(quantile=0.001,spacing=4,check_all=10000), #number=800
+            ]
 
     # Looping through full search progression
     for step in strategy_full_search_progression:
