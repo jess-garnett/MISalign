@@ -103,7 +103,7 @@ def strategy_scaled_grid(
         strategy_max_size:int=5,
         metric:Callable[[np.ndarray,np.ndarray],float]=metric_squared_mean,)->dict:
     grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
-    grid=np.fromfunction(lambda x,y: np.array([rectangular_relation[0]+(strategy_grid_scale*(x-strategy_max_size)),
+    grid=np.fromfunction(lambda y,x: np.array([rectangular_relation[0]+(strategy_grid_scale*(x-strategy_max_size)),
                                                                                             rectangular_relation[1]+(strategy_grid_scale*(y-strategy_max_size))]),
                                                                                             shape=grid_shape,dtype=int)
     grid_results=np.full(grid_shape,np.nan)
