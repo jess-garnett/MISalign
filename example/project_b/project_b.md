@@ -1,6 +1,6 @@
 Project B includes 39 images of two cut pieces of zinc-galvanized low-carbon steel bar(https://www.mcmaster.com/8962K13-8962K23/) mounted in resin, ground(silicon carbide 60, 80, 120, 320, 600, 800, and 1200 grit), and polished(polycrystalline diamond 1um). They were captured with the same 5x objective lens as `project_a`. These images were taken on 2024-03-08 by Jessica Garnett.
 
-Below are example modifications to the notebooks to demo thisproject.
+Below are example modifications to the notebooks to demo this project.
 
 Setup code in `setup.ipynb`:
 ```
