@@ -1,0 +1,79 @@
+{
+    "relations": [],
+    "images": [
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d00.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d01.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d02.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d03.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d04.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d05.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d06.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d07.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d08.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d09.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d10.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d11.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d12.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d13.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d14.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d15.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_d/image_d16.tif"
+        }
+    ],
+    "calibration": {
+        "pixel": 600,
+        "length": 1,
+        "length_unit": "mm"
+    },
+    "file_path": "..\\example\\project_d\\demo-project_d-no_relations-calibrated.mis.json"
+}
