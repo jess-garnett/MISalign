@@ -1,6 +1,6 @@
 [project]
 name = "misalign"
-version = "2.2.0.dev0"
+version = "2.2.0.dev1"
 description = "A Metallography Image Software for Alignment."
 readme = "README.md"
 authors = [
@@ -29,6 +29,10 @@ dev = [
     "ty>=0.0.35",
     "uv>=0.11.12",
     "ipykernel<7", # freezing issue in VS Code
+    "pandas>=3.0.3", # temporarily in development dependency group until core or extra dependency is decided.
+    "seaborn>=0.13.2", # temporarily in development dependency group until core or extra dependency is decided.
+    "scipy>=1.18.0", # temporarily in development dependency group until core or extra dependency is decided.
+    "scikit-image>=0.26.0", # temporarily in development dependency group until core or extra dependency is decided.
 ]
 docs = [
     "myst-nb>=1.4.0",
