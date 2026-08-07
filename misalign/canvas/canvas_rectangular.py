@@ -589,7 +589,8 @@ def render_blended_project(
     canvas_extents:dict,
     weight,
     image_names:list[str]|None=None,
-    return_image:bool=True)->PILImage.Image | np.ndarray:
+    return_image:bool=True,
+    depth:int|None=None)->PILImage.Image | np.ndarray:
     """
     Renders a canvas from a project with blending.
 
@@ -610,6 +611,9 @@ def render_blended_project(
         If `None` all images in project will be used.
     return_image : bool
         Wether to return an image or an array. `True` by default.
+    depth : int|None
+        Depth of images and canvas or `None` by default.
+        If `None` depth determined from the shape of the first image in image_arrays.values().
     
     Returns
     -------
