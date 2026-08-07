@@ -1,0 +1,35 @@
+{
+    "relations": [],
+    "images": [
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_f/image_f03.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_f/image_f04.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_f/image_f05.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_f/image_f06.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_f/image_f07.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_f/image_f08.png"
+        }
+    ],
+    "calibration": {
+        "pixel": 1,
+        "length": 50.061,
+        "length_unit": "nm"
+    },
+    "file_path": "..\\example\\project_f\\demo-project_f-no_relations-calibrated.mis.json"
+}

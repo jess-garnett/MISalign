@@ -86,7 +86,10 @@ def image_with_scale_bar(image:Path|str|Any,
         array=np.asarray(image)
     
     plt.figure()
-    plt.imshow(array)
+    if len(array.shape)==2:
+        plt.imshow(array,cmap="gray",vmin=np.iinfo(array.dtype).min,vmax=np.iinfo(array.dtype).max)
+    else:
+        plt.imshow(array)
     add_scale_bar(plt.gca(),scale_measurement,calibration,**AnchoredSizeBar_kwargs)
     plt.gca().set_axis_off()
     plt.show()
@@ -126,3 +129,100 @@ def save_calibrated_image(image_filepath:Path|str,scale_dpi:int):
         Scaled image DPI.
     """
     plt.savefig(image_filepath,bbox_inches="tight",pad_inches=0,dpi=scale_dpi)
+
+# Image Overlays
+
+def add_image_overlays(
+    image_names:list,
+    canvas_relative_offsets:dict[str,tuple[int,int]],
+    image_shapes,
+    boundary=True,
+    boundary_kwargs:dict|None=None,
+    label=True,
+    label_kwargs:dict|None=None,)->None:
+    """
+    Adds image-boundary overlays to a matplotlib imshow of a canvas.
+
+    Parameters
+    ----------
+    image_names : list[str]
+        List of image names.
+    canvas_relative_offsets : dict[str, tuple[int, int]]
+        Dictionary of the form `"image_name":(canvas-relative x, canvas-relative y)`
+    image_shapes : dict
+        Dictionary of the form `"image_name":(rows, columns, ...)`
+    boundary : bool
+        Wether to draw the image boundaries. `True` by default.
+    boundary_kwargs : dict
+        Keyword arguments to be passed to `matplotlib.patches.Rectangle`.
+        Default: {'fill':False,'edgecolor':'r'}
+    label : bool
+        Wether to draw the image labels. `True` by default.
+    label_kwargs : dict
+        Keyword arguments to be passed to `matplotlib.pyplot.text`.
+        Default: {'backgroundcolor':(1,1,1,0.25),'fontsize':'small'}
+    """
+    if boundary_kwargs is None:
+        boundary_kwargs={'fill':False,'edgecolor':'r'}
+    if label_kwargs is None:
+        label_kwargs={'backgroundcolor':(1,1,1,0.25),'fontsize':'small'}
+    for image_name in image_names:
+        if boundary:
+            rectangle=plt.Rectangle(
+                xy=canvas_relative_offsets[image_name],
+                width=image_shapes[image_name][1],
+                height=image_shapes[image_name][0],
+                **boundary_kwargs)
+            plt.gca().add_artist(rectangle)
+        if label:
+            text=plt.Text(
+                canvas_relative_offsets[image_name][0]+(0.5*image_shapes[image_name][1]),
+                canvas_relative_offsets[image_name][1]+(0.5*image_shapes[image_name][0]),
+                image_name,
+                horizontalalignment='center',verticalalignment='center',
+                **label_kwargs)
+            plt.gca().add_artist(text)
+def add_image_overlays_project(
+    project, #:MISProject
+    canvas_relative_offsets:dict[str,tuple[int,int]],
+    image_names:list[str]|None=None,
+    boundary=True,
+    boundary_kwargs:dict|None=None,
+    label=True,
+    label_kwargs:dict|None=None,)->None:
+    """
+    Adds image-boundary overlays to a matplotlib imshow of a canvas.
+
+    Parameters
+    ----------
+    project : MISProject
+        A MISProject with images.
+    canvas_relative_offsets : dict[str, tuple[int, int]]
+        Dictionary of the form `"image_name":(canvas-relative x, canvas-relative y)`
+    image_names : list[str] | None
+        List of image names or `None` by default.
+        If `None` all images in project will be used.
+    boundary : bool
+        Wether to draw the image boundaries. `True` by default.
+    boundary_kwargs : dict
+        Keyword arguments to be passed to `matplotlib.patches.Rectangle`.
+        Default: {'fill':False,'edgecolor':'r'}
+    label : bool
+        Wether to draw the image labels. `True` by default.
+    label_kwargs : dict
+        Keyword arguments to be passed to `matplotlib.pyplot.text`.
+        Default: {'backgroundcolor':(1,1,1,0.25),'fontsize':'small'}
+    """
+    if image_names is None:
+        image_names=project.get_image_names()
+    image_shapes={image_name:project.get_image(image_name).shape for image_name in image_names}
+    add_image_overlays(
+        image_names=image_names,
+        canvas_relative_offsets=canvas_relative_offsets,
+        image_shapes=image_shapes,
+        boundary=boundary,
+        boundary_kwargs=boundary_kwargs,
+        label=label,
+        label_kwargs=label_kwargs,)
+
+# TODO add transpose handling to these

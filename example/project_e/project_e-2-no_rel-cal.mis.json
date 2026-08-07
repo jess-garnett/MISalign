@@ -1,0 +1,75 @@
+{
+    "relations": [],
+    "images": [
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e000.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e001.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e002.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e003.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e004.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e005.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e006.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e007.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e008.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e009.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e010.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e011.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e012.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e013.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e014.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_e/image_e015.tif"
+        }
+    ],
+    "calibration": {
+        "pixel": 1,
+        "length": 49.60938,
+        "length_unit": "nm"
+    },
+    "file_path": "..\\example\\project_e\\demo-project_e-2-no_rel-cal.mis.json"
+}

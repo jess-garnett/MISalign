@@ -14,6 +14,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [2.2.0.dev0]
+### Added
+- Additional example projects.
+    - Description of project a.
+    - project b - a sequential low-feature and high-overlap optical microscopy data set.
+    - project c - a looped and branched medium-feature and medium-overlap optical microscopy data set.
+    - project d - a sequential irregular grid high-feature medium-overlap optical microscopy data set.
+    - project e - two sequential linear high-feature medium-overlap backscattered electron(BSE) scanning electron microscope(SEM) data sets.
+    - project f - a sequential grid high-feature medium-overlap backscattered electron(BSE) and secondary electron(SE) scanning electron microscope(SEM) data set.
+- `MISImage` array filtering and `MISProject.set_image_filter(filter)` for adding filters to images. [#14](https://github.com/jess-garnett/MISalign/issues/14)
+    - Enables simple cropping(i.e. remove information bar) and type conversion(i.e. 16 bit image to 8 bit)
+- Added image boundary overlays and image label overlays to matplotlib-based canvas displays in `scale_bar.py`.
+- Added save with 10 to 1 downscaling option to the matplotlib-based canvas display in `render.ipynb`.
+### Changed
+- `canvas_rectangular.py` render can work with 2D/grayscale and 3D image depths other than `depth=3`/RGB. [#12](https://github.com/jess-garnett/MISalign/issues/12)
+    - Added handling for 2D/grayscale images in `scale_bar.py` and `interactive_manual.py`
+### Deprecated
+### Removed
+### Fixed
+- `file_contains` and `file_notcontains` updated to work properly with Path objects in `setup.ipynb`.
 
 ## [2.1.0] - 2026-06-26
 Primarily docstring and documentation development but during that process some code fixes, or renamings for clarity, were done.

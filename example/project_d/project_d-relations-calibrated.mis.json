@@ -1,0 +1,704 @@
+{
+    "relations": [
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d00.tif",
+                "image_d01.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1359.7569643721633,
+                        899.9996355850081
+                    ],
+                    [
+                        91.00564189945513,
+                        913.4986320337858
+                    ]
+                ],
+                [
+                    [
+                        1523.6627126933895,
+                        1128.7377855742716
+                    ],
+                    [
+                        254.2461089051208,
+                        1144.2150664733701
+                    ]
+                ],
+                [
+                    [
+                        1428.319489871347,
+                        485.6166589867131
+                    ],
+                    [
+                        156.39295608847442,
+                        500.6932937938273
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d01.tif",
+                "image_d02.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1432.405907284349,
+                        657.2461903327976
+                    ],
+                    [
+                        195.1649600346928,
+                        711.1698866447272
+                    ]
+                ],
+                [
+                    [
+                        1436.3010897182771,
+                        1111.8570954925276
+                    ],
+                    [
+                        202.89967110650767,
+                        1167.9972144042736
+                    ]
+                ],
+                [
+                    [
+                        1430.1714635987742,
+                        892.2121595436696
+                    ],
+                    [
+                        193.66824159550328,
+                        947.3660490912689
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d02.tif",
+                "image_d03.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1448.5603419572833,
+                        946.3571902659462
+                    ],
+                    [
+                        121.66309140966908,
+                        936.2883336780636
+                    ]
+                ],
+                [
+                    [
+                        1389.307289468754,
+                        1171.1101479810568
+                    ],
+                    [
+                        65.35137139254235,
+                        1164.3046425998718
+                    ]
+                ],
+                [
+                    [
+                        1445.1442576499535,
+                        718.4458233593762
+                    ],
+                    [
+                        117.39694411717808,
+                        711.3125621174395
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d03.tif",
+                "image_d04.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1414.4961270524384,
+                        601.9829270888189
+                    ],
+                    [
+                        944.8326216861399,
+                        596.2963715436842
+                    ]
+                ],
+                [
+                    [
+                        620.3643374027068,
+                        625.3842097240436
+                    ],
+                    [
+                        148.0846695285705,
+                        619.3749453211951
+                    ]
+                ],
+                [
+                    [
+                        1270.0352338964863,
+                        1143.654657322314
+                    ],
+                    [
+                        800.1774080900258,
+                        1138.4837508198473
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d04.tif",
+                "image_d05.tif"
+            ],
+            "points": [
+                [
+                    [
+                        799.9090284589249,
+                        1137.971919939926
+                    ],
+                    [
+                        806.1642818467847,
+                        353.01041124977337
+                    ]
+                ],
+                [
+                    [
+                        503.99806930060066,
+                        1076.8991031134526
+                    ],
+                    [
+                        507.89353365143484,
+                        289.63600423606596
+                    ]
+                ],
+                [
+                    [
+                        76.23572979399405,
+                        967.5874373156489
+                    ],
+                    [
+                        84.41491675342861,
+                        180.5795765682813
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d05.tif",
+                "image_d06.tif"
+            ],
+            "points": [
+                [
+                    [
+                        42.20372427863313,
+                        800.8445047250884
+                    ],
+                    [
+                        1523.810164752379,
+                        800.1040717465834
+                    ]
+                ],
+                [
+                    [
+                        72.27713926001267,
+                        195.89873404794412
+                    ],
+                    [
+                        1554.3723307258388,
+                        196.47989872728718
+                    ]
+                ],
+                [
+                    [
+                        76.58700104157211,
+                        1105.0571362673518
+                    ],
+                    [
+                        1556.792192116129,
+                        1103.7809969918305
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d06.tif",
+                "image_d07.tif"
+            ],
+            "points": [
+                [
+                    [
+                        14.26913549329143,
+                        1058.0633360178288
+                    ],
+                    [
+                        1348.16188516743,
+                        1063.1627071434114
+                    ]
+                ],
+                [
+                    [
+                        67.96727747845317,
+                        59.13157759139773
+                    ],
+                    [
+                        1404.0526999851888,
+                        65.84161572118083
+                    ]
+                ],
+                [
+                    [
+                        122.17571630078287,
+                        466.33400315397364
+                    ],
+                    [
+                        1456.519177909192,
+                        472.5238783598694
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d07.tif",
+                "image_d08.tif"
+            ],
+            "points": [
+                [
+                    [
+                        188.69417421808078,
+                        1060.2917149894554
+                    ],
+                    [
+                        1528.5243280950258,
+                        1051.6098648292614
+                    ]
+                ],
+                [
+                    [
+                        222.71811387894593,
+                        648.4079279445939
+                    ],
+                    [
+                        1564.750911213021,
+                        645.0260507777177
+                    ]
+                ],
+                [
+                    [
+                        161.4218526839158,
+                        173.55275447980674
+                    ],
+                    [
+                        1505.7953217805261,
+                        167.96091583031784
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d08.tif",
+                "image_d09.tif"
+            ],
+            "points": [
+                [
+                    [
+                        983.3067713619218,
+                        842.6812991864814
+                    ],
+                    [
+                        1012.5716245794828,
+                        223.4208306327009
+                    ]
+                ],
+                [
+                    [
+                        847.2333928574393,
+                        992.5231211445591
+                    ],
+                    [
+                        876.2346923592809,
+                        374.5380448865183
+                    ]
+                ],
+                [
+                    [
+                        1527.552419948734,
+                        1051.5527292645306
+                    ],
+                    [
+                        1556.917751554061,
+                        435.563928246292
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d09.tif",
+                "image_d10.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1557.6258349301133,
+                        434.79560576441
+                    ],
+                    [
+                        91.22648487414246,
+                        423.8141887578528
+                    ]
+                ],
+                [
+                    [
+                        1530.3615792504447,
+                        1129.3858950906429
+                    ],
+                    [
+                        66.10472802014095,
+                        1117.3770223824708
+                    ]
+                ],
+                [
+                    [
+                        1561.6800429536315,
+                        854.1606553975414
+                    ],
+                    [
+                        94.82060809139932,
+                        840.4712427191362
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d10.tif",
+                "image_d11.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1552.485603774377,
+                        747.9138026594891
+                    ],
+                    [
+                        100.35946579800196,
+                        735.2329462936863
+                    ]
+                ],
+                [
+                    [
+                        1562.6067072613687,
+                        1167.8468725206135
+                    ],
+                    [
+                        113.50747513848611,
+                        1154.8763159145774
+                    ]
+                ],
+                [
+                    [
+                        1517.6561157183467,
+                        191.56865807072148
+                    ],
+                    [
+                        64.93046619317413,
+                        179.36108785574635
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d11.tif",
+                "image_d12.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1463.51108499607,
+                        168.07175794595992
+                    ],
+                    [
+                        113.85704260149733,
+                        159.97508588263716
+                    ]
+                ],
+                [
+                    [
+                        1504.1518147575318,
+                        768.6442587414913
+                    ],
+                    [
+                        156.89519384020673,
+                        759.2888847238748
+                    ]
+                ],
+                [
+                    [
+                        1390.6581140571898,
+                        1174.4104006031857
+                    ],
+                    [
+                        45.992480270221066,
+                        1167.1996308911066
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d12.tif",
+                "image_d13.tif"
+            ],
+            "points": [
+                [
+                    [
+                        884.9114889521788,
+                        979.8841605612454
+                    ],
+                    [
+                        875.2202220398074,
+                        211.47419396997208
+                    ]
+                ],
+                [
+                    [
+                        596.6229525759088,
+                        874.2821651160953
+                    ],
+                    [
+                        585.9297844795955,
+                        105.48254091692324
+                    ]
+                ],
+                [
+                    [
+                        106.35151254194776,
+                        859.884086681051
+                    ],
+                    [
+                        96.63978314281181,
+                        90.36268623630508
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d13.tif",
+                "image_d14.tif"
+            ],
+            "points": [
+                [
+                    [
+                        151.55775784301105,
+                        487.9919354240427
+                    ],
+                    [
+                        1500.7315909748677,
+                        506.0623651769282
+                    ]
+                ],
+                [
+                    [
+                        111.81080555577834,
+                        134.61446804673437
+                    ],
+                    [
+                        1460.9108846396155,
+                        152.74261256255545
+                    ]
+                ],
+                [
+                    [
+                        171.86201802900055,
+                        724.2351627462065
+                    ],
+                    [
+                        1519.2928985840213,
+                        742.8149870767797
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d14.tif",
+                "image_d15.tif"
+            ],
+            "points": [
+                [
+                    [
+                        78.44913314608989,
+                        438.7314820994608
+                    ],
+                    [
+                        1531.4193163862603,
+                        441.9445963516305
+                    ]
+                ],
+                [
+                    [
+                        70.85101393622136,
+                        594.9393092994218
+                    ],
+                    [
+                        1522.0623274373227,
+                        598.3124437693876
+                    ]
+                ],
+                [
+                    [
+                        91.85781661736698,
+                        157.5366525553601
+                    ],
+                    [
+                        1545.3649092399112,
+                        160.82689109738195
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_d15.tif",
+                "image_d16.tif"
+            ],
+            "points": [
+                [
+                    [
+                        35.31830594101126,
+                        140.52064979767948
+                    ],
+                    [
+                        1410.4875897921024,
+                        151.21878327257807
+                    ]
+                ],
+                [
+                    [
+                        157.4639395939566,
+                        449.68227751660544
+                    ],
+                    [
+                        1531.6433244113382,
+                        460.53301481157297
+                    ]
+                ],
+                [
+                    [
+                        166.30710752563306,
+                        754.1505628169102
+                    ],
+                    [
+                        1542.2730237743874,
+                        765.0788613063444
+                    ]
+                ]
+            ]
+        }
+    ],
+    "images": [
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d00.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d01.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d02.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d03.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d04.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d05.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d06.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d07.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d08.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d09.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d10.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d11.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d12.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d13.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d14.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d15.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_d/image_d16.tif"
+        }
+    ],
+    "calibration": {
+        "pixel": 600,
+        "length": 1,
+        "length_unit": "mm"
+    },
+    "file_path": "C:\\Users\\drago\\Documents\\git_gh\\MISalign_extra_branch\\example\\project_d\\project_d-relations-calibrated.mis.json"
+}

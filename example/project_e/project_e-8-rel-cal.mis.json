@@ -1,0 +1,361 @@
+{
+    "relations": [
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e096.tif",
+                "image_e097.tif"
+            ],
+            "points": [
+                [
+                    [
+                        14.187732476285596,
+                        324.8978704837965
+                    ],
+                    [
+                        100.48991773130723,
+                        1518.8769113396938
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e097.tif",
+                "image_e098.tif"
+            ],
+            "points": [
+                [
+                    [
+                        102.89103738052412,
+                        915.3983475889709
+                    ],
+                    [
+                        116.78888698691301,
+                        1597.864223886091
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e098.tif",
+                "image_e099.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1583.2556071718502,
+                        84.27379442329249
+                    ],
+                    [
+                        1584.080250368879,
+                        1642.1336444338863
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e099.tif",
+                "image_e100.tif"
+            ],
+            "points": [
+                [
+                    [
+                        884.6333021673802,
+                        396.1205015122541
+                    ],
+                    [
+                        833.5650117674559,
+                        1437.4283090585213
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e100.tif",
+                "image_e101.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1224.3962015475877,
+                        126.96423746581881
+                    ],
+                    [
+                        1169.3763929699976,
+                        875.7658079691333
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e101.tif",
+                "image_e102.tif"
+            ],
+            "points": [
+                [
+                    [
+                        2198.5392782755766,
+                        351.92332928039616
+                    ],
+                    [
+                        2240.3253596958207,
+                        1395.4565795500562
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e102.tif",
+                "image_e103.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1925.8347046826295,
+                        305.6541964094382
+                    ],
+                    [
+                        1919.2992642238187,
+                        1483.2399004880745
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e103.tif",
+                "image_e104.tif"
+            ],
+            "points": [
+                [
+                    [
+                        262.2259068737484,
+                        173.1312587388784
+                    ],
+                    [
+                        191.27303034791208,
+                        1545.9871647715968
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e104.tif",
+                "image_e105.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1690.6823064631644,
+                        375.42747716854575
+                    ],
+                    [
+                        1680.160438217166,
+                        1504.4585067570083
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e105.tif",
+                "image_e106.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1626.074160226217,
+                        331.09621621676877
+                    ],
+                    [
+                        1656.5172638499414,
+                        1545.6982734687815
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e106.tif",
+                "image_e107.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1666.7009523419715,
+                        300.46986523719994
+                    ],
+                    [
+                        1679.0850674346264,
+                        1528.7724207802678
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e107.tif",
+                "image_e108.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1472.5229062717851,
+                        349.02081255586074
+                    ],
+                    [
+                        1389.317618949343,
+                        1458.3482894849872
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e108.tif",
+                "image_e109.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1751.2380418282266,
+                        127.74828509583197
+                    ],
+                    [
+                        1638.9154269012442,
+                        1629.3823016792605
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e109.tif",
+                "image_e110.tif"
+            ],
+            "points": [
+                [
+                    [
+                        1222.6618032390897,
+                        382.832229827143
+                    ],
+                    [
+                        1123.0239286190133,
+                        1567.320841821377
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_e110.tif",
+                "image_e111.tif"
+            ],
+            "points": [
+                [
+                    [
+                        351.9858380586189,
+                        324.92728685358605
+                    ],
+                    [
+                        320.63402450199203,
+                        1592.077827338512
+                    ]
+                ]
+            ]
+        }
+    ],
+    "images": [
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e096.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e097.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e098.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e099.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e100.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e101.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e102.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e103.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e104.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e105.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e106.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e107.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e108.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e109.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e110.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_e/image_e111.tif"
+        }
+    ],
+    "calibration": {
+        "pixel": 1,
+        "length": 49.60938,
+        "length_unit": "nm"
+    },
+    "file_path": "C:\\Users\\drago\\Documents\\git_gh\\MISalign_extra_branch\\example\\project_e\\project_e-8-rel-cal.mis.json"
+}

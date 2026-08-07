@@ -24,7 +24,7 @@ class InteractiveManualRelation():
     -----
     Currently images must have the same width.
     """
-    def __init__(self)->None:
+    def __init__(self,imshow_kwargs:dict|None=None)->None:
         """
         Initialize InteractiveManualRelation.
         """
@@ -36,6 +36,7 @@ class InteractiveManualRelation():
         canvas.footer_visible = False
         self._fig.tight_layout()
         self.points=None
+        self._imshow_kwargs=imshow_kwargs
         plt.show()
     def plot_points(self)->None:
         """
@@ -72,7 +73,10 @@ class InteractiveManualRelation():
             self._image_axes.set_data(self._image_stack)
             self._fig.canvas.draw_idle()
         except AttributeError:
-            self._image_axes=self._ax.imshow(self._image_stack)
+            if self._imshow_kwargs is not None:
+                self._image_axes=self._ax.imshow(self._image_stack,**self._imshow_kwargs)
+            else:
+                self._image_axes=self._ax.imshow(self._image_stack)
         if points is not None:
             self.points=points
     def relate_setup(self)->None:
@@ -140,7 +144,7 @@ class IMRControls():
 
     Uses `ipywidgets` for controls in Jupyter Notebooks.
     """
-    def __init__(self,mis_project:MISProject):
+    def __init__(self,mis_project:MISProject,imshow_kwargs:dict|None=None):
         """
         Initialize IMRControls object from MISProject.
 
@@ -148,6 +152,8 @@ class IMRControls():
         ----------
         mis_project : MISProject
             Source project for images.
+        imshow_kwargs : dict | None
+            Keyword arguments for matplotlib.pyplot.imshow or `None` by default.
         """
         self._project=mis_project
         # self._images=mis_project.get_image_names()
@@ -188,7 +194,7 @@ class IMRControls():
         self._full=widgets.VBox([self._dropdowns,self._buttons_move,self._buttons_relate])
         display(self._full)
         ## display IMR and set to first pair.
-        self.imr=InteractiveManualRelation()
+        self.imr=InteractiveManualRelation(imshow_kwargs=imshow_kwargs)
         self._update_imr()
     def _click_next(self,event)->None:
         """

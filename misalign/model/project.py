@@ -8,6 +8,7 @@ MISProjects can also have additional JSON-dumpable information stored in them.
 """
 
 from typing import Protocol, runtime_checkable, Any
+from collections.abc import Callable
 from misalign.model.relation import MISRelation, setup_relation
 from misalign.model.image import MISImage, MISImageFile,setup_image, MISImageHDF5
 from misalign.calibration.calibrate import calibration_from_json
@@ -205,6 +206,20 @@ class MISProject(Protocol):
                 self.set_relation(
                     relation_index=i,
                     relation=setup_relation(**relation_data))
+    def set_image_filter(self,filter:None|Callable[[np.ndarray],np.ndarray]=None)->None:
+        """
+        Sets a default filter for all images in the project.
+
+        Applies when `.__array__` or `.shape` are used.
+
+        Parameters
+        ----------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter to apply to the image array or `None` by default.
+            `None` removes the default filter.
+        """
+        for image in self._images:
+            image.set_filter(filter=filter)
 
     
     # image methods
