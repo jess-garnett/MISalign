@@ -322,7 +322,8 @@ def render_unblended(
         image_arrays:dict[str,array_like],
         canvas_relative_offsets:dict,
         canvas_extents:dict,
-        return_image:bool=True)->PILImage.Image | np.ndarray:
+        return_image:bool=True,
+        depth:int|None=None)->PILImage.Image | np.ndarray:
     """
     Renders a canvas without blending.
 
@@ -334,6 +335,11 @@ def render_unblended(
         Dictionary of the form `"image_name":(canvas-relative x, canvas-relative y)`
     canvas_extents : dict[str, int]
         Dictionary of canvas extents with keys `width` and `height`
+    return_image : bool
+        Wether to return an image or an array. `True` by default.
+    depth : int|None
+        Depth of images and canvas or `None` by default.
+        If `None` depth determined from the shape of the first image in image_arrays.values().
     
     Returns
     PIL.Image.Image | numpy.ndarray
@@ -343,7 +349,15 @@ def render_unblended(
     -----
     The order of `image_arrays.items()` determines the stacking order with later items overriding early items.
     """
-    canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
+    image_2d=False
+    if depth is None:
+        first_image=next(iter(image_arrays.values()))
+        if len(first_image.shape)==2: # image does not have depth - 1D
+            depth=1
+            image_2d=True
+        else:
+            depth=first_image.shape[2]
+    canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],depth))
     for image_name,image_arraylike in image_arrays.items():
         image_shape: tuple[int, ...]=image_arraylike.shape
         image_place: tuple[int, ...]=canvas_relative_offsets[image_name]
@@ -354,9 +368,15 @@ def render_unblended(
             "top":image_place[1],
             "bottom":image_place[1]+image_shape[0],
         }
-        canvas[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]=image_array
+        if image_2d:
+            canvas[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]=image_array[:,:,np.newaxis]
+        else:
+            canvas[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]=image_array
     if return_image:
-        return PILImage.fromarray(canvas.astype(np.uint8))
+        if image_2d:
+            return PILImage.fromarray(canvas[:,:,0].astype(np.uint8))
+        else:
+            return PILImage.fromarray(canvas.astype(np.uint8))
     else:
         return canvas
 def render_unblended_project(
@@ -364,7 +384,8 @@ def render_unblended_project(
     canvas_relative_offsets:dict[str,tuple[int,int]],
     canvas_extents:dict[str,int],
     image_names:list[str]|None=None,
-    return_image:bool=True)->PILImage.Image | np.ndarray:
+    return_image:bool=True,
+    depth:int|None=None)->PILImage.Image | np.ndarray:
     """
     Renders a canvas from a project without blending.
 
@@ -381,6 +402,9 @@ def render_unblended_project(
         If `None` all images in project will be used.
     return_image : bool
         Wether to return an image or an array. `True` by default.
+    depth : int|None
+        Depth of images and canvas or `None` by default.
+        If `None` depth determined from the shape of the first image in image_arrays.values().
     
     Returns
     -------
@@ -398,7 +422,8 @@ def render_unblended_project(
         image_arrays=image_arrays,
         canvas_relative_offsets=canvas_relative_offsets,
         canvas_extents=canvas_extents,
-        return_image=return_image
+        return_image=return_image,
+        depth=depth
     )
 ## Rectangular Blended Render
 
@@ -487,7 +512,8 @@ def render_blended(
     canvas_extents:dict,
     weight,
     normalizer:np.ndarray,
-    return_image:bool=True)->PILImage.Image | np.ndarray:
+    return_image:bool=True,
+    depth:int|None=None)->PILImage.Image | np.ndarray:
     """
     Renders a canvas with blending.
 
@@ -505,6 +531,9 @@ def render_blended(
         Array with image weights added to it at their relative position.
     return_image : bool
         Wether to return an image or an array. `True` by default.
+    depth : int|None
+        Depth of images and canvas or `None` by default.
+        If `None` depth determined from the shape of the first image in image_arrays.values().
     
     Returns
     -------
@@ -517,7 +546,18 @@ def render_blended(
     However, in testing with two and four overlapping image regions the variation from the original image was less than 1 at any pixel.
     See `tests\test_canvas_rectangular.py` for those tests.
     """
-    canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],3))
+
+
+    image_2d=False
+    if depth is None:
+        first_image=next(iter(image_arrays.values()))
+        if len(first_image.shape)==2: # image does not have depth - 1D
+            depth=1
+            image_2d=True
+        else:
+            depth=first_image.shape[2]
+
+    canvas=np.zeros((canvas_extents["height"],canvas_extents["width"],depth))
     for image_name,image_arraylike in image_arrays.items():
         image_shape: tuple[int, ...]=image_arraylike.shape
         image_place: tuple[int, ...]=canvas_relative_offsets[image_name]
@@ -531,10 +571,16 @@ def render_blended(
         }
         normalizing_array: np.ndarray=normalizer[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]
         normed_array: np.ndarray=np.divide(weight_array,normalizing_array)
-        weighted_image_array=np.repeat(normed_array[:,:,np.newaxis],3,axis=2)*image_array
+        if image_2d:
+            weighted_image_array=np.repeat(normed_array[:,:,np.newaxis],depth,axis=2)*image_array[:,:,np.newaxis]
+        else:
+            weighted_image_array=np.repeat(normed_array[:,:,np.newaxis],depth,axis=2)*image_array
         canvas[canv_slice["top"]:canv_slice["bottom"],canv_slice["left"]:canv_slice["right"]]+=weighted_image_array
     if return_image:
-        return PILImage.fromarray(canvas.astype(np.uint8))
+        if image_2d:
+            return PILImage.fromarray(canvas[:,:,0].astype(np.uint8))
+        else:
+            return PILImage.fromarray(canvas.astype(np.uint8))
     else:
         return canvas
 def render_blended_project(
