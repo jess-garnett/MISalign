@@ -638,6 +638,6 @@ def render_blended_project(
         normalizer=normalizer,
         return_image=return_image
     )
-#TODO rework methods/classes of canvas_rectangular to have "MISProject" and "just a dictionary" variants.
-#TODO redo docstrings with project update
+
 #TODO canvas_rectangular unit tests
+#TODO canvas rectangular unit tests for 2D/0 depth images.
