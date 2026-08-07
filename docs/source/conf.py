@@ -9,7 +9,7 @@
 project = 'misalign'
 copyright = '2023, Jessica Garnett'
 author = 'Jessica Garnett'
-release = '2.1.0'
+release = '2.2.0.dev0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
