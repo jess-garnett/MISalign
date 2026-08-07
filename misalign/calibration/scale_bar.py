@@ -86,7 +86,10 @@ def image_with_scale_bar(image:Path|str|Any,
         array=np.asarray(image)
     
     plt.figure()
-    plt.imshow(array)
+    if len(array.shape)==2:
+        plt.imshow(array,cmap="gray",vmin=np.iinfo(array.dtype).min,vmax=np.iinfo(array.dtype).max)
+    else:
+        plt.imshow(array)
     add_scale_bar(plt.gca(),scale_measurement,calibration,**AnchoredSizeBar_kwargs)
     plt.gca().set_axis_off()
     plt.show()
