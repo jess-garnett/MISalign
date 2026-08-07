@@ -33,13 +33,17 @@ Alignment code in `align.ipynb`:
 ```
 mis_filepath="../example/project_e/project_e-2-no_rel-cal.mis.json"
 ...
-mis_filepath="../example/project_d/demo-project_e-2-rel-cal.mis.json.mis.json"
+imrc=IMRControls(mis_project,imshow_kwargs=dict(cmap="gray",vmin=0,vmax=255))
+...
+mis_filepath="../example/project_e/demo-project_e-2-rel-cal.mis.json.mis.json"
 ```
 
 ```
 mis_filepath="../example/project_e/project_e-8-no_rel-cal.mis.json"
 ...
-mis_filepath="../example/project_d/demo-project_e-8-rel-cal.mis.json.mis.json"
+imrc=IMRControls(mis_project,imshow_kwargs=dict(cmap="gray",vmin=0,vmax=255))
+...
+mis_filepath="../example/project_e/demo-project_e-8-rel-cal.mis.json.mis.json"
 ```
 
 Render code in `render.ipynb`:
