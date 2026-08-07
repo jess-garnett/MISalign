@@ -1,0 +1,1 @@
+Project A includes 10 images of a directed energy deposition additively manufactured metal wall segment mounted in resin and ground/polished. These images were taken on 2022-10-07 by Jessica Garnett.

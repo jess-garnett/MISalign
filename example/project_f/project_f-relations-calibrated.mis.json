@@ -1,0 +1,231 @@
+{
+    "relations": [
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_f03.png",
+                "image_f04.png"
+            ],
+            "points": [
+                [
+                    [
+                        1272.5676016486464,
+                        3599.4556057981717
+                    ],
+                    [
+                        1285.554597789705,
+                        99.8045809747046
+                    ]
+                ],
+                [
+                    [
+                        3764.0764454116147,
+                        3630.6577952078865
+                    ],
+                    [
+                        3776.116008424352,
+                        127.46242160972713
+                    ]
+                ],
+                [
+                    [
+                        2517.982589336822,
+                        3783.384831985379
+                    ],
+                    [
+                        2531.6413385970977,
+                        280.9217332139117
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_f04.png",
+                "image_f05.png"
+            ],
+            "points": [
+                [
+                    [
+                        2594.365727860982,
+                        3653.2947991864185
+                    ],
+                    [
+                        2602.8207883533287,
+                        290.116936495608
+                    ]
+                ],
+                [
+                    [
+                        576.883972726774,
+                        3523.215916701922
+                    ],
+                    [
+                        586.9636279189145,
+                        157.20068836431636
+                    ]
+                ],
+                [
+                    [
+                        1991.6881484367495,
+                        3398.500508735547
+                    ],
+                    [
+                        2001.9039933270333,
+                        31.06863347687404
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_f05.png",
+                "image_f06.png"
+            ],
+            "points": [
+                [
+                    [
+                        3829.551819137365,
+                        1813.0474349111778
+                    ],
+                    [
+                        76.73301467837122,
+                        1834.0606999471343
+                    ]
+                ],
+                [
+                    [
+                        3919.6567733608304,
+                        462.0901977552857
+                    ],
+                    [
+                        169.30082155774693,
+                        480.6557441438576
+                    ]
+                ],
+                [
+                    [
+                        3999.6193876520347,
+                        2336.954246831519
+                    ],
+                    [
+                        249.3877710428232,
+                        2354.8042307057194
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_f06.png",
+                "image_f07.png"
+            ],
+            "points": [
+                [
+                    [
+                        2417.7343113298175,
+                        209.68484808584714
+                    ],
+                    [
+                        2438.014761829275,
+                        3910.031978010885
+                    ]
+                ],
+                [
+                    [
+                        3801.5081649647777,
+                        342.15660675688093
+                    ],
+                    [
+                        3823.510884795532,
+                        4040.7443715826494
+                    ]
+                ],
+                [
+                    [
+                        526.1686656107838,
+                        197.75195039399998
+                    ],
+                    [
+                        547.1273086546956,
+                        3895.6867584794886
+                    ]
+                ]
+            ]
+        },
+        {
+            "relation_type": "p",
+            "image_pair": [
+                "image_f07.png",
+                "image_f08.png"
+            ],
+            "points": [
+                [
+                    [
+                        2583.0269498354505,
+                        175.07505024378895
+                    ],
+                    [
+                        2571.1381654388856,
+                        4032.843852872672
+                    ]
+                ],
+                [
+                    [
+                        337.0053124650733,
+                        105.25805538910122
+                    ],
+                    [
+                        323.2659343897522,
+                        3961.871558594759
+                    ]
+                ],
+                [
+                    [
+                        1174.1895509218239,
+                        123.15969757985036
+                    ],
+                    [
+                        1162.8151304174517,
+                        3981.5854461026
+                    ]
+                ]
+            ]
+        }
+    ],
+    "images": [
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_f/image_f03.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_f/image_f04.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_f/image_f05.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_f/image_f06.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_f/image_f07.png"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "C:/Users/drago/Documents/git_gh/MISalign_extra_branch/example/project_f/image_f08.png"
+        }
+    ],
+    "calibration": {
+        "pixel": 1,
+        "length": 50.061,
+        "length_unit": "nm"
+    },
+    "file_path": "C:\\Users\\drago\\Documents\\git_gh\\MISalign_extra_branch\\example/project_f/project_f-relations-calibrated.mis.json"
+}

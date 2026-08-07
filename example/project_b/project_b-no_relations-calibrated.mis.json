@@ -1,0 +1,167 @@
+{
+    "relations": [],
+    "images": [
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b00.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b01.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b02.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b03.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b04.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b05.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b06.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b07.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b08.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b09.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b10.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b11.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b12.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b13.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b14.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b15.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b16.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b17.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b18.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b19.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b20.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b21.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b22.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b23.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b24.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b25.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b26.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b27.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b28.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b29.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b30.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b31.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b32.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b33.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b34.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b35.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b36.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b37.tif"
+        },
+        {
+            "image_type": "file",
+            "image_filepath": "../example/project_b/image_b38.tif"
+        }
+    ],
+    "calibration": {
+        "pixel": 600,
+        "length": 1,
+        "length_unit": "mm"
+    },
+    "file_path": "..\\example\\project_b\\demo-project_b-no_relations-calibrated.mis.json"
+}

@@ -7,6 +7,7 @@ Includes `Protocol` model: `MISImage`
 from PIL import Image as PILImage
 import numpy as np
 from typing import Protocol, runtime_checkable, Any
+from collections.abc import Callable
 from pathlib import Path
 import h5py
 
@@ -24,6 +25,7 @@ class MISImage(Protocol):
             Any other passed kwargs will be kept in `self._dict` and should be JSON dump-able objects.
         """
         self.name:str
+        self._filter:None|Callable[[np.ndarray],np.ndarray]
     def __str__(self)->str:
         """
         String representation of the Image.
@@ -58,6 +60,43 @@ class MISImage(Protocol):
         -----
         Shape should behave cache-like.
         It may be expensive the first time a `MISImage` has to get the shape but after that it should be very fast.
+        """
+        ...
+    def set_filter(self,filter:None|Callable[[np.ndarray],np.ndarray]=None)->None:
+        """
+        Sets a default filter for the image array.
+
+        Applies when `.__array__` or `.shape` are used.
+
+        Parameters
+        ----------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter to apply to the image array or `None` by default.
+            `None` removes the default filter.
+        """
+        ...
+    def get_filter(self)->None|Callable[[np.ndarray],np.ndarray]:
+        """
+        Gets the default filter of the image array.
+
+        The default filter is applied when `.__array__` or `.shape` are used.
+
+        Returns
+        -------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter being applied to the image array or `None` if no default filter is set.
+        """
+        ...
+    def with_filter(self,filter:None|Callable[[np.ndarray],np.ndarray]=None,apply_default=True)->np.ndarray:
+        """
+        Returns the image array with a filter applied.
+        
+        Parameters
+        ----------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter to apply to the image array or `None` by default.
+        apply_default : None | Callable[[np.ndarray],np.ndarray]
+            Whether to use the default filter before the parameter filter. `True` by default.
         """
         ...
     def for_json(self)->dict:
@@ -115,6 +154,9 @@ class MISImageFile():
         self.image_filepath=Path(image_filepath)
         self.name:str=self.image_filepath.name
         self._dict:dict=image_data
+        self._shape:None|tuple[int, ...]=None
+        self._filter:None|Callable[[np.ndarray],np.ndarray]=None
+        self._filter_changed:bool=False
     def __str__(self):
         """
         String representation of the Image.
@@ -136,7 +178,10 @@ class MISImageFile():
         """
         PIL_image=PILImage.open(self.image_filepath)
         array=np.asarray(PIL_image)
-        self._shape:tuple[int, ...]=array.shape
+        if self._filter is not None:
+            array=self._filter(array)
+            self._filter_changed=False
+        self._shape=array.shape
         return array
     @property
     def shape(self)->tuple[int, ...]:
@@ -150,14 +195,67 @@ class MISImageFile():
 
         Notes
         -----
-        `shape` only opens the image once, and then only if the image hasn't already been accessed.
-        It acts cache-like and can be accessed on-demand without needing to store it separately.
+        `shape` acts cache-like and can be accessed on-demand without needing to store it separately.
+        Changing the default filter will reset the shape cache.
         """
-        try: # if image has already been opened just get the size that was stored.
-            return self._shape
-        except AttributeError: # if image hasn't been opened then open it and grab the size.
-            self.__array__()
-            return self._shape
+        
+        if self._shape is None or self._filter_changed is True:
+            self._shape=self.__array__().shape
+            self._filter_changed=False
+        return self._shape
+    def set_filter(self,filter:None|Callable[[np.ndarray],np.ndarray]=None)->None:
+        """
+        Sets a default filter for the image array.
+
+        Applies when `.__array__` or `.shape` are used.
+
+        Parameters
+        ----------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter to apply to the image array or `None` by default.
+            `None` removes the default filter.
+        """
+        self._filter=filter
+        self._filter_changed=True
+        self._shape=None # Resets self._shape as the filter may have changed the default shape.
+    def get_filter(self)->None|Callable[[np.ndarray],np.ndarray]:
+        """
+        Gets the default filter of the image array.
+
+        The default filter is applied when `.__array__` or `.shape` are used.
+
+        Returns
+        -------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter being applied to the image array or `None` if no default filter is set.
+        """
+        return self._filter
+    def with_filter(self,filter:None|Callable[[np.ndarray],np.ndarray]=None,apply_default=True)->np.ndarray:
+        """
+        Returns the image array with a filter applied.
+        
+        Parameters
+        ----------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter to apply to the image array or `None` by default.
+        apply_default : None | Callable[[np.ndarray],np.ndarray]
+            Whether to use the default filter before the parameter filter. `True` by default.
+        """
+        if apply_default is False:
+            default_filter=self.get_filter()
+            default_shape=self._shape
+            self.set_filter(filter=None)
+        
+        array=self.__array__()
+        if filter is not None:
+            array=filter(array)
+
+        if apply_default is False:
+            self.set_filter(filter=default_filter)
+            self._shape=default_shape
+            self._filter_changed=False
+        
+        return array
     def for_json(self)->dict:
         """
         Returns a dictionary compatible with JSON.dump().
@@ -251,6 +349,9 @@ class MISImageHDF5():
         self.hdf5path:str=hdf5path
         self.name:str=image_name
         self._dict:dict=image_data
+        self._shape:None|tuple[int, ...]=None
+        self._filter:None|Callable[[np.ndarray],np.ndarray]=None
+        self._filter_changed:bool=False
     def __str__(self):
         """
         String representation of the Image.
@@ -271,7 +372,10 @@ class MISImageHDF5():
             Numpy array of the hdf5 dataset with 1-length axes squeezed.
         """
         with h5py.File(self.hdf5_filepath, "r") as f:
-            return np.squeeze(f[self.hdf5path][()])
+            array= np.squeeze(f[self.hdf5path][()])
+        if self._filter is not None:
+            array=self._filter(array)
+        return array
         #TODO option for passing a currently open h5py.File rather than requiring opening a new one.
     @property
     def shape(self)->tuple[int, ...]:
@@ -285,11 +389,71 @@ class MISImageHDF5():
 
         Notes
         -----
-        `shape` is taken from the hdf5 dataset shape attribute and does not require accessing the full array.
+        If a filter is not applied then `shape` is taken from the hdf5 dataset shape attribute and does not require accessing the full array.
         """
-        with h5py.File(self.hdf5_filepath, "r") as f:
-            shape=tuple([int(dimension) for dimension in f[self.hdf5path].shape if dimension!=1])
+        
+        if self._filter is None:
+            with h5py.File(self.hdf5_filepath, "r") as f:
+                shape=tuple([int(dimension) for dimension in f[self.hdf5path].shape if dimension!=1])
+        else:
+            if self._shape is None or self._filter_changed is True:
+                self._shape=self.__array__().shape
+                self._filter_changed=False
+            shape=self._shape
         return shape
+    def set_filter(self,filter:None|Callable[[np.ndarray],np.ndarray]=None)->None:
+        """
+        Sets a default filter for the image array.
+
+        Applies when `.__array__` or `.shape` are used.
+
+        Parameters
+        ----------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter to apply to the image array or `None` by default.
+            `None` removes the default filter.
+        """
+        self._filter=filter
+        self._filter_changed=True
+        self._shape=None # Resets self._shape as the filter may have changed the default shape.
+    def get_filter(self)->None|Callable[[np.ndarray],np.ndarray]:
+        """
+        Gets the default filter of the image array.
+
+        The default filter is applied when `.__array__` or `.shape` are used.
+
+        Returns
+        -------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter being applied to the image array or `None` if no default filter is set.
+        """
+        return self._filter
+    def with_filter(self,filter:None|Callable[[np.ndarray],np.ndarray]=None,apply_default=True)->np.ndarray:
+        """
+        Returns the image array with a filter applied.
+        
+        Parameters
+        ----------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter to apply to the image array or `None` by default.
+        apply_default : None | Callable[[np.ndarray],np.ndarray]
+            Whether to use the default filter before the parameter filter. `True` by default.
+        """
+        if apply_default is False:
+            default_filter=self.get_filter()
+            default_shape=self.shape
+            self.set_filter(filter=None)
+        
+        array=self.__array__()
+        if filter is not None:
+            array=filter(array)
+
+        if apply_default is False:
+            self.set_filter(filter=default_filter)
+            self._shape=default_shape
+            self._filter_changed=False
+        
+        return array
     def for_json(self)->dict:
         """
         Returns a dictionary compatible with JSON.dump().
@@ -373,3 +537,5 @@ def setup_image(**image_data)->MISImage:
         MISImage implementation selection is based on `image_type` lookup in the `image_types` dictionary.
     """
     return image_types[image_data["image_type"]](**image_data)
+
+#TODO add filters to unit tests.
