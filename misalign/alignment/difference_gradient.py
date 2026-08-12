@@ -338,22 +338,27 @@ def plot_grid_difference_gradient_analysis(
 
 # DGA Full Search
 
-def metric_inverse_std_adjusted_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+def metric_inverse_std_adjusted_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=20,power=1)->float:
     """High value when standard deviation of image is low > weights against low-feature regions"""
     def adjusted_inverse_std(overlap):
-        return (1/(np.max((np.std(overlap)-20,1))))**0.5
+        return (1/(np.max((np.std(overlap)-modifier,1))))**power
     return (adjusted_inverse_std(overlap_a)+adjusted_inverse_std(overlap_b))/2
     
-def metric_highlow_inverse_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+def metric_highlow_inverse_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=16)->float:
     """High value when difference of maximum and minimum intensity of overlap region is low > weights against low-feature regions"""
     def metric(overlap):
-        return  np.min([1/((np.max(overlap)-np.min(overlap))/16),1])
+        return  np.min([1/((np.max(overlap)-np.min(overlap))/modifier),1])
         # variation of 16 > value of 1 > variation of 32 > value of 1/2 > etc. variation of 80 > 0.2
     return np.max([metric(overlap_a),metric(overlap_b)])
 
-def metric_squared_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+def metric_squared_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,power=1)->float:
     """High value when misaligned features in overlap."""
-    return np.mean((overlap_a-overlap_b)**2)/(255**2)
+    return np.mean((overlap_a-overlap_b)**2)/(255**2)**power
+
+def metric_absolute_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,power=1)->float:
+    diff=overlap_a-overlap_b
+    return (np.mean(np.abs(diff,out=diff))/255)**power
+
     
 def metric_difference_max_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
     """High value when not perfectly aligned"""
@@ -364,8 +369,8 @@ def metric_difference_max_norm(overlap_a:np.ndarray,overlap_b:np.ndarray)->float
 def metric_combined_balanced(overlap_a:np.ndarray,overlap_b:np.ndarray):
     return np.sum([
         metric_difference_max_norm(overlap_a,overlap_b),
-        metric_squared_mean_norm(overlap_a,overlap_b)**0.1,
-        metric_inverse_std_adjusted_norm(overlap_a,overlap_b),
+        metric_squared_mean_norm(overlap_a,overlap_b,power=0.1),
+        metric_highlow_inverse_norm(overlap_a,overlap_b),
     ])
 
 def interpolate_nearest_neighbor(
