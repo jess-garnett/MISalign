@@ -36,9 +36,12 @@ class TestOverlap():
             b_shape=1200)
         assert a_span==(0,1200) and b_span==(0,1200)
     #TODO Test/handle non-matching shapes in axis_span
+
+
+
     def test_overlap_spans_simple(self):
         """
-        Tests `overlap_spans` with one negative and one positive offset.
+        Tests `overlap_spans` with one negative and one positive offset and matching shapes.
 
         Based on `('image_a01.jpg', 'image_a02.jpg')` in `example/project_a/project_a-relations-calibrated.mis.json`.
         """
@@ -48,4 +51,63 @@ class TestOverlap():
                 b_shape=(1200,1600)
             )
         assert ax_span==(0,1600-12) and bx_span==(12,1600) and ay_span==(1088,1200) and by_span==(0,1200-1088)
+    def test_overlap_spans_no_overlap(self):
+        """
+        Tests `overlap_spans` with offset vectors that do not overlap.
+        """
+        with pytest.raises(expected_exception=ValueError):
+            axy_bxy_spans=dr.overlap_spans(
+                    offset_vector=(1600,0),
+                    a_shape=(1200,1600),
+                    b_shape=(1200,1600)
+                )
+        with pytest.raises(expected_exception=ValueError):
+            axy_bxy_spans=dr.overlap_spans(
+                    offset_vector=(-1600,0),
+                    a_shape=(1200,1600),
+                    b_shape=(1200,1600)
+                )
+        with pytest.raises(expected_exception=ValueError):
+            axy_bxy_spans=dr.overlap_spans(
+                    offset_vector=(0,1200),
+                    a_shape=(1200,1600),
+                    b_shape=(1200,1600)
+                )
+        with pytest.raises(expected_exception=ValueError):
+            axy_bxy_spans=dr.overlap_spans(
+                    offset_vector=(0,-1200),
+                    a_shape=(1200,1600),
+                    b_shape=(1200,1600)
+                )
     #TODO diversify offsets/shapes tested.
+    
+
+
+    def test_overlap_evaluate_simple(self):
+        """
+        Tests `overlap_compare` with a simplified metric and array.
+        """
+        def metric_sum(overlap_a,overlap_b):
+            return np.sum((overlap_a,overlap_b))
+        overlap_metric=dr.overlap_evaluate(
+            array_a=np.full(shape=(100,100),fill_value=100,dtype=np.uint8),
+            array_b=np.full(shape=(100,100),fill_value=200,dtype=np.uint8),
+            offset_ab=(50,50),
+            metric=metric_sum
+        )
+        assert overlap_metric==(100*50*50)+(200*50*50)
+
+
+
+    def test_overlap_difference_simple(self):
+        """
+        Tests `overlap_difference` with a simplified array.
+        """
+        def metric_sum(overlap_a,overlap_b):
+            return np.sum((overlap_a,overlap_b))
+        difference=dr.overlap_difference(
+            array_a=np.full(shape=(100,100),fill_value=100,dtype=np.uint8),
+            array_b=np.full(shape=(100,100),fill_value=200,dtype=np.uint8),
+            offset_ab=(50,50),
+        )
+        assert np.all(difference==-100)
