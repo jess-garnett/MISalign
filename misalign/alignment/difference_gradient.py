@@ -15,6 +15,8 @@ from skimage.morphology import skeletonize, dilation, footprints
 from skimage.filters import gaussian
 import logging
 
+
+
 #DONE transfer past work from `feature_diff_grad_alignment` branch
 #DONE update past work to be compatible with misalign 2
 #TODO update docstrings to be in-line with standards
