@@ -72,3 +72,69 @@ def overlap_spans(offset_vector:tuple[int,int],a_shape:tuple[int,int],b_shape:tu
     ay_span,by_span=axis_span(offset_vector[1],a_shape[0],b_shape[0])
     return (ax_span,ay_span),(bx_span,by_span)
 
+
+def overlap_evaluate(
+        array_a:np.ndarray,
+        array_b:np.ndarray,
+        offset_ab:tuple[int,int]|np.ndarray,
+        metric:Callable[[np.ndarray,np.ndarray],float]
+        )->float:
+    """
+    Evaluates overlap between image a and image b based on a translation offset and a metric.
+    
+    Parameters
+    ----------
+    array_a : np.ndarray
+        Numpy array of image a.
+    array_b : np.ndarray
+        Numpy array of image b.
+    offset_ab : tuple[int,int] | np.ndarray
+        The vector from the top left corner of image a to the top left corner of image b.
+        In (x,y) order.
+    metric : Callable[[np.ndarray,np.ndarray],float]
+        Function that takes two numpy arrays and returns a value describing some aspect of them.
+        Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+
+    Returns
+    -------
+    overlap_metric : float
+        Result of `metric(overlap_a,overlap_b)`.
+    """
+    ## Find overlap spans
+    a_spans,b_spans=overlap_spans(tuple(offset_ab),array_a.shape,array_b.shape)
+    ## Extract overlap regions
+    overlap_a=array_a[a_spans[1][0]:a_spans[1][1],a_spans[0][0]:a_spans[0][1]]
+    overlap_b=array_b[b_spans[1][0]:b_spans[1][1],b_spans[0][0]:b_spans[0][1]]
+    ## Get overlap metric
+    return metric(overlap_a,overlap_b)
+
+def overlap_difference(
+        array_a:np.ndarray,
+        array_b:np.ndarray,
+        offset_ab:tuple[int,int]|np.ndarray,
+        )->np.ndarray:
+    """
+    Calculate the difference between overlapping regions of image a and image b given a translational offset.
+    
+    Parameters
+    ----------
+    array_a : np.ndarray
+        Numpy array of image a.
+    array_b : np.ndarray
+        Numpy array of image b.
+    offset_ab : tuple[int,int] | np.ndarray
+        The vector from the top left corner of image a to the top left corner of image b.
+        In (x,y) order.
+
+    Returns
+    -------
+    difference : np.ndarray
+        Difference (a-b) of the overlap between image a and image b.
+    """
+    ## Find overlap spans
+    a_spans,b_spans=overlap_spans(tuple(offset_ab),array_a.shape,array_b.shape)
+    ## Extract overlap regions
+    overlap_a=array_a[a_spans[1][0]:a_spans[1][1],a_spans[0][0]:a_spans[0][1]]
+    overlap_b=array_b[b_spans[1][0]:b_spans[1][1],b_spans[0][0]:b_spans[0][1]]
+
+    return overlap_a.astype(np.int16)-overlap_b.astype(np.int16)
