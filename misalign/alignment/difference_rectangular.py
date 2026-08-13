@@ -1,9 +1,10 @@
 """
-Difference- & Overlap-based Rectangular Alignment Module
+Difference- & Overlap-based Automated Rectangular Alignment Module
 """
 
 import numpy as np
-from collections.abc import Callable, Container
+from collections.abc import Callable
+from typing import runtime_checkable, Protocol
 from misalign.model.image import MISImage
 from misalign.model.relation import MISRelation
 
@@ -144,9 +145,9 @@ def overlap_difference(
     overlap_b=array_b[b_spans[1][0]:b_spans[1][1],b_spans[0][0]:b_spans[0][1]]
 
     if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(float)
+        overlap_a=overlap_a.astype(np.float32)
     if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(float)
+        overlap_b=overlap_b.astype(np.float32)
 
     return overlap_a-overlap_b
 
@@ -170,9 +171,9 @@ def metric_difference_squared_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->f
         Result of taking the mean of the square of the difference of the arrays.
     """
     if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(float)
+        overlap_a=overlap_a.astype(np.float32)
     if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(float)
+        overlap_b=overlap_b.astype(np.float32)
 
     return np.mean((overlap_a-overlap_b)**2)
     
@@ -195,9 +196,9 @@ def metric_difference_absolute_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->
         Result of taking the mean of the absolute value of the difference of the arrays.
     """
     if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(float)
+        overlap_a=overlap_a.astype(np.float32)
     if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(float)
+        overlap_b=overlap_b.astype(np.float32)
 
     diff=overlap_a-overlap_b
     return np.mean(np.abs(diff,out=diff))
@@ -319,3 +320,137 @@ def strategy_full_grid(
                                 metric=metric)
 
 
+## array-like class
+@runtime_checkable
+class array_like(Protocol):
+    """
+    Type hinting utility class for representing objects compatible with `numpy.asarray` and with `.shape` property.
+
+    MISImages are `array_like`.
+    """
+    def __array__(self)->np.ndarray:
+        """
+        Get array.
+        
+        Returns
+        -------
+        array : np.ndarray
+            Numpy array.
+        """
+        ...
+    @property
+    def shape(self)->tuple[int, ...]:
+        """
+        Get the shape of the array.
+        
+        Returns
+        -------
+        shape : tuple[int]
+            Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
+        """
+        ...
+
+
+def filter_simple(image:array_like)->np.ndarray:
+    """
+    Filter to get an array from an array-like and convert it to `np.int16`.
+    
+    Parameters
+    ----------
+    image : array_like
+        Array-like image.
+
+    Returns
+    -------
+    array : np.ndarray
+        Converted array.
+    """
+    return np.asarray(image).astype(np.int16)
+def filter_rgb_gray_mean(image:array_like)->np.ndarray:
+    """
+    Filter to get an array from an array-like, reduce it from RGB to grayscale by taking the mean, and convert it to `np.int16`.
+    
+    Parameters
+    ----------
+    image : array_like
+        Array-like image with shape (Rows,Columns,Depth).
+
+    Returns
+    -------
+    array : np.ndarray
+        Converted array.
+    """
+    return np.mean(image,axis=-1).astype(np.int16)
+
+def difference_gradient_analysis(
+        image_a:MISImage|array_like,
+        image_b:MISImage|array_like,
+        relation:MISRelation|tuple[int,int]|None,
+        strategy:Callable[...,dict]=strategy_full_grid,
+        metric:Callable[[np.ndarray,np.ndarray],float]=metric_difference_squared_mean,
+        filter:Callable[[array_like],np.ndarray]=filter_simple,
+        **kwargs)->dict:
+    """
+    Uses a metric to evaluate overlaps of a pair of images at multiple offsets to identify the best offset.
+
+    Note: This functions primary purpose is to prepare MISImage and MISRelation objects to be passed to a strategy function.
+
+    Parameters
+    ----------
+    strategy : Callable[...,dict]
+        Function that takes keyword arguments `array_a`, `array_b`, `initial_offset`, `metric`, and all other `kwargs`.
+        Returns a dictionary of results that must include `optimized_offset`.
+        `strategy_full_grid` by default.
+    metric : Callable[[np.ndarray,np.ndarray],float]
+        Function that takes two numpy arrays and returns a value describing some aspect of them.
+        `metric_difference_squared_mean` by default.
+        Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+    filter : Callable[[array_like],np.ndarray]
+        Filter to convert array_like to array, convert dtypes, or apply other effects such as gaussian or median filters.
+        `filter_simple` by default.
+    kwargs
+        All keyword arguments are passed to the strategy function.
+
+    dga_results : dict
+        Dictionary with results of difference gradient alignment. Contents will depend on strategy used.
+        `grid` : np.ndarray : optional
+            Offsets that were searched.
+        `grid_results` : np.ndarray : optional
+            Metric value at matching offset in `grid`.
+        `optimized_offset` : tuple[int,int]
+            Optimized offset based on minimum in metric value.
+        `initial_offset` : tuple[int,int] | None : optional
+            Initial offset provided to strategy.
+    """
+    ## Get image arrays
+    image_a_array:np.ndarray=filter(image_a)
+    image_b_array:np.ndarray=filter(image_b)
+
+    ## Get initial relation
+    if isinstance(relation,MISRelation):
+        try:
+            initial_rectangular_relation=relation.get_relation('r')
+        except ValueError:
+            initial_rectangular_relation=None
+    elif isinstance(relation,tuple):
+        initial_rectangular_relation=relation
+    else:
+        initial_rectangular_relation=None
+
+    return strategy(
+        array_a=image_a_array,
+        array_b=image_b_array,
+        initial_offset=initial_rectangular_relation,
+        metric=metric,
+        **kwargs)
+
+#TODO make `filter_...` and `metric_...` kwargs passable through to their respective use case.
+
+#TODO potential strategy: `local_minima`
+    # search starts with +1/-1 around `relation` and then moves to the observed minima and
+    # another +1/-1 is searched until a local minima is found.
+
+#TODO potential strategy: `gaussian_minimization`
+    # gaussian process regression is used to fit the minimization trend and efficiently reach the minimum value.
+
+#TODO consider downscaling for strategy/processing.

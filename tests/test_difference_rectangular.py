@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
-from misalign.model.project import MISProjectJSON
+# from misalign.model.project import MISProjectJSON
+from misalign.model.image import MISImageFile
+from misalign.model.relation import MISRelationRectangular
 import misalign.alignment.difference_rectangular as dr
 
 class TestOverlap():
@@ -56,25 +58,25 @@ class TestOverlap():
         Tests `overlap_spans` with offset vectors that do not overlap.
         """
         with pytest.raises(expected_exception=ValueError):
-            axy_bxy_spans=dr.overlap_spans(
+            dr.overlap_spans(
                     offset_vector=(1600,0),
                     a_shape=(1200,1600),
                     b_shape=(1200,1600)
                 )
         with pytest.raises(expected_exception=ValueError):
-            axy_bxy_spans=dr.overlap_spans(
+            dr.overlap_spans(
                     offset_vector=(-1600,0),
                     a_shape=(1200,1600),
                     b_shape=(1200,1600)
                 )
         with pytest.raises(expected_exception=ValueError):
-            axy_bxy_spans=dr.overlap_spans(
+            dr.overlap_spans(
                     offset_vector=(0,1200),
                     a_shape=(1200,1600),
                     b_shape=(1200,1600)
                 )
         with pytest.raises(expected_exception=ValueError):
-            axy_bxy_spans=dr.overlap_spans(
+            dr.overlap_spans(
                     offset_vector=(0,-1200),
                     a_shape=(1200,1600),
                     b_shape=(1200,1600)
@@ -90,8 +92,8 @@ class TestOverlap():
         def metric_sum(overlap_a,overlap_b):
             return np.sum((overlap_a,overlap_b))
         overlap_metric=dr.overlap_evaluate(
-            array_a=np.full(shape=(100,100),fill_value=100,dtype=np.uint8),
-            array_b=np.full(shape=(100,100),fill_value=200,dtype=np.uint8),
+            array_a=np.full(shape=(100,100),fill_value=100,dtype=np.float32),
+            array_b=np.full(shape=(100,100),fill_value=200,dtype=np.float32),
             offset_ab=(50,50),
             metric=metric_sum
         )
@@ -106,22 +108,21 @@ class TestOverlap():
         def metric_sum(overlap_a,overlap_b):
             return np.sum((overlap_a,overlap_b))
         difference=dr.overlap_difference(
-            array_a=np.full(shape=(100,100),fill_value=100,dtype=np.uint8),
-            array_b=np.full(shape=(100,100),fill_value=200,dtype=np.uint8),
+            array_a=np.full(shape=(100,100),fill_value=100,dtype=np.float32),
+            array_b=np.full(shape=(100,100),fill_value=200,dtype=np.float32),
             offset_ab=(50,50),
         )
         assert np.all(difference==-100)
 
-
-
+class TestMetric():
     def test_metric_difference_squared_mean_simple(self):
         """
         Tests `metric_difference_squared_mean` with  simplified arrays.
         """
         
         overlap_metric=dr.metric_difference_squared_mean(
-            overlap_a=np.full(shape=(50,50),fill_value=100,dtype=np.uint8),
-            overlap_b=np.full(shape=(50,50),fill_value=200,dtype=np.uint8)
+            overlap_a=np.full(shape=(50,50),fill_value=100,dtype=np.float32),
+            overlap_b=np.full(shape=(50,50),fill_value=200,dtype=np.float32)
             )
         assert overlap_metric==100**2
     def test_metric_difference_absolute_mean_simple(self):
@@ -130,13 +131,13 @@ class TestOverlap():
         """
         
         overlap_metric=dr.metric_difference_absolute_mean(
-            overlap_a=np.full(shape=(50,50),fill_value=100,dtype=np.uint8),
-            overlap_b=np.full(shape=(50,50),fill_value=200,dtype=np.uint8)
+            overlap_a=np.full(shape=(50,50),fill_value=100,dtype=np.float32),
+            overlap_b=np.full(shape=(50,50),fill_value=200,dtype=np.float32)
             )
         assert overlap_metric==100
 
 
-
+class TestStrategy():
     def test_strategy_scaled_grid_simple(self):
         """
         Tests `strategy_scaled_grid` with  simplified arrays and offsets.
@@ -147,16 +148,15 @@ class TestOverlap():
             function=lambda row,col:(row-50)**2+(col-50)**2,
             shape=(100,100))
         array_a[array_a>255]==255
-        array_a=array_a.astype(np.uint8)
+        array_a=array_a.astype(np.float32)
 
         # Quadratic curve centered at 50,50 and then offset.
         array_b=np.fromfunction(
             function=lambda row,col:(row-50-planned_offset[1])**2+(col-50-planned_offset[0])**2,
             shape=(100,100))
         array_b[array_b>255]==255
-        array_b=array_b.astype(np.uint8)
+        array_b=array_b.astype(np.float32)
 
-        
         assert array_a[50,50]==0 and array_b[45,47]==0
         
         results=dr.strategy_scaled_grid(
@@ -191,14 +191,14 @@ class TestOverlap():
             function=lambda row,col:(row-50)**2+(col-50)**2,
             shape=(100,100))
         array_a[array_a>255]==255
-        array_a=array_a.astype(np.uint8)
+        array_a=array_a.astype(np.int32)
 
         # Quadratic curve centered at 50,50 and then offset.
         array_b=np.fromfunction(
             function=lambda row,col:(row-50-planned_offset[1])**2+(col-50-planned_offset[0])**2,
             shape=(100,100))
         array_b[array_b>255]==255
-        array_b=array_b.astype(np.uint8)
+        array_b=array_b.astype(np.float32)
 
         
         assert array_a[50,50]==0 and array_b[95,55]==0
@@ -210,6 +210,26 @@ class TestOverlap():
         )
 
         assert results["optimized_offset"]==planned_offset
-        
+
         #TODO test more of the items in results.
         #TODO test with noise or other factors.
+
+class TestDifferenceGradientAnalysis():
+    def test_difference_gradient_analysis_simple(self):
+        reference_optimized_relation=(9, -1087)
+        reference_initial_relation=(12,-1088)
+
+        image_a=MISImageFile(image_filepath="tests/test_files/test_data/test_image_a01.jpg")
+        image_b=MISImageFile(image_filepath="tests/test_files/test_data/test_image_a02.jpg")
+
+        relation=MISRelationRectangular(
+            image_pair=(image_a.name,image_b.name),
+            rectangular=reference_initial_relation)
+        
+        dga_results=dr.difference_gradient_analysis(
+            image_a=image_a,
+            image_b=image_b,
+            relation=relation)
+        
+        assert dga_results['optimized_offset']==reference_optimized_relation
+    #TODO Add more comprehensive tests to DGA
