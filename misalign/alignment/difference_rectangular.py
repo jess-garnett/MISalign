@@ -40,8 +40,6 @@ def axis_span(offset_vector:int,a_shape:int,b_shape:int)->tuple[tuple[int,int],t
     else:
         raise ValueError()
     return a_span,b_span
-#TODO add better handling for different image sizes.
-#TODO add tests for axis_span
 
 
 def overlap_spans(offset_vector:tuple[int,int],a_shape:tuple[int,int],b_shape:tuple[int,int])->tuple[tuple[tuple[int,int],tuple[int,int]],tuple[tuple[int,int],tuple[int,int]]]:
@@ -73,5 +71,4 @@ def overlap_spans(offset_vector:tuple[int,int],a_shape:tuple[int,int],b_shape:tu
     ax_span,bx_span=axis_span(offset_vector[0],a_shape[1],b_shape[1])
     ay_span,by_span=axis_span(offset_vector[1],a_shape[0],b_shape[0])
     return (ax_span,ay_span),(bx_span,by_span)
-#TODO add tests for overlap_spans
 
