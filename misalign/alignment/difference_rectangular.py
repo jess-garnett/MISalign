@@ -51,6 +51,7 @@ def overlap_spans(offset_vector:tuple[int,int],a_shape:tuple[int,int],b_shape:tu
     offset_vector : tuple[int,int]
         The vector from the top left corner of image a to the top left corner of image b.
         In (x,y) order.
+        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
     a_shape : tuple[int,int]
         The shape of image a.
         In (row,column) / (y,x) order.
@@ -91,6 +92,7 @@ def overlap_evaluate(
     offset_ab : tuple[int,int] | np.ndarray
         The vector from the top left corner of image a to the top left corner of image b.
         In (x,y) order.
+        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
     metric : Callable[[np.ndarray,np.ndarray],float]
         Function that takes two numpy arrays and returns a value describing some aspect of them.
         Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
@@ -108,6 +110,7 @@ def overlap_evaluate(
     ## Get overlap metric
     return metric(overlap_a,overlap_b)
 
+
 def overlap_difference(
         array_a:np.ndarray,
         array_b:np.ndarray,
@@ -120,11 +123,14 @@ def overlap_difference(
     ----------
     array_a : np.ndarray
         Numpy array of image a.
+        Note: Unsigned integer arrays are converted to float.
     array_b : np.ndarray
         Numpy array of image b.
+        Note: Unsigned integer arrays are converted to float.
     offset_ab : tuple[int,int] | np.ndarray
         The vector from the top left corner of image a to the top left corner of image b.
         In (x,y) order.
+        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
 
     Returns
     -------
@@ -137,4 +143,179 @@ def overlap_difference(
     overlap_a=array_a[a_spans[1][0]:a_spans[1][1],a_spans[0][0]:a_spans[0][1]]
     overlap_b=array_b[b_spans[1][0]:b_spans[1][1],b_spans[0][0]:b_spans[0][1]]
 
-    return overlap_a.astype(np.int16)-overlap_b.astype(np.int16)
+    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
+        overlap_a=overlap_a.astype(float)
+    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
+        overlap_b=overlap_b.astype(float)
+
+    return overlap_a-overlap_b
+
+
+def metric_difference_squared_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+    """
+    Calculates the mean of the squared difference of two arrays.
+
+    Parameters
+    ----------
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image a.
+        Note: Unsigned integer arrays are converted to float.
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image b.
+        Note: Unsigned integer arrays are converted to float.
+
+    Returns
+    -------
+    overlap_metric : float
+        Result of taking the mean of the square of the difference of the arrays.
+    """
+    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
+        overlap_a=overlap_a.astype(float)
+    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
+        overlap_b=overlap_b.astype(float)
+
+    return np.mean((overlap_a-overlap_b)**2)
+    
+def metric_difference_absolute_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+    """
+    Calculates the mean of the absolute difference of two arrays.
+
+    Parameters
+    ----------
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image a.
+        Note: Unsigned integer arrays are converted to float.
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image b.
+        Note: Unsigned integer arrays are converted to float.
+
+    Returns
+    -------
+    overlap_metric : float
+        Result of taking the mean of the absolute value of the difference of the arrays.
+    """
+    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
+        overlap_a=overlap_a.astype(float)
+    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
+        overlap_b=overlap_b.astype(float)
+
+    diff=overlap_a-overlap_b
+    return np.mean(np.abs(diff,out=diff))
+
+
+def strategy_scaled_grid(
+        array_a:np.ndarray,
+        array_b:np.ndarray,
+        initial_offset:tuple[int,int],
+        strategy_grid_scale:int,
+        strategy_max_size:int=5,
+        metric:Callable[[np.ndarray,np.ndarray],float]=metric_difference_squared_mean,)->dict:
+    """
+    Sparse grid search strategy for difference gradient alignment.
+    
+    Parameters
+    ----------
+    array_a : np.ndarray
+        Numpy array of image a.
+        Note: Unsigned integer arrays are converted to float.
+    array_b : np.ndarray
+        Numpy array of image b.
+        Note: Unsigned integer arrays are converted to float.
+    initial_offset : tuple[int,int]
+        An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
+        In (x,y) order.
+        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
+    strategy_grid_scale : int
+        Distance to space out search grid by.
+    strategy_max_size : int
+        Number of steps to check on each side of initial offset or `5` by default.
+        Example: `...=5` means an 11x11 set of offsets will be searched.
+    metric : Callable[[np.ndarray,np.ndarray],float]
+        Function that takes two numpy arrays and returns a value describing some aspect of them or `metric_difference_squared_mean` by default.
+        Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+
+    Returns
+    -------
+    strategy_results : dict
+        Dictionary with results of sparse grid search.
+        `grid` : np.ndarray
+            Offsets that were searched.
+        `grid_results` : np.ndarray
+            Metric value at matching offset in `grid`.
+        `optimized_offset` : tuple[int,int]
+            Optimized offset based on minimum in metric value.
+        `initial_offset` : tuple[int,int]
+            Initial offset provided to strategy.
+    """
+    grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
+    grid=np.fromfunction(lambda y,x: np.array([initial_offset[0]+(strategy_grid_scale*(x-strategy_max_size)),
+                                                                                            initial_offset[1]+(strategy_grid_scale*(y-strategy_max_size))]),
+                                                                                            shape=grid_shape,dtype=int)
+    grid_results=np.full(grid_shape,np.nan)
+    grid_indeces=np.fromfunction(lambda row,col: np.array([row,col]),shape=grid_shape,dtype=int).reshape(2,-1)
+
+    for i,grid_index in enumerate(grid_indeces.T):
+        check_offset=grid[:,grid_index[0],grid_index[1]]
+        grid_results[grid_index[0],grid_index[1]]=overlap_evaluate(array_a,array_b,
+            offset_ab=check_offset,
+            metric=metric)
+    optimized_location=grid_results.reshape(-1).argmin()
+    optimized_offset=tuple([int(value) for value in grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]])
+    return {
+        "grid":grid,
+        "grid_results":grid_results,
+        "optimized_offset":optimized_offset,
+        "initial_offset":initial_offset
+        }
+
+def strategy_full_grid(
+        array_a:np.ndarray,
+        array_b:np.ndarray,
+        initial_offset:tuple[int,int],
+        strategy_max_size:int=5,
+        metric:Callable[[np.ndarray,np.ndarray],float]=metric_difference_squared_mean,)->dict:
+    """
+    Full grid search strategy for difference gradient alignment.
+
+    Convenience function that wraps `strategy_scaled_grid` with `strategy_grid_scale=1`.
+    
+    Parameters
+    ----------
+    array_a : np.ndarray
+        Numpy array of image a.
+        Note: Unsigned integer arrays are converted to float.
+    array_b : np.ndarray
+        Numpy array of image b.
+        Note: Unsigned integer arrays are converted to float.
+    initial_offset : tuple[int,int]
+        An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
+        In (x,y) order.
+        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
+    strategy_max_size : int
+        Number of steps to check on each side of initial offset or `5` by default.
+        Example: `...=5` means an 11x11 set of offsets will be searched.
+    metric : Callable[[np.ndarray,np.ndarray],float]
+        Function that takes two numpy arrays and returns a value describing some aspect of them or `metric_difference_squared_mean` by default.
+        Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+
+    Returns
+    -------
+    strategy_results : dict
+        Dictionary with results of full grid search.
+        `grid` : np.ndarray
+            Offsets that were searched.
+        `grid_results` : np.ndarray
+            Metric value at matching offset in `grid`.
+        `optimized_offset` : tuple[int,int]
+            Optimized offset based on minimum in metric value.
+        `initial_offset` : tuple[int,int]
+            Initial offset provided to strategy.
+    """
+    return strategy_scaled_grid(array_a=array_a,
+                                array_b=array_b,
+                                initial_offset=initial_offset,
+                                strategy_grid_scale=1,
+                                strategy_max_size=strategy_max_size,
+                                metric=metric)
+
+

@@ -85,7 +85,7 @@ class TestOverlap():
 
     def test_overlap_evaluate_simple(self):
         """
-        Tests `overlap_compare` with a simplified metric and array.
+        Tests `overlap_compare` with a simplified metric and arrays.
         """
         def metric_sum(overlap_a,overlap_b):
             return np.sum((overlap_a,overlap_b))
@@ -101,7 +101,7 @@ class TestOverlap():
 
     def test_overlap_difference_simple(self):
         """
-        Tests `overlap_difference` with a simplified array.
+        Tests `overlap_difference` with simplified arrays.
         """
         def metric_sum(overlap_a,overlap_b):
             return np.sum((overlap_a,overlap_b))
@@ -111,3 +111,105 @@ class TestOverlap():
             offset_ab=(50,50),
         )
         assert np.all(difference==-100)
+
+
+
+    def test_metric_difference_squared_mean_simple(self):
+        """
+        Tests `metric_difference_squared_mean` with  simplified arrays.
+        """
+        
+        overlap_metric=dr.metric_difference_squared_mean(
+            overlap_a=np.full(shape=(50,50),fill_value=100,dtype=np.uint8),
+            overlap_b=np.full(shape=(50,50),fill_value=200,dtype=np.uint8)
+            )
+        assert overlap_metric==100**2
+    def test_metric_difference_absolute_mean_simple(self):
+        """
+        Tests `metric_difference_absolute_mean` with  simplified arrays.
+        """
+        
+        overlap_metric=dr.metric_difference_absolute_mean(
+            overlap_a=np.full(shape=(50,50),fill_value=100,dtype=np.uint8),
+            overlap_b=np.full(shape=(50,50),fill_value=200,dtype=np.uint8)
+            )
+        assert overlap_metric==100
+
+
+
+    def test_strategy_scaled_grid_simple(self):
+        """
+        Tests `strategy_scaled_grid` with  simplified arrays and offsets.
+        """
+        planned_offset=(-3,-5)
+        # Quadratic curve centered at 50,50
+        array_a=np.fromfunction(
+            function=lambda row,col:(row-50)**2+(col-50)**2,
+            shape=(100,100))
+        array_a[array_a>255]==255
+        array_a=array_a.astype(np.uint8)
+
+        # Quadratic curve centered at 50,50 and then offset.
+        array_b=np.fromfunction(
+            function=lambda row,col:(row-50-planned_offset[1])**2+(col-50-planned_offset[0])**2,
+            shape=(100,100))
+        array_b[array_b>255]==255
+        array_b=array_b.astype(np.uint8)
+
+        
+        assert array_a[50,50]==0 and array_b[45,47]==0
+        
+        results=dr.strategy_scaled_grid(
+            array_a=array_a,
+            array_b=array_b,
+            initial_offset=(-5,-5),
+            strategy_grid_scale=1,
+        )
+
+        assert results["optimized_offset"]==planned_offset
+
+        results=dr.strategy_scaled_grid(
+            array_a=array_a,
+            array_b=array_b,
+            initial_offset=(-7,1),
+            strategy_grid_scale=2,
+        )
+
+        assert results["optimized_offset"]==planned_offset
+        
+        #TODO test more of the items in results.
+        #TODO test with noise or other factors.
+        
+
+    def test_strategy_full_grid_simple(self):
+        """
+        Tests `strategy_full_grid` with  simplified arrays and offsets.
+        """
+        planned_offset=(5,45)
+        # Quadratic curve centered at 50,50
+        array_a=np.fromfunction(
+            function=lambda row,col:(row-50)**2+(col-50)**2,
+            shape=(100,100))
+        array_a[array_a>255]==255
+        array_a=array_a.astype(np.uint8)
+
+        # Quadratic curve centered at 50,50 and then offset.
+        array_b=np.fromfunction(
+            function=lambda row,col:(row-50-planned_offset[1])**2+(col-50-planned_offset[0])**2,
+            shape=(100,100))
+        array_b[array_b>255]==255
+        array_b=array_b.astype(np.uint8)
+
+        
+        assert array_a[50,50]==0 and array_b[95,55]==0
+        
+        results=dr.strategy_full_grid(
+            array_a=array_a,
+            array_b=array_b,
+            initial_offset=(2,48),
+        )
+
+        assert results["optimized_offset"]==planned_offset
+        
+        #TODO test more of the items in results.
+        #TODO test with noise or other factors.
