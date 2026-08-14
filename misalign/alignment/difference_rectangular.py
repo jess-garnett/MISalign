@@ -365,7 +365,7 @@ def filter_simple(image:array_like)->np.ndarray:
     array : np.ndarray
         Converted array.
     """
-    return np.asarray(image).astype(np.int16)
+    return np.asarray(image).astype(np.float32)
 def filter_rgb_gray_mean(image:array_like)->np.ndarray:
     """
     Filter to get an array from an array-like, reduce it from RGB to grayscale by taking the mean, and convert it to `np.int16`.
@@ -380,7 +380,7 @@ def filter_rgb_gray_mean(image:array_like)->np.ndarray:
     array : np.ndarray
         Converted array.
     """
-    return np.mean(image,axis=-1).astype(np.int16)
+    return np.mean(image,axis=-1).astype(np.float32)
 
 def difference_gradient_analysis(
         image_a:MISImage|array_like,
