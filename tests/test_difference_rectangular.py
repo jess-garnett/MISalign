@@ -115,33 +115,33 @@ class TestOverlap():
         assert np.all(difference==-100)
 
 class TestMetric():
-    def test_metric_difference_squared_mean_simple(self):
+    @pytest.mark.parametrize(argnames="dtype",argvalues=[np.float32,np.float64,np.int16,pytest.param(np.uint8, marks=pytest.mark.xfail)])
+    def test_metric_difference_squared_mean_simple(self,benchmark,dtype):
         """
         Tests `metric_difference_squared_mean` with  simplified arrays.
         """
         
-        overlap_metric=dr.metric_difference_squared_mean(
-            overlap_a=np.full(shape=(50,50),fill_value=100,dtype=np.float32),
-            overlap_b=np.full(shape=(50,50),fill_value=200,dtype=np.float32)
+        overlap_a=np.full(shape=(50,50),fill_value=100,dtype=dtype)
+        overlap_b=np.full(shape=(50,50),fill_value=200,dtype=dtype)
+        overlap_metric=benchmark(dr.metric_difference_squared_mean,
+            overlap_a=overlap_a,
+            overlap_b=overlap_b
             )
         assert overlap_metric==100**2
-    def test_metric_difference_absolute_mean_simple(self):
+    @pytest.mark.parametrize(argnames="dtype",argvalues=[np.float32,np.float64,np.int16,pytest.param(np.uint8, marks=pytest.mark.xfail)])
+    def test_metric_difference_absolute_mean_simple(self,benchmark,dtype):
         """
         Tests `metric_difference_absolute_mean` with  simplified arrays.
         """
         
-        overlap_metric=dr.metric_difference_absolute_mean(
-            overlap_a=np.full(shape=(50,50),fill_value=100,dtype=np.float32),
-            overlap_b=np.full(shape=(50,50),fill_value=200,dtype=np.float32)
+        overlap_metric=benchmark(dr.metric_difference_absolute_mean,
+            overlap_a=np.full(shape=(50,50),fill_value=100,dtype=dtype),
+            overlap_b=np.full(shape=(50,50),fill_value=200,dtype=dtype)
             )
         assert overlap_metric==100
 
-
-class TestStrategy():
-    def test_strategy_scaled_grid_simple(self):
-        """
-        Tests `strategy_scaled_grid` with  simplified arrays and offsets.
-        """
+@pytest.fixture
+def simple_parabolic_arrays_1():
         planned_offset=(-3,-5)
         # Quadratic curve centered at 50,50
         array_a=np.fromfunction(
@@ -156,23 +156,28 @@ class TestStrategy():
             shape=(100,100))
         array_b[array_b>255]==255
         array_b=array_b.astype(np.float32)
+        
+        return array_a,array_b,planned_offset
 
+class TestStrategy():
+    @pytest.mark.parametrize(argnames="initial_offset,strategy_grid_scale,strategy_max_size",argvalues=[
+        ((-5,-5),1,5), # 2 pixels away, non-scaled grid.
+        ((-7,-1),1,5), # (4,4) pixels away, scaled grid aligned with true solution.
+        ((1,4),1,10), # (4,9) pixels away, non-scaled large grid.
+    ])
+    def test_strategy_scaled_grid_simple_1(self,benchmark,simple_parabolic_arrays_1,initial_offset,strategy_grid_scale,strategy_max_size):
+        """
+        Tests `strategy_scaled_grid` with  simplified arrays and offsets.
+        """
+        array_a,array_b,planned_offset=simple_parabolic_arrays_1
         assert array_a[50,50]==0 and array_b[45,47]==0
         
-        results=dr.strategy_scaled_grid(
+        results=benchmark(dr.strategy_scaled_grid,
             array_a=array_a,
             array_b=array_b,
-            initial_offset=(-5,-5),
-            strategy_grid_scale=1,
-        )
-
-        assert results["optimized_offset"]==planned_offset
-
-        results=dr.strategy_scaled_grid(
-            array_a=array_a,
-            array_b=array_b,
-            initial_offset=(-7,1),
-            strategy_grid_scale=2,
+            initial_offset=initial_offset,
+            strategy_grid_scale=strategy_grid_scale,
+            strategy_max_size=strategy_max_size
         )
 
         assert results["optimized_offset"]==planned_offset
@@ -215,9 +220,13 @@ class TestStrategy():
         #TODO test with noise or other factors.
 
 class TestDifferenceGradientAnalysis():
-    def test_difference_gradient_analysis_simple(self):
+    @pytest.mark.parametrize(argnames="reference_initial_relation,kwargs",argvalues=[
+        ((12,-1088),{"strategy_max_size":5}), # (3,1) from true solution
+        ((12,-1088),{"strategy_max_size":10}), # (3,1) from true solution
+        ((12,-1088),{"strategy_max_size":20}), # (3,1) from true solution
+    ])
+    def test_difference_gradient_analysis_simple(self,benchmark,reference_initial_relation,kwargs):
         reference_optimized_relation=(9, -1087)
-        reference_initial_relation=(12,-1088)
 
         image_a=MISImageFile(image_filepath="tests/test_files/test_data/test_image_a01.jpg")
         image_b=MISImageFile(image_filepath="tests/test_files/test_data/test_image_a02.jpg")
@@ -226,10 +235,11 @@ class TestDifferenceGradientAnalysis():
             image_pair=(image_a.name,image_b.name),
             rectangular=reference_initial_relation)
         
-        dga_results=dr.difference_gradient_analysis(
+        dga_results=benchmark(dr.difference_gradient_analysis,
             image_a=image_a,
             image_b=image_b,
-            relation=relation)
+            relation=relation,
+            **kwargs)
         
         assert dga_results['optimized_offset']==reference_optimized_relation
     #TODO Add more comprehensive tests to DGA
