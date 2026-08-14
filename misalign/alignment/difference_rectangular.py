@@ -5,8 +5,13 @@ Difference- & Overlap-based Automated Rectangular Alignment Module
 import numpy as np
 from collections.abc import Callable
 from typing import runtime_checkable, Protocol
+
 from misalign.model.image import MISImage
 from misalign.model.relation import MISRelation
+
+"""
+Axis and Overlap Functions
+"""
 
 def axis_span(offset_vector:int,a_shape:int,b_shape:int)->tuple[tuple[int,int],tuple[int,int]]:
     """
@@ -151,6 +156,9 @@ def overlap_difference(
 
     return overlap_a-overlap_b
 
+"""
+Basic Metric Functions
+"""
 
 def metric_difference_squared_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
     """
@@ -203,6 +211,9 @@ def metric_difference_absolute_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->
     diff=overlap_a-overlap_b
     return np.mean(np.abs(diff,out=diff))
 
+"""
+Basic Strategy Functions
+"""
 
 def strategy_scaled_grid(
         array_a:np.ndarray,
@@ -319,6 +330,19 @@ def strategy_full_grid(
                                 strategy_max_size=strategy_max_size,
                                 metric=metric)
 
+#TODO potential strategy: `local_minima`
+    # search starts with +1/-1 around `relation` and then moves to the observed minima and
+    # another +1/-1 is searched until a local minima is found.
+
+#TODO potential strategy: `gaussian_minimization`
+    # gaussian process regression is used to fit the minimization trend and efficiently reach the minimum value.
+
+#TODO consider downscaling for strategy/processing.
+
+
+"""
+Filter Functions
+"""
 
 ## array-like class
 @runtime_checkable
@@ -353,7 +377,7 @@ class array_like(Protocol):
 
 def filter_simple(image:array_like)->np.ndarray:
     """
-    Filter to get an array from an array-like and convert it to `np.int16`.
+    Filter to get an array from an array-like and convert it to `np.float32`.
     
     Parameters
     ----------
@@ -381,6 +405,10 @@ def filter_rgb_gray_mean(image:array_like)->np.ndarray:
         Converted array.
     """
     return np.mean(image,axis=-1).astype(np.float32)
+
+"""
+Difference Gradient Analysis Function
+"""
 
 def difference_gradient_analysis(
         image_a:MISImage|array_like,
@@ -446,11 +474,196 @@ def difference_gradient_analysis(
 
 #TODO make `filter_...` and `metric_...` kwargs passable through to their respective use case.
 
-#TODO potential strategy: `local_minima`
-    # search starts with +1/-1 around `relation` and then moves to the observed minima and
-    # another +1/-1 is searched until a local minima is found.
+"""
+Result Visualization Functions
+"""
 
-#TODO potential strategy: `gaussian_minimization`
-    # gaussian process regression is used to fit the minimization trend and efficiently reach the minimum value.
+#TODO plotting functions from `difference_gradient.py`
 
-#TODO consider downscaling for strategy/processing.
+"""
+Difference Gradient Analysis Metric and Strategy Functions
+"""
+
+try:
+    import scipy
+    # from scipy.interpolate import NearestNDInterpolator
+except ImportError:
+    _if_scipy = False
+else:
+    _if_scpy = True
+
+try:
+    import skimage
+    # from skimage.morphology import skeletonize, dilation, footprints
+    # from skimage.filters import gaussian
+except ImportError:
+    _if_scipy = False
+else:
+    _if_scpy = True
+
+### Difference Gradient Analysis Full Search Metrics
+
+def metric_highlow_inverse_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier:int=16)->float:
+    """
+    Calculates the inverse of (max-min)/modifier for the overlap region.
+
+    Weights against low-feature overlapping regions. Result will be on the interval (0,1]
+
+    Parameters
+    ----------
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image a.
+        Note: Unsigned integer arrays are converted to float.
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image b.
+        Note: Unsigned integer arrays are converted to float.
+    modifier : int
+        Modifier to divide the difference of max and min by.
+        The higher the modifier the greater the difference needed to reduce the metric.
+        Example: `modifier=16` difference of 16 is metric of 1, difference of 80 is metric of 0.2.
+        Example: `modifier=8` difference of 16 is metric of 0.5, difference of 80 is metric of 0.1.
+
+    Returns
+    -------
+    overlap_metric : float
+        Result of taking the mean of the square of the difference of the arrays.
+    """
+    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
+        overlap_a=overlap_a.astype(np.float32)
+    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
+        overlap_b=overlap_b.astype(np.float32)
+
+    def metric(overlap):
+        return  np.min([1/((np.max(overlap)-np.min(overlap))/modifier),1])
+        # variation of 16 > value of 1 > variation of 32 > value of 1/2 > etc. variation of 80 > 0.2
+    return np.max([metric(overlap_a),metric(overlap_b)])
+
+
+def metric_difference_squared_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
+    """
+    Calculates the mean of the squared difference of two arrays.
+
+    Weights against misalignment in features. Result will be on the interval [0,1]
+
+    Parameters
+    ----------
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image a.
+        Note: Unsigned integer arrays are converted to float.
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image b.
+        Note: Unsigned integer arrays are converted to float.
+    modifier : int
+        Modifier to multiply the mean by.
+
+    Returns
+    -------
+    overlap_metric : float
+        Result of taking the mean of the square of the difference of the arrays.
+    """
+    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
+        overlap_a=overlap_a.astype(np.float32)
+    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
+        overlap_b=overlap_b.astype(np.float32)
+
+    return np.min([modifier*np.mean((overlap_a-overlap_b)**2)/(255**2),1])
+
+
+def metric_difference_absolute_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
+    """
+    Calculates the mean of the absolute difference of two arrays.
+
+    Weights against misalignment in features. Result will be on the interval [0,1]
+
+    Parameters
+    ----------
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image a.
+        Note: Unsigned integer arrays are converted to float.
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image b.
+        Note: Unsigned integer arrays are converted to float.
+    modifier : int
+        Modifier to multiply the mean by.
+
+    Returns
+    -------
+    overlap_metric : float
+        Result of taking the mean of the square of the difference of the arrays.
+    """
+    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
+        overlap_a=overlap_a.astype(np.float32)
+    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
+        overlap_b=overlap_b.astype(np.float32)
+        
+    diff=overlap_a-overlap_b
+    return np.min([modifier*np.mean(np.abs(diff,out=diff))/255,1])
+
+
+def metric_difference_max_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
+    """
+    Calculates the max of the absolute difference of two arrays.
+
+    Weights strongly against misalignment in features. Result will be on the interval [0,1]
+
+    Parameters
+    ----------
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image a.
+        Note: Unsigned integer arrays are converted to float.
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image b.
+        Note: Unsigned integer arrays are converted to float.
+    modifier : int
+        Modifier to multiply the mean by.
+
+    Returns
+    -------
+    overlap_metric : float
+        Result of taking the mean of the square of the difference of the arrays.
+    """
+    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
+        overlap_a=overlap_a.astype(np.float32)
+    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
+        overlap_b=overlap_b.astype(np.float32)
+
+    diff=(overlap_a-overlap_b)
+    np.abs(diff,out=diff)
+    return np.min([np.max(diff)/(255),1])
+
+def metric_combined_simple_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier_max:int=1,modifier_squared:int=50,modifier_highlow:int=1):
+    """
+    Simple combination of `metric_difference_max_norm`, `metric_difference_squared_mean_norm`, and `metric_highlow_inverse_norm`.
+
+    Weights against misalignment in features and against low feature regions. Result will be on the interval (0,1]
+
+    Parameters
+    ----------
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image a.
+        Note: Unsigned integer arrays are converted to float.
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image b.
+        Note: Unsigned integer arrays are converted to float.
+    modifier_max : int
+        Modifier to multiply the `metric_difference_max_norm` by.
+    modifier_squared : int
+        Modifier to multiply the `metric_difference_squared_mean_norm` by.
+    modifier_highlow : int
+        Modifier to multiply the `metric_highlow_inverse_norm` by.
+
+    Returns
+    -------
+    overlap_metric : float
+        Result of taking the mean of the square of the difference of the arrays.
+    """
+    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
+        overlap_a=overlap_a.astype(np.float32)
+    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
+        overlap_b=overlap_b.astype(np.float32)
+    
+    return np.mean([
+        metric_difference_max_norm(overlap_a,overlap_b,modifier=modifier_max),
+        metric_difference_squared_mean_norm(overlap_a,overlap_b,modifier=modifier_squared),
+        metric_highlow_inverse_norm(overlap_a,overlap_b,modifier=modifier_highlow),
+        ])
