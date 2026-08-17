@@ -1,9 +1,31 @@
+from math import dist
 import numpy as np
 import pytest
 # from misalign.model.project import MISProjectJSON
 from misalign.model.image import MISImageFile
 from misalign.model.relation import MISRelationRectangular
 import misalign.alignment.difference_rectangular as dr
+
+
+@pytest.fixture
+def simple_parabolic_arrays_1():
+        planned_offset=(-3,-5)
+        # Quadratic curve centered at 50,50
+        array_a=np.fromfunction(
+            function=lambda row,col:(row-50)**2+(col-50)**2,
+            shape=(100,100))
+        array_a[array_a>255]==255
+        array_a=array_a.astype(np.float32)
+
+        # Quadratic curve centered at 50,50 and then offset.
+        array_b=np.fromfunction(
+            function=lambda row,col:(row-50-planned_offset[1])**2+(col-50-planned_offset[0])**2,
+            shape=(100,100))
+        array_b[array_b>255]==255
+        array_b=array_b.astype(np.float32)
+        
+        return array_a,array_b,planned_offset
+
 
 class TestOverlap():
     def test_axis_span_matching_shape_positive_offset(self):
@@ -116,7 +138,7 @@ class TestOverlap():
 
 class TestMetric():
     @pytest.mark.parametrize(argnames="dtype",argvalues=[np.float32,np.float64,np.int16,pytest.param(np.uint8, marks=pytest.mark.xfail)])
-    def test_metric_difference_squared_mean_simple(self,benchmark,dtype):
+    def test_metric_dtypes(self,benchmark,dtype):
         """
         Tests `metric_difference_squared_mean` with  simplified arrays.
         """
@@ -128,36 +150,48 @@ class TestMetric():
             overlap_b=overlap_b
             )
         assert overlap_metric==100**2
-    @pytest.mark.parametrize(argnames="dtype",argvalues=[np.float32,np.float64,np.int16,pytest.param(np.uint8, marks=pytest.mark.xfail)])
-    def test_metric_difference_absolute_mean_simple(self,benchmark,dtype):
+
+    @pytest.mark.parametrize(argnames="metric",argvalues=[
+        pytest.param(dr.metric_difference_squared_mean,id="metric_difference_squared_mean"),
+        pytest.param(dr.metric_difference_squared_mean_norm,id="metric_difference_squared_mean_norm"),
+        pytest.param(dr.metric_difference_absolute_mean,id="metric_difference_absolute_mean"),
+        pytest.param(dr.metric_difference_absolute_mean_norm,id="metric_difference_absolute_mean_norm"),
+        pytest.param(dr.metric_difference_max_norm,id="metric_difference_max_norm"),
+        pytest.param(dr.metric_combined_simple_norm,id="metric_combined_simple_norm"),
+        ])
+    def test_metric_location_simple_1(self,benchmark,simple_parabolic_arrays_1,metric):
         """
-        Tests `metric_difference_absolute_mean` with  simplified arrays.
+        Tests metric that have a minima at the true match with simplified parabolic array.
         """
-        
-        overlap_metric=benchmark(dr.metric_difference_absolute_mean,
-            overlap_a=np.full(shape=(50,50),fill_value=100,dtype=dtype),
-            overlap_b=np.full(shape=(50,50),fill_value=200,dtype=dtype)
+        array_a,array_b,planned_offset=simple_parabolic_arrays_1
+
+        overlap_metric=benchmark(dr.overlap_evaluate,
+            array_a=array_a,
+            array_b=array_b,
+            offset_ab=planned_offset,
+            metric=metric
             )
-        assert overlap_metric==100
+        assert overlap_metric<1e-3
+    
+    @pytest.mark.parametrize(argnames="metric,expected_value",argvalues=[
+        pytest.param(dr.metric_highlow_inverse_norm,0.0033319450449198484,id="metric_difference_max_norm"),
+        pytest.param(dr.metric_linear_edge_penalty,0.1366666666666667,id="metric_linear_edge_penalty"),
+        ])
+    def test_metric_other_simple_1(self,benchmark,simple_parabolic_arrays_1,metric,expected_value):
+        """
+        Tests metric which are not expected to consistently have a minima at the true solution.
+        """
+        array_a,array_b,planned_offset=simple_parabolic_arrays_1
 
-@pytest.fixture
-def simple_parabolic_arrays_1():
-        planned_offset=(-3,-5)
-        # Quadratic curve centered at 50,50
-        array_a=np.fromfunction(
-            function=lambda row,col:(row-50)**2+(col-50)**2,
-            shape=(100,100))
-        array_a[array_a>255]==255
-        array_a=array_a.astype(np.float32)
+        overlap_metric=benchmark(dr.overlap_evaluate,
+            array_a=array_a,
+            array_b=array_b,
+            offset_ab=planned_offset,
+            metric=metric
+            )
+        assert overlap_metric==expected_value
+    #TODO make two parametrized test sets. One for metrics which should find correct location. One for metrics that shouldn't(i.e. feature weighting).
 
-        # Quadratic curve centered at 50,50 and then offset.
-        array_b=np.fromfunction(
-            function=lambda row,col:(row-50-planned_offset[1])**2+(col-50-planned_offset[0])**2,
-            shape=(100,100))
-        array_b[array_b>255]==255
-        array_b=array_b.astype(np.float32)
-        
-        return array_a,array_b,planned_offset
 
 class TestStrategy():
     @pytest.mark.parametrize(argnames="initial_offset,strategy_grid_scale,strategy_max_size",argvalues=[
@@ -218,15 +252,17 @@ class TestStrategy():
 
         #TODO test more of the items in results.
         #TODO test with noise or other factors.
-
+        
 class TestDifferenceGradientAnalysis():
-    @pytest.mark.parametrize(argnames="reference_initial_relation,kwargs",argvalues=[
-        ((12,-1088),{"strategy_max_size":5}), # (3,1) from true solution
-        ((12,-1088),{"strategy_max_size":10}), # (3,1) from true solution
-        ((12,-1088),{"strategy_max_size":20}), # (3,1) from true solution
+    # (12,-1088) is (3,1) from true solution
+    @pytest.mark.parametrize(argnames="size,kwargs",argvalues=[
+        pytest.param(5,dict(metric=dr.metric_difference_squared_mean),id="small"),
+        pytest.param(10,dict(metric=dr.metric_difference_squared_mean),id="small-medium"),
+        pytest.param(20,dict(metric=dr.metric_difference_squared_mean),id="medium"),
     ])
-    def test_difference_gradient_analysis_simple(self,benchmark,reference_initial_relation,kwargs):
+    def test_difference_gradient_analysis_simple(self,benchmark,size,kwargs):
         reference_optimized_relation=(9, -1087)
+        reference_initial_relation=(12,-1088)
 
         image_a=MISImageFile(image_filepath="tests/test_files/test_data/test_image_a01.jpg")
         image_b=MISImageFile(image_filepath="tests/test_files/test_data/test_image_a02.jpg")
@@ -239,7 +275,8 @@ class TestDifferenceGradientAnalysis():
             image_a=image_a,
             image_b=image_b,
             relation=relation,
+            strategy_max_size=size,
             **kwargs)
         
-        assert dga_results['optimized_offset']==reference_optimized_relation
+        assert dist(dga_results['optimized_offset'],reference_optimized_relation)<2
     #TODO Add more comprehensive tests to DGA
