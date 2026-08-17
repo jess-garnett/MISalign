@@ -129,10 +129,10 @@ def overlap_difference(
     ----------
     array_a : np.ndarray
         Numpy array of image a.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     array_b : np.ndarray
         Numpy array of image b.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     offset_ab : tuple[int,int] | np.ndarray
         The vector from the top left corner of image a to the top left corner of image b.
         In (x,y) order.
@@ -149,11 +149,6 @@ def overlap_difference(
     overlap_a=array_a[a_spans[1][0]:a_spans[1][1],a_spans[0][0]:a_spans[0][1]]
     overlap_b=array_b[b_spans[1][0]:b_spans[1][1],b_spans[0][0]:b_spans[0][1]]
 
-    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(np.float32)
-    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(np.float32)
-
     return overlap_a-overlap_b
 
 """
@@ -168,20 +163,16 @@ def metric_difference_squared_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->f
     ----------
     overlap_a : np.ndarray
         Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     overlap_a : np.ndarray
         Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
 
     Returns
     -------
     overlap_metric : float
         Result of taking the mean of the square of the difference of the arrays.
     """
-    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(np.float32)
-    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(np.float32)
 
     return np.mean((overlap_a-overlap_b)**2)
     
@@ -193,20 +184,16 @@ def metric_difference_absolute_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->
     ----------
     overlap_a : np.ndarray
         Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     overlap_a : np.ndarray
         Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
 
     Returns
     -------
     overlap_metric : float
         Result of taking the mean of the absolute value of the difference of the arrays.
     """
-    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(np.float32)
-    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(np.float32)
 
     diff=overlap_a-overlap_b
     return np.mean(np.abs(diff,out=diff))
@@ -229,10 +216,10 @@ def strategy_scaled_grid(
     ----------
     array_a : np.ndarray
         Numpy array of image a.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     array_b : np.ndarray
         Numpy array of image b.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     initial_offset : tuple[int,int]
         An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
         In (x,y) order.
@@ -295,10 +282,10 @@ def strategy_full_grid(
     ----------
     array_a : np.ndarray
         Numpy array of image a.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     array_b : np.ndarray
         Numpy array of image b.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     initial_offset : tuple[int,int]
         An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
         In (x,y) order.
@@ -513,10 +500,10 @@ def metric_highlow_inverse_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifi
     ----------
     overlap_a : np.ndarray
         Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     overlap_a : np.ndarray
         Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     modifier : int
         Modifier to divide the difference of max and min by.
         The higher the modifier the greater the difference needed to reduce the metric.
@@ -526,12 +513,8 @@ def metric_highlow_inverse_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifi
     Returns
     -------
     overlap_metric : float
-        Result of taking the mean of the square of the difference of the arrays.
+        Result of taking the inverse of the difference of max and min of each overlap divided by the modifier.
     """
-    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(np.float32)
-    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(np.float32)
 
     def metric(overlap):
         return  np.min([1/((np.max(overlap)-np.min(overlap))/modifier),1])
@@ -549,10 +532,10 @@ def metric_difference_squared_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarra
     ----------
     overlap_a : np.ndarray
         Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     overlap_a : np.ndarray
         Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     modifier : int
         Modifier to multiply the mean by.
 
@@ -561,10 +544,6 @@ def metric_difference_squared_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarra
     overlap_metric : float
         Result of taking the mean of the square of the difference of the arrays.
     """
-    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(np.float32)
-    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(np.float32)
 
     return np.min([modifier*np.mean((overlap_a-overlap_b)**2)/(255**2),1])
 
@@ -579,22 +558,18 @@ def metric_difference_absolute_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarr
     ----------
     overlap_a : np.ndarray
         Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     overlap_a : np.ndarray
         Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     modifier : int
         Modifier to multiply the mean by.
 
     Returns
     -------
     overlap_metric : float
-        Result of taking the mean of the square of the difference of the arrays.
+        Result of taking the mean of the absolute value of the difference of the arrays.
     """
-    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(np.float32)
-    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(np.float32)
         
     diff=overlap_a-overlap_b
     return np.min([modifier*np.mean(np.abs(diff,out=diff))/255,1])
@@ -610,26 +585,52 @@ def metric_difference_max_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifie
     ----------
     overlap_a : np.ndarray
         Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     overlap_a : np.ndarray
         Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     modifier : int
         Modifier to multiply the mean by.
 
     Returns
     -------
     overlap_metric : float
-        Result of taking the mean of the square of the difference of the arrays.
+        Result of taking the max of the difference of the arrays.
     """
-    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(np.float32)
-    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(np.float32)
 
     diff=(overlap_a-overlap_b)
     np.abs(diff,out=diff)
     return np.min([np.max(diff)/(255),1])
+
+def metric_linear_edge_penalty(overlap_a:np.ndarray,overlap_b:np.ndarray,penalty:float=0.2,distance:float=300):
+    """
+    Calculates a linear penalty based on the shape of the overlap region. Thinner regions higher penalties.
+
+    Weights against low-overlap distances. Result will be on the interval [0,1]
+
+    Parameters
+    ----------
+    overlap_a : np.ndarray
+        Numpy array of the overlap region in image a.
+    overlap_b : np.ndarray
+        Numpy array of the overlap region in image b.
+        Note: Not used. Only overlap_a's shape is considered.
+    Penalty : float | int
+        Maximum value for penalty.
+    distance : float | int
+        Distance at which penalty should reach 0.
+        Note: Linear gradient is used between this distance and 1 pixel overlap.
+
+    Returns
+    -------
+    overlap_metric : float
+        Result of linear penalty.
+    """
+    distance_from_edge=np.min(overlap_a.shape[:2])
+    if distance_from_edge>distance:
+        return 0
+    else:
+        return (1-(distance_from_edge/distance))*penalty
 
 def metric_combined_simple_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier_max:int=1,modifier_squared:int=50,modifier_highlow:int=1):
     """
@@ -641,10 +642,10 @@ def metric_combined_simple_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifi
     ----------
     overlap_a : np.ndarray
         Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     overlap_a : np.ndarray
         Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays are converted to float.
+        Note: Unsigned integer arrays may underflow and should not be used.
     modifier_max : int
         Modifier to multiply the `metric_difference_max_norm` by.
     modifier_squared : int
@@ -655,15 +656,10 @@ def metric_combined_simple_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifi
     Returns
     -------
     overlap_metric : float
-        Result of taking the mean of the square of the difference of the arrays.
+        Result of combining all three metrics.
     """
-    if np.isdtype(overlap_a.dtype,kind='unsigned integer'):
-        overlap_a=overlap_a.astype(np.float32)
-    if np.isdtype(overlap_b.dtype,kind='unsigned integer'):
-        overlap_b=overlap_b.astype(np.float32)
     
-    return np.mean([
-        metric_difference_max_norm(overlap_a,overlap_b,modifier=modifier_max),
-        metric_difference_squared_mean_norm(overlap_a,overlap_b,modifier=modifier_squared),
-        metric_highlow_inverse_norm(overlap_a,overlap_b,modifier=modifier_highlow),
-        ])
+    return (metric_difference_max_norm(overlap_a,overlap_b,modifier=modifier_max)+
+        metric_difference_squared_mean_norm(overlap_a,overlap_b,modifier=modifier_squared)+
+        metric_highlow_inverse_norm(overlap_a,overlap_b,modifier=modifier_highlow)
+        )/3
