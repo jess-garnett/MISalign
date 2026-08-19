@@ -538,12 +538,11 @@ else:
     _if_scpy = True
 
 ### Difference Gradient Analysis Full Search Metrics
-
-def metric_highlow_inverse_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier:int=16)->float:
+def metric_highlow_inverse(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
     """
-    Calculates the inverse of (max-min)/modifier for the overlap region.
+    Calculates the 1/(max-min) for each overlap region and returns the higher value.
 
-    Weights against low-feature overlapping regions. Result will be on the interval (0,1]
+    Weights against low-feature overlapping regions.
 
     Parameters
     ----------
@@ -553,82 +552,103 @@ def metric_highlow_inverse_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifi
     overlap_a : np.ndarray
         Numpy array of the overlap region in image b.
         Note: Unsigned integer arrays may underflow and should not be used.
-    modifier : int
-        Modifier to divide the difference of max and min by.
-        The higher the modifier the greater the difference needed to reduce the metric.
-        Example: `modifier=16` difference of 16 is metric of 1, difference of 80 is metric of 0.2.
-        Example: `modifier=8` difference of 16 is metric of 0.5, difference of 80 is metric of 0.1.
 
     Returns
     -------
     overlap_metric : float
-        Result of taking the inverse of the difference of max and min of each overlap divided by the modifier.
+        Result of taking the higher of the inverse of the difference of max and min of each overlap.
     """
+    return np.max([1/(np.ptp(overlap_a)),1/(np.ptp(overlap_b))])
 
-    def metric(overlap):
-        return  np.min([1/((np.max(overlap)-np.min(overlap))/modifier),1])
-        # variation of 16 > value of 1 > variation of 32 > value of 1/2 > etc. variation of 80 > 0.2
-    return np.max([metric(overlap_a),metric(overlap_b)])
+# def metric_highlow_inverse_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier:int=16)->float:
+#     """
+#     Calculates the inverse of (max-min)/modifier for the overlap region.
+
+#     Weights against low-feature overlapping regions. Result will be on the interval (0,1]
+
+#     Parameters
+#     ----------
+#     overlap_a : np.ndarray
+#         Numpy array of the overlap region in image a.
+#         Note: Unsigned integer arrays may underflow and should not be used.
+#     overlap_a : np.ndarray
+#         Numpy array of the overlap region in image b.
+#         Note: Unsigned integer arrays may underflow and should not be used.
+#     modifier : int
+#         Modifier to divide the difference of max and min by.
+#         The higher the modifier the greater the difference needed to reduce the metric.
+#         Example: `modifier=16` difference of 16 is metric of 1, difference of 80 is metric of 0.2.
+#         Example: `modifier=8` difference of 16 is metric of 0.5, difference of 80 is metric of 0.1.
+
+#     Returns
+#     -------
+#     overlap_metric : float
+#         Result of taking the inverse of the difference of max and min of each overlap divided by the modifier.
+#     """
+
+#     def metric(overlap):
+#         return  np.min([1/((np.max(overlap)-np.min(overlap))/modifier),1])
+#         # variation of 16 > value of 1 > variation of 32 > value of 1/2 > etc. variation of 80 > 0.2
+#     return np.max([metric(overlap_a),metric(overlap_b)])
 
 
-def metric_difference_squared_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
-    """
-    Calculates the mean of the squared difference of two arrays.
+# def metric_difference_squared_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
+#     """
+#     Calculates the mean of the squared difference of two arrays.
 
-    Weights against misalignment in features. Result will be on the interval [0,1]
+#     Weights against misalignment in features. Result will be on the interval [0,1]
 
-    Parameters
-    ----------
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    modifier : int
-        Modifier to multiply the mean by.
+#     Parameters
+#     ----------
+#     overlap_a : np.ndarray
+#         Numpy array of the overlap region in image a.
+#         Note: Unsigned integer arrays may underflow and should not be used.
+#     overlap_a : np.ndarray
+#         Numpy array of the overlap region in image b.
+#         Note: Unsigned integer arrays may underflow and should not be used.
+#     modifier : int
+#         Modifier to multiply the mean by.
 
-    Returns
-    -------
-    overlap_metric : float
-        Result of taking the mean of the square of the difference of the arrays.
-    """
+#     Returns
+#     -------
+#     overlap_metric : float
+#         Result of taking the mean of the square of the difference of the arrays.
+#     """
 
-    return np.min([modifier*np.mean((overlap_a-overlap_b)**2)/(255**2),1])
+#     return np.min([modifier*np.mean((overlap_a-overlap_b)**2)/(255**2),1])
 
 
-def metric_difference_absolute_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
-    """
-    Calculates the mean of the absolute difference of two arrays.
+# def metric_difference_absolute_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
+#     """
+#     Calculates the mean of the absolute difference of two arrays.
 
-    Weights against misalignment in features. Result will be on the interval [0,1]
+#     Weights against misalignment in features. Result will be on the interval [0,1]
 
-    Parameters
-    ----------
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    modifier : int
-        Modifier to multiply the mean by.
+#     Parameters
+#     ----------
+#     overlap_a : np.ndarray
+#         Numpy array of the overlap region in image a.
+#         Note: Unsigned integer arrays may underflow and should not be used.
+#     overlap_a : np.ndarray
+#         Numpy array of the overlap region in image b.
+#         Note: Unsigned integer arrays may underflow and should not be used.
+#     modifier : int
+#         Modifier to multiply the mean by.
 
-    Returns
-    -------
-    overlap_metric : float
-        Result of taking the mean of the absolute value of the difference of the arrays.
-    """
+#     Returns
+#     -------
+#     overlap_metric : float
+#         Result of taking the mean of the absolute value of the difference of the arrays.
+#     """
         
-    diff=overlap_a-overlap_b
-    return np.min([modifier*np.mean(np.abs(diff,out=diff))/255,1])
+#     diff=overlap_a-overlap_b
+#     return np.min([modifier*np.mean(np.abs(diff,out=diff))/255,1])
 
-
-def metric_difference_max_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
+def metric_difference_max(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
     """
     Calculates the max of the absolute difference of two arrays.
 
-    Weights strongly against misalignment in features. Result will be on the interval [0,1]
+    Weights strongly against misalignment in features.
 
     Parameters
     ----------
@@ -638,14 +658,40 @@ def metric_difference_max_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifie
     overlap_a : np.ndarray
         Numpy array of the overlap region in image b.
         Note: Unsigned integer arrays may underflow and should not be used.
-    modifier : int
-        Modifier to multiply the mean by.
 
     Returns
     -------
     overlap_metric : float
-        Result of taking the max of the difference of the arrays.
+        Result of taking the max of the absolute difference of the arrays.
     """
+
+    diff=(overlap_a-overlap_b)
+    np.abs(diff,out=diff)
+    return np.min([np.max(diff)/(255),1])
+
+
+# def metric_difference_max_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
+#     """
+#     Calculates the max of the absolute difference of two arrays.
+
+#     Weights strongly against misalignment in features. Result will be on the interval [0,1]
+
+#     Parameters
+#     ----------
+#     overlap_a : np.ndarray
+#         Numpy array of the overlap region in image a.
+#         Note: Unsigned integer arrays may underflow and should not be used.
+#     overlap_a : np.ndarray
+#         Numpy array of the overlap region in image b.
+#         Note: Unsigned integer arrays may underflow and should not be used.
+#     modifier : int
+#         Modifier to multiply the mean by.
+
+#     Returns
+#     -------
+#     overlap_metric : float
+#         Result of taking the max of the difference of the arrays.
+#     """
 
     diff=(overlap_a-overlap_b)
     np.abs(diff,out=diff)
@@ -681,37 +727,37 @@ def metric_linear_edge_penalty(overlap_a:np.ndarray,overlap_b:np.ndarray,penalty
     else:
         return (1-(distance_from_edge/distance))*penalty
 
-def metric_combined_simple_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier_max:int=1,modifier_squared:int=50,modifier_highlow:int=1):
-    """
-    Simple combination of `metric_difference_max_norm`, `metric_difference_squared_mean_norm`, and `metric_highlow_inverse_norm`.
+# def metric_combined_simple_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier_max:int=1,modifier_squared:int=50,modifier_highlow:int=1):
+#     """
+#     Simple combination of `metric_difference_max_norm`, `metric_difference_squared_mean_norm`, and `metric_highlow_inverse_norm`.
 
-    Weights against misalignment in features and against low feature regions. Result will be on the interval (0,1]
+#     Weights against misalignment in features and against low feature regions. Result will be on the interval (0,1]
 
-    Parameters
-    ----------
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    modifier_max : int
-        Modifier to multiply the `metric_difference_max_norm` by.
-    modifier_squared : int
-        Modifier to multiply the `metric_difference_squared_mean_norm` by.
-    modifier_highlow : int
-        Modifier to multiply the `metric_highlow_inverse_norm` by.
+#     Parameters
+#     ----------
+#     overlap_a : np.ndarray
+#         Numpy array of the overlap region in image a.
+#         Note: Unsigned integer arrays may underflow and should not be used.
+#     overlap_a : np.ndarray
+#         Numpy array of the overlap region in image b.
+#         Note: Unsigned integer arrays may underflow and should not be used.
+#     modifier_max : int
+#         Modifier to multiply the `metric_difference_max_norm` by.
+#     modifier_squared : int
+#         Modifier to multiply the `metric_difference_squared_mean_norm` by.
+#     modifier_highlow : int
+#         Modifier to multiply the `metric_highlow_inverse_norm` by.
 
-    Returns
-    -------
-    overlap_metric : float
-        Result of combining all three metrics.
-    """
+#     Returns
+#     -------
+#     overlap_metric : float
+#         Result of combining all three metrics.
+#     """
     
-    return (metric_difference_max_norm(overlap_a,overlap_b,modifier=modifier_max)+
-        metric_difference_squared_mean_norm(overlap_a,overlap_b,modifier=modifier_squared)+
-        metric_highlow_inverse_norm(overlap_a,overlap_b,modifier=modifier_highlow)
-        )/3
+#     return (metric_difference_max_norm(overlap_a,overlap_b,modifier=modifier_max)+
+#         metric_difference_squared_mean_norm(overlap_a,overlap_b,modifier=modifier_squared)+
+#         metric_highlow_inverse_norm(overlap_a,overlap_b,modifier=modifier_highlow)
+#         )/3
         
 ### Difference Gradient Analysis Full Search Strategy
 
@@ -732,7 +778,7 @@ def strategy_full_search_grid(
         array_a:np.ndarray,
         array_b:np.ndarray,
         initial_offset:tuple[int,int]|None=None,
-        metric:Callable[[np.ndarray,np.ndarray],float]=metric_combined_simple_norm,
+        metric:Callable[[np.ndarray,np.ndarray],float]=metric_difference_squared_mean,
         strategy_interpolate:Callable=interpolate_nearest_neighbor,
         strategy_edge_avoid=20,
         strategy_logger:logging.Logger=logging.getLogger(),
