@@ -398,6 +398,7 @@ def filter_rgb_gray_mean(image:array_like)->np.ndarray:
 Difference Gradient Analysis Function
 """
 
+#TODO ----------------------------- update docstring on this.
 def difference_gradient_analysis(
         image_a:MISImage|array_like,
         image_b:MISImage|array_like,
@@ -439,24 +440,24 @@ def difference_gradient_analysis(
             Initial offset provided to strategy.
     """
     ## Get image arrays
-    image_a_array:np.ndarray=filter(image_a)
-    image_b_array:np.ndarray=filter(image_b)
+    array_a:np.ndarray=filter(image_a)
+    array_b:np.ndarray=filter(image_b)
 
     ## Get initial relation
     if isinstance(relation,MISRelation):
         try:
-            initial_rectangular_relation=relation.get_relation('r')
+            initial_rectangular_offset=relation.get_relation('r')
         except ValueError:
-            initial_rectangular_relation=None
+            initial_rectangular_offset=None
     elif isinstance(relation,tuple):
-        initial_rectangular_relation=relation
+        initial_rectangular_offset=relation
     else:
-        initial_rectangular_relation=None
+        initial_rectangular_offset=None
 
     return strategy(
-        array_a=image_a_array,
-        array_b=image_b_array,
-        initial_offset=initial_rectangular_relation,
+        array_a=array_a,
+        array_b=array_b,
+        initial_offset=initial_rectangular_offset,
         metric=metric,
         **kwargs)
 
@@ -467,6 +468,53 @@ Result Visualization Functions
 """
 
 #TODO plotting functions from `difference_gradient.py`
+
+def calibrate_metrics_initial(
+        image_a:MISImage|array_like,
+        image_b:MISImage|array_like,
+        relation:MISRelation|tuple[int,int]|None,
+        metrics:dict[str,Callable[[np.ndarray,np.ndarray],float]],
+        filter:Callable[[array_like],np.ndarray]=filter_simple,
+        **kwargs
+    ):
+
+    ## Get image arrays
+    array_a:np.ndarray=filter(image_a)
+    array_b:np.ndarray=filter(image_b)
+
+    ## Get initial relation
+    if isinstance(relation,MISRelation):
+        try:
+            initial_rectangular_offset=relation.get_relation('r')
+        except ValueError:
+            initial_rectangular_offset=None
+    elif isinstance(relation,tuple):
+        initial_rectangular_offset=relation
+    else:
+        initial_rectangular_offset=None
+    
+    calibration_results_initial=dict()
+
+    if initial_rectangular_offset is not None:
+        calibration_results_initial["full_grid"]=dict()
+        for name,metric in metrics.items():
+            calibration_results_initial["full_grid"][name]=strategy_full_grid(
+                array_a,array_b,
+                initial_offset=initial_rectangular_offset,
+                strategy_max_size=20,
+                metric=metric)
+    
+    
+    calibration_results_initial["full_sparse"]=dict()
+    for name,metric in metrics.items():
+        calibration_results_initial["full_sparse"][name]=strategy_full_search_grid(
+            array_a,array_b,
+            strategy_full_search_progression=[dict(initial_grid_number=40)],
+            metric=metric)
+
+    return calibration_results_initial
+        
+
 
 """
 Difference Gradient Analysis Metric and Strategy Functions
