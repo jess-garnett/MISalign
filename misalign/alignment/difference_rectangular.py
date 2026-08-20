@@ -469,53 +469,6 @@ Result Visualization Functions
 
 #TODO plotting functions from `difference_gradient.py`
 
-def calibrate_metrics_initial(
-        image_a:MISImage|array_like,
-        image_b:MISImage|array_like,
-        relation:MISRelation|tuple[int,int]|None,
-        metrics:dict[str,Callable[[np.ndarray,np.ndarray],float]],
-        filter:Callable[[array_like],np.ndarray]=filter_simple,
-        **kwargs
-    ):
-
-    ## Get image arrays
-    array_a:np.ndarray=filter(image_a)
-    array_b:np.ndarray=filter(image_b)
-
-    ## Get initial relation
-    if isinstance(relation,MISRelation):
-        try:
-            initial_rectangular_offset=relation.get_relation('r')
-        except ValueError:
-            initial_rectangular_offset=None
-    elif isinstance(relation,tuple):
-        initial_rectangular_offset=relation
-    else:
-        initial_rectangular_offset=None
-    
-    calibration_results_initial=dict()
-
-    if initial_rectangular_offset is not None:
-        calibration_results_initial["full_grid"]=dict()
-        for name,metric in metrics.items():
-            calibration_results_initial["full_grid"][name]=strategy_full_grid(
-                array_a,array_b,
-                initial_offset=initial_rectangular_offset,
-                strategy_max_size=20,
-                metric=metric)
-    
-    
-    calibration_results_initial["full_sparse"]=dict()
-    for name,metric in metrics.items():
-        calibration_results_initial["full_sparse"][name]=strategy_full_search_grid(
-            array_a,array_b,
-            strategy_full_search_progression=[dict(initial_grid_number=40)],
-            metric=metric)
-
-    return calibration_results_initial
-        
-
-
 """
 Difference Gradient Analysis Metric and Strategy Functions
 """
@@ -560,90 +513,6 @@ def metric_highlow_inverse(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
     """
     return np.max([1/(np.ptp(overlap_a)),1/(np.ptp(overlap_b))])
 
-# def metric_highlow_inverse_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier:int=16)->float:
-#     """
-#     Calculates the inverse of (max-min)/modifier for the overlap region.
-
-#     Weights against low-feature overlapping regions. Result will be on the interval (0,1]
-
-#     Parameters
-#     ----------
-#     overlap_a : np.ndarray
-#         Numpy array of the overlap region in image a.
-#         Note: Unsigned integer arrays may underflow and should not be used.
-#     overlap_a : np.ndarray
-#         Numpy array of the overlap region in image b.
-#         Note: Unsigned integer arrays may underflow and should not be used.
-#     modifier : int
-#         Modifier to divide the difference of max and min by.
-#         The higher the modifier the greater the difference needed to reduce the metric.
-#         Example: `modifier=16` difference of 16 is metric of 1, difference of 80 is metric of 0.2.
-#         Example: `modifier=8` difference of 16 is metric of 0.5, difference of 80 is metric of 0.1.
-
-#     Returns
-#     -------
-#     overlap_metric : float
-#         Result of taking the inverse of the difference of max and min of each overlap divided by the modifier.
-#     """
-
-#     def metric(overlap):
-#         return  np.min([1/((np.max(overlap)-np.min(overlap))/modifier),1])
-#         # variation of 16 > value of 1 > variation of 32 > value of 1/2 > etc. variation of 80 > 0.2
-#     return np.max([metric(overlap_a),metric(overlap_b)])
-
-
-# def metric_difference_squared_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
-#     """
-#     Calculates the mean of the squared difference of two arrays.
-
-#     Weights against misalignment in features. Result will be on the interval [0,1]
-
-#     Parameters
-#     ----------
-#     overlap_a : np.ndarray
-#         Numpy array of the overlap region in image a.
-#         Note: Unsigned integer arrays may underflow and should not be used.
-#     overlap_a : np.ndarray
-#         Numpy array of the overlap region in image b.
-#         Note: Unsigned integer arrays may underflow and should not be used.
-#     modifier : int
-#         Modifier to multiply the mean by.
-
-#     Returns
-#     -------
-#     overlap_metric : float
-#         Result of taking the mean of the square of the difference of the arrays.
-#     """
-
-#     return np.min([modifier*np.mean((overlap_a-overlap_b)**2)/(255**2),1])
-
-
-# def metric_difference_absolute_mean_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
-#     """
-#     Calculates the mean of the absolute difference of two arrays.
-
-#     Weights against misalignment in features. Result will be on the interval [0,1]
-
-#     Parameters
-#     ----------
-#     overlap_a : np.ndarray
-#         Numpy array of the overlap region in image a.
-#         Note: Unsigned integer arrays may underflow and should not be used.
-#     overlap_a : np.ndarray
-#         Numpy array of the overlap region in image b.
-#         Note: Unsigned integer arrays may underflow and should not be used.
-#     modifier : int
-#         Modifier to multiply the mean by.
-
-#     Returns
-#     -------
-#     overlap_metric : float
-#         Result of taking the mean of the absolute value of the difference of the arrays.
-#     """
-        
-#     diff=overlap_a-overlap_b
-#     return np.min([modifier*np.mean(np.abs(diff,out=diff))/255,1])
-
 def metric_difference_max(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
     """
     Calculates the max of the absolute difference of two arrays.
@@ -667,41 +536,13 @@ def metric_difference_max(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
 
     diff=(overlap_a-overlap_b)
     np.abs(diff,out=diff)
-    return np.min([np.max(diff)/(255),1])
-
-
-# def metric_difference_max_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier=1)->float:
-#     """
-#     Calculates the max of the absolute difference of two arrays.
-
-#     Weights strongly against misalignment in features. Result will be on the interval [0,1]
-
-#     Parameters
-#     ----------
-#     overlap_a : np.ndarray
-#         Numpy array of the overlap region in image a.
-#         Note: Unsigned integer arrays may underflow and should not be used.
-#     overlap_a : np.ndarray
-#         Numpy array of the overlap region in image b.
-#         Note: Unsigned integer arrays may underflow and should not be used.
-#     modifier : int
-#         Modifier to multiply the mean by.
-
-#     Returns
-#     -------
-#     overlap_metric : float
-#         Result of taking the max of the difference of the arrays.
-#     """
-
-    diff=(overlap_a-overlap_b)
-    np.abs(diff,out=diff)
-    return np.min([np.max(diff)/(255),1])
+    return np.max(diff)
 
 def metric_linear_edge_penalty(overlap_a:np.ndarray,overlap_b:np.ndarray,penalty:float=0.2,distance:float=300):
     """
     Calculates a linear penalty based on the shape of the overlap region. Thinner regions higher penalties.
 
-    Weights against low-overlap distances. Result will be on the interval [0,1]
+    Weights against low-overlap distances.
 
     Parameters
     ----------
@@ -726,38 +567,6 @@ def metric_linear_edge_penalty(overlap_a:np.ndarray,overlap_b:np.ndarray,penalty
         return 0
     else:
         return (1-(distance_from_edge/distance))*penalty
-
-# def metric_combined_simple_norm(overlap_a:np.ndarray,overlap_b:np.ndarray,modifier_max:int=1,modifier_squared:int=50,modifier_highlow:int=1):
-#     """
-#     Simple combination of `metric_difference_max_norm`, `metric_difference_squared_mean_norm`, and `metric_highlow_inverse_norm`.
-
-#     Weights against misalignment in features and against low feature regions. Result will be on the interval (0,1]
-
-#     Parameters
-#     ----------
-#     overlap_a : np.ndarray
-#         Numpy array of the overlap region in image a.
-#         Note: Unsigned integer arrays may underflow and should not be used.
-#     overlap_a : np.ndarray
-#         Numpy array of the overlap region in image b.
-#         Note: Unsigned integer arrays may underflow and should not be used.
-#     modifier_max : int
-#         Modifier to multiply the `metric_difference_max_norm` by.
-#     modifier_squared : int
-#         Modifier to multiply the `metric_difference_squared_mean_norm` by.
-#     modifier_highlow : int
-#         Modifier to multiply the `metric_highlow_inverse_norm` by.
-
-#     Returns
-#     -------
-#     overlap_metric : float
-#         Result of combining all three metrics.
-#     """
-    
-#     return (metric_difference_max_norm(overlap_a,overlap_b,modifier=modifier_max)+
-#         metric_difference_squared_mean_norm(overlap_a,overlap_b,modifier=modifier_squared)+
-#         metric_highlow_inverse_norm(overlap_a,overlap_b,modifier=modifier_highlow)
-#         )/3
         
 ### Difference Gradient Analysis Full Search Strategy
 
@@ -777,8 +586,8 @@ def interpolate_nearest_neighbor(
 def strategy_full_search_grid(
         array_a:np.ndarray,
         array_b:np.ndarray,
+        metric:Callable[[np.ndarray,np.ndarray],float],
         initial_offset:tuple[int,int]|None=None,
-        metric:Callable[[np.ndarray,np.ndarray],float]=metric_difference_squared_mean,
         strategy_interpolate:Callable=interpolate_nearest_neighbor,
         strategy_edge_avoid=20,
         strategy_logger:logging.Logger=logging.getLogger(),
@@ -804,7 +613,8 @@ def strategy_full_search_grid(
         In (x,y) order.
         Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
     metric : Callable[[np.ndarray,np.ndarray],float]
-        Function that takes two numpy arrays and returns a value describing some aspect of them or `metric_difference_squared_mean` by default.
+        Function that takes two numpy arrays and returns a value describing some aspect of them.
+        Note: For full search it is likely that a custom combination of a metric which matches location and a metric which avoids low-feature regions will be needed.
         Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
     strategy_interpolate : Callable[[np.ndarray,np.ndarray],np.ndarray]
         Function that takes grid of offsets and grid of results and un-checked `np.nan` and interpolates for all `np.nan` values.
@@ -1059,3 +869,67 @@ def strategy_full_search_grid(
         "interp_results":interp_results,
         "optimized_offset":optimized_offset,
         }
+
+
+def calibrate_metrics_initial(
+        image_a:MISImage|array_like,
+        image_b:MISImage|array_like,
+        relation_offset:MISRelation|tuple[int,int]|None,
+        metrics:dict[str,Callable[[np.ndarray,np.ndarray],float]],
+        filter:Callable[[array_like],np.ndarray]=filter_simple,
+        strategies:dict[str,Callable]={
+                "grid":strategy_full_grid,
+                "sparse":strategy_full_search_grid,
+            },
+        strategy_kwargs:dict[str,dict]={
+                "grid":dict(strategy_max_size=20),
+                "sparse":dict(strategy_full_search_progression=[dict(initial_grid_number=40)]),
+            },
+        **kwargs
+    ):
+
+    ## Get image arrays
+    array_a:np.ndarray=filter(image_a)
+    array_b:np.ndarray=filter(image_b)
+
+    ## Get initial relation
+    if isinstance(relation_offset,MISRelation):
+        try:
+            initial_rectangular_offset=relation_offset.get_relation('r')
+        except ValueError:
+            initial_rectangular_offset=None
+    elif isinstance(relation_offset,tuple):
+        initial_rectangular_offset=relation_offset
+    else:
+        initial_rectangular_offset=None
+    
+    calibration_results_initial=dict()
+
+    for metric_name,metric in metrics.items():
+        calibration_results_initial[metric_name]=dict()
+        for strategy_name,strategy in strategies.items():
+            calibration_results_initial[metric_name][strategy_name]=strategy(
+                array_a,array_b,
+                initial_offset=initial_rectangular_offset,
+                metric=metric,
+                **strategy_kwargs[strategy_name],
+                )
+
+    # if initial_rectangular_offset is not None:
+    #     calibration_results_initial["full_grid"]=dict()
+    #     for name,metric in metrics.items():
+    #         calibration_results_initial["full_grid"][name]=strategy_full_grid(
+    #             array_a,array_b,
+    #             initial_offset=initial_rectangular_offset,
+    #             strategy_max_size=20,
+    #             metric=metric)
+    
+    
+    # calibration_results_initial["full_sparse"]=dict()
+    # for name,metric in metrics.items():
+    #     calibration_results_initial["full_sparse"][name]=strategy_full_search_grid(
+    #         array_a,array_b,
+    #         strategy_full_search_progression=[dict(initial_grid_number=40)],
+    #         metric=metric)
+
+    return calibration_results_initial
