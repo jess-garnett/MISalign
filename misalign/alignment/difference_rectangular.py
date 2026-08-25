@@ -319,12 +319,144 @@ def strategy_full_grid(
                                 strategy_max_size=strategy_max_size,
                                 metric=metric)
 
-#TODO potential strategy: `local_minima`
-    # search starts with +1/-1 around `relation` and then moves to the observed minima and
-    # another +1/-1 is searched until a local minima is found.
+
+def strategy_local_minima_grid(
+        array_a:np.ndarray,
+        array_b:np.ndarray,
+        metric:Callable[[np.ndarray,np.ndarray],float],
+        initial_offset:tuple[int,int],
+        strategy_grid_scale:int=1,
+        strategy_max_size:int=20,
+        strategy_max_steps:int=20,
+        strategy_edge_avoid=20,
+        strategy_footprint:np.ndarray|None=None,
+        strategy_footprint_shape:tuple[int,int]=(3,3)
+        )->dict:
+    """
+    Gridded local minimization descent search strategy for difference gradient alignment.
+    
+    Parameters
+    ----------
+    array_a : np.ndarray
+        Numpy array of image a.
+        Note: Unsigned integer arrays may underflow and should not be used.
+    array_b : np.ndarray
+        Numpy array of image b.
+        Note: Unsigned integer arrays may underflow and should not be used.
+    metric : Callable[[np.ndarray,np.ndarray],float]
+        Function that takes two numpy arrays and returns a value describing some aspect of them or `metric_difference_squared_mean` by default.
+        Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+    initial_offset : tuple[int,int]
+        An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
+        In (x,y) order.
+        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`.
+    strategy_grid_scale : int
+        Distance to space out search grid by.
+    strategy_max_size : int
+        Maximum number of offsets to check on each side of initial offset or `20` by default.
+        Example: `...=5` means an 11x11 set of offsets could be searched.
+    strategy_max_steps : int
+        Maximum number of steps to take for minimization or `20` by default.
+        Note: Footprint size will significantly affect the total space explored.
+    strategy_edge_avoid : int
+        Minimum amount of overlap to require between images. Default is 20.
+    strategy_footprint : np.ndarray|None
+        Footprint array or `None` by default.
+        i.e. `strategy_footprint=skimage.morphology.disk(radius=5),`
+    strategy_footprint_shape : tuple[int,int]
+        Shape for square footprint or `(3,3)` by default.
+        Overridden if `strategy_footprint` is not `None`.
+
+    Returns
+    -------
+    strategy_results : dict
+        Dictionary with results of sparse grid search.
+        `grid` : np.ndarray
+            Offsets that were searched.
+        `grid_results` : np.ndarray
+            Metric value at matching offset in `grid`.
+        `optimized_offset` : tuple[int,int]
+            Optimized offset based on minimum in metric value.
+        `initial_offset` : tuple[int,int]
+            Initial offset provided to strategy.
+    """
+    
+    # Calculate search region boundaries
+    x_min: int=np.max([-array_b.shape[1]+1+strategy_edge_avoid,initial_offset[0]-(strategy_max_size*strategy_grid_scale)])
+    x_max: int=np.min([array_a.shape[1]-strategy_edge_avoid,initial_offset[0]+(strategy_max_size*strategy_grid_scale)])
+    y_min: int=np.max([-array_b.shape[0]+1+strategy_edge_avoid,initial_offset[1]-(strategy_max_size*strategy_grid_scale)])
+    y_max: int=np.min([array_a.shape[0]-strategy_edge_avoid,initial_offset[1]+(strategy_max_size*strategy_grid_scale)])
+
+    # Create grid over full search space
+    grid: np.ndarray=np.stack(
+        arrays=np.meshgrid(
+            np.arange(start=x_min,stop=x_max+1,step=strategy_grid_scale),
+            np.arange(start=y_min,stop=y_max+1,step=strategy_grid_scale)
+            )
+        ).astype(int)
+    
+    # Setup nan-filled results grid
+    grid_results=np.full(grid[0].shape,np.nan)
+
+    # Check initial point in grid
+    
+    initial_ix=np.floor_divide((initial_offset[0]-x_min),strategy_grid_scale)
+    initial_iy=np.floor_divide((initial_offset[1]-y_min),strategy_grid_scale)
+    # grid_results[np.all((grid[0]==initial_offset[0],grid[1]==initial_offset[1]),axis=0)]=overlap_evaluate(array_a,array_b,
+    #         offset_ab=initial_offset,
+    #         metric=metric)
+    grid_results[initial_iy,initial_ix]=overlap_evaluate(array_a,array_b,
+            offset_ab=initial_offset,
+            metric=metric)
+
+    # Setup function for checking based on index.
+    def check_offset(iy,ix):
+        grid_results[iy,ix]=overlap_evaluate(
+                    array_a=array_a,
+                    array_b=array_b,
+                    offset_ab=grid[:,iy,ix],
+                    metric=metric)
+    # Setup function for checking values around index.
+    if strategy_footprint is None:
+        footprint_array:np.ndarray=np.ones(shape=strategy_footprint_shape)
+    else:
+        footprint_array:np.ndarray=strategy_footprint
+    def check_near(iy,ix):
+        ix_positions,iy_positions=np.meshgrid(
+            np.arange(ix-np.floor_divide(footprint_array.shape[0],2),ix+np.floor_divide(footprint_array.shape[0],2)+1),
+            np.arange(iy-np.floor_divide(footprint_array.shape[1],2),iy+np.floor_divide(footprint_array.shape[1],2)+1))
+        x_valid=np.logical_and(ix_positions>=0, ix_positions<grid_results.shape[0])
+        y_valid=np.logical_and(iy_positions>=0, iy_positions<grid_results.shape[1])
+        valid=np.all([x_valid,y_valid,footprint_array],axis=0)
+        
+        any_unsearched=True
+        for ix,iy in zip(ix_positions[valid].flatten(),iy_positions[valid].flatten()):
+            if np.isnan(grid_results[iy,ix]):
+                check_offset(iy,ix)
+                any_unsearched=False
+        return any_unsearched
+    
+    for i in range(strategy_max_steps):
+        iy,ix=np.unravel_index(np.nanargmin(grid_results), grid_results.shape)
+        if check_near(iy,ix):
+            break
+
+    # Get indeces of optimized offset
+    optimized_location:tuple=np.unravel_index(np.nanargmin(grid_results), grid_results.shape)
+    # Get optimized offset
+    optimized_offset:tuple[int,int]=tuple(grid[:,optimized_location[0],optimized_location[1]].tolist())
+    return {
+        "grid":grid,
+        "grid_results":grid_results,
+        "optimized_offset":optimized_offset,
+        "initial_offset":initial_offset
+        }
 
 #TODO potential strategy: `gaussian_minimization`
     # gaussian process regression is used to fit the minimization trend and efficiently reach the minimum value.
+
+#TODO potential strategy: `gradient_descent`
+    # gradient is calculated and followed in decreasing direction to reach minimum value.
 
 #TODO consider downscaling for strategy/processing.
 
