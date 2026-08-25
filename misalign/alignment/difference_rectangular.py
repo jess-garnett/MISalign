@@ -725,6 +725,57 @@ class ModifierSkimage():
             return skimage.filters.scharr(filter(image))
         return modified_filter
 
+### Difference Gradient Analysis Full Search Metrics
+class LocateMetricSkimage():
+    """
+    Group of functions which take two overlap regions and return a value with a local minima when well aligned using scikit-image functions.
+
+    Locate metrics may have false-positives particularly in low-feature regions.
+    """
+    @staticmethod
+    def modified_pearson(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+        """
+        Calculates the Pearson Correlation Coefficient(PCC) and then subtracts it from 1.
+
+        Calls `skimage.measure.pearson_corr_coeff` which implements SciPy's PCC to measure the linear correlation of pixel intensities.
+        The PCC ranges from 1 for full correlation to -1 for full anti-correlation this value is subtracted
+        from 1 so that it will always be a positive value with a minima at the ideal alignment.
+
+        Parameters
+        ----------
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image a.
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image b.
+
+        Returns
+        -------
+        overlap_metric : float
+            Result of 1-PCC.
+        """
+        return 1-skimage.measure.pearson_corr_coeff(overlap_a,overlap_b)[0]
+    def modified_mutual_information(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+        """
+        Calculates the Normalized Mutual Information(NMI) and then subtracts it from 2.
+
+        Calls `skimage.metrics.normalized_mutual_information` to measure the mutual information.
+        The NMI ranges from 2 for full correlation(or full anti-correlation) to 1 for full uncorrelation this value is subtracted
+        from 2 so that it will always be a positive value with a minima at the ideal alignment.
+
+        Parameters
+        ----------
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image a.
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image b.
+
+        Returns
+        -------
+        overlap_metric : float
+            Result of 1-PCC.
+        """
+        return 2-skimage.metrics.normalized_mutual_information(overlap_a,overlap_b)
+
 ### Difference Gradient Analysis Full Search Strategy
 
 def interpolate_nearest_neighbor(
