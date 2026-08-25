@@ -25,7 +25,8 @@ Alignment code in `align.ipynb`:
 mis_filepath="../example/project_f/project_f-no_relations-calibrated.mis.json"
 mis_project=MISProjectJSON.load(mis_filepath)
 mis_project.find_image_paths(mis_filepath,update=True)
-mis_project.set_image_filter(filter=lambda array:array[:4096,:4096])
+from misalign.model.image import Filter, Modifier
+mis_project.set_image_filter(Modifier.crop(bottom=4096,right=4096,filter=Filter.simple_uint16))
 ...
 imrc=IMRControls(mis_project,imshow_kwargs=dict(cmap="gray",vmin=0,vmax=65535))
 ...
@@ -38,8 +39,8 @@ BSE render:
 ```
 mis_filepath="../example/project_f/project_f-relations-calibrated.mis.json"
 mis_project=MISProjectJSON.load(mis_filepath)
-from numpy import uint8
-mis_project.set_image_filter(filter=lambda array:((array[:4096,:4096]//256).astype(uint8)))
+from misalign.model.image import Filter, Modifier
+mis_project.set_image_filter(Modifier.crop(bottom=4096,right=4096,filter=Filter.simple_uint16))
 ...
 selected_image=selected_image
 ...
@@ -54,8 +55,8 @@ SE render:
 ```
 mis_filepath="../example/project_f/project_f-relations-calibrated.mis.json"
 mis_project=MISProjectJSON.load(mis_filepath)
-from numpy import uint8
-mis_project.set_image_filter(filter=lambda array:((array[:4096,4096:]//256).astype(uint8)))
+from misalign.model.image import Filter, Modifier
+mis_project.set_image_filter(Modifier.crop(bottom=4096,left=4096,filter=Filter.simple_uint16))
 ...
 selected_image=selected_image
 ...

@@ -592,6 +592,22 @@ class Filter():
             Converted array.
         """
         return np.asarray(image).astype(dtype=np.uint8)
+    @staticmethod
+    def simple_uint16(image:array_like)->np.ndarray:
+        """
+        Filter to get an array from a 16-bit image / `np.uint16` array-like and convert it to `np.uint8`.
+        
+        Parameters
+        ----------
+        image : array_like
+            Array-like image.
+
+        Returns
+        -------
+        array : np.ndarray
+            Converted array.
+        """
+        return (np.asarray(image)//256).astype(dtype=np.uint8)
 
     @staticmethod
     def float(image:array_like)->np.ndarray:
