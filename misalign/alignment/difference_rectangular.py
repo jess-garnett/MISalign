@@ -4,11 +4,12 @@ Difference- & Overlap-based Automated Rectangular Alignment Module
 
 import numpy as np
 from collections.abc import Callable
-from typing import runtime_checkable, Protocol
+# from typing import runtime_checkable, Protocol
 import logging
 from math import dist
 
-from misalign.model.image import MISImage
+from misalign.model.image import MISImage, array_like, Filter, Modifier  # noqa: F401
+    # `Filter` and `Modifier` are largely imported so they can be used with DGA
 from misalign.model.relation import MISRelation
 
 """
@@ -154,411 +155,428 @@ def overlap_difference(
     return overlap_a-overlap_b
 
 """
-Basic Metric Functions
+Metric Functions
 """
 
-def metric_difference_squared_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+class LocateMetric():
     """
-    Calculates the mean of the squared difference of two arrays.
+    Group of functions which take two overlap regions and return a value with a local minima when well aligned.
 
-    Parameters
-    ----------
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-
-    Returns
-    -------
-    overlap_metric : float
-        Result of taking the mean of the square of the difference of the arrays.
+    Locate metrics may have false-positives particularly in low-feature regions.
     """
+    @staticmethod
+    def mean_squared_difference(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+        """
+        Calculates the mean of the squared difference of two arrays.
 
-    return np.mean((overlap_a-overlap_b)**2)
-    
-def metric_difference_absolute_mean(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+        Parameters
+        ----------
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+
+        Returns
+        -------
+        overlap_metric : float
+            Result of taking the mean of the square of the difference of the arrays.
+        """
+
+        return np.mean((overlap_a-overlap_b)**2)
+    @staticmethod
+    def root_mean_squared_difference(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+        """
+        Calculates the square root of the mean of the squared difference of two arrays.
+
+        Parameters
+        ----------
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+
+        Returns
+        -------
+        overlap_metric : float
+            Result of taking the square root of the mean of the square of the difference of the arrays.
+        """
+
+        return np.mean((overlap_a-overlap_b)**2)**0.5
+    @staticmethod
+    def mean_absolute_difference(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+        """
+        Calculates the mean of the absolute difference of two arrays.
+
+        Parameters
+        ----------
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+
+        Returns
+        -------
+        overlap_metric : float
+            Result of taking the mean of the absolute value of the difference of the arrays.
+        """
+
+        diff=overlap_a-overlap_b
+        return np.mean(np.abs(diff,out=diff))
+    @staticmethod
+    def max_absolute_difference(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+        """
+        Calculates the max of the absolute difference of two arrays.
+
+        Weights strongly against misalignment in features.
+
+        Parameters
+        ----------
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+
+        Returns
+        -------
+        overlap_metric : float
+            Result of taking the max of the absolute difference of the arrays.
+        """
+
+        diff=(overlap_a-overlap_b)
+        return np.max(np.abs(diff,out=diff))
+
+class WeightMetric():
     """
-    Calculates the mean of the absolute difference of two arrays.
+    Group of functions which take two overlap regions and return a weight value.
 
-    Parameters
-    ----------
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-
-    Returns
-    -------
-    overlap_metric : float
-        Result of taking the mean of the absolute value of the difference of the arrays.
+    Weight metrics are intended to be combined with locating metrics to counteract false-positives.
     """
+    @staticmethod
+    def highlow_inverse(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+        """
+        Calculates the 1/(max-min) for each overlap region and returns the higher value.
 
-    diff=overlap_a-overlap_b
-    return np.mean(np.abs(diff,out=diff))
+        Weights against low-feature overlapping regions.
+
+        Parameters
+        ----------
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+
+        Returns
+        -------
+        overlap_metric : float
+            Result of taking the higher of the inverse of the difference of max and min of each overlap.
+        """
+        return np.max([1/(np.ptp(overlap_a)),1/(np.ptp(overlap_b))])
+    @staticmethod
+    def linear_edge_penalty(overlap_a:np.ndarray,overlap_b:np.ndarray,penalty:float=0.2,distance:float=300):
+        """
+        Calculates a linear penalty based on the shape of the overlap region. Thinner regions higher penalties.
+
+        Weights against low-overlap distances.
+
+        Parameters
+        ----------
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image a.
+        overlap_b : np.ndarray
+            Numpy array of the overlap region in image b.
+            Note: Not used. Only overlap_a's shape is considered.
+        Penalty : float | int
+            Maximum value for penalty.
+        distance : float | int
+            Distance at which penalty should reach 0.
+            Note: Linear gradient is used between this distance and 1 pixel overlap.
+
+        Returns
+        -------
+        overlap_metric : float
+            Result of linear penalty.
+        """
+        distance_from_edge=np.min(overlap_a.shape[:2])
+        if distance_from_edge>distance:
+            return 0
+        else:
+            return (1-(distance_from_edge/distance))*penalty
+
 
 """
 Basic Strategy Functions
 """
-
-def strategy_scaled_grid(
-        array_a:np.ndarray,
-        array_b:np.ndarray,
-        initial_offset:tuple[int,int],
-        strategy_grid_scale:int,
-        strategy_max_size:int=5,
-        metric:Callable[[np.ndarray,np.ndarray],float]=metric_difference_squared_mean,)->dict:
+class Strategy():
     """
-    Sparse grid search strategy for difference gradient alignment.
-    
-    Parameters
-    ----------
-    array_a : np.ndarray
-        Numpy array of image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    array_b : np.ndarray
-        Numpy array of image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    initial_offset : tuple[int,int]
-        An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
-        In (x,y) order.
-        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
-    strategy_grid_scale : int
-        Distance to space out search grid by.
-    strategy_max_size : int
-        Number of steps to check on each side of initial offset or `5` by default.
-        Example: `...=5` means an 11x11 set of offsets will be searched.
-    metric : Callable[[np.ndarray,np.ndarray],float]
-        Function that takes two numpy arrays and returns a value describing some aspect of them or `metric_difference_squared_mean` by default.
-        Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+    Group of simple local difference gradient alignment strategies.
 
-    Returns
-    -------
-    strategy_results : dict
-        Dictionary with results of sparse grid search.
-        `grid` : np.ndarray
-            Offsets that were searched.
-        `grid_results` : np.ndarray
-            Metric value at matching offset in `grid`.
-        `optimized_offset` : tuple[int,int]
-            Optimized offset based on minimum in metric value.
-        `initial_offset` : tuple[int,int]
-            Initial offset provided to strategy.
+    Strategies evaluate arrays at various offsets with the goal of finding the local minimum in the metrics.
     """
-    grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
-    grid=np.fromfunction(lambda y,x: np.array([initial_offset[0]+(strategy_grid_scale*(x-strategy_max_size)),
-                                                                                            initial_offset[1]+(strategy_grid_scale*(y-strategy_max_size))]),
-                                                                                            shape=grid_shape,dtype=int)
-    grid_results=np.full(grid_shape,np.nan)
-    grid_indeces=np.fromfunction(lambda row,col: np.array([row,col]),shape=grid_shape,dtype=int).reshape(2,-1)
-
-    for i,grid_index in enumerate(grid_indeces.T):
-        check_offset=grid[:,grid_index[0],grid_index[1]]
-        grid_results[grid_index[0],grid_index[1]]=overlap_evaluate(array_a,array_b,
-            offset_ab=check_offset,
-            metric=metric)
-    optimized_location=grid_results.reshape(-1).argmin()
-    optimized_offset=tuple([int(value) for value in grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]])
-    return {
-        "grid":grid,
-        "grid_results":grid_results,
-        "optimized_offset":optimized_offset,
-        "initial_offset":initial_offset
-        }
-
-def strategy_full_grid(
-        array_a:np.ndarray,
-        array_b:np.ndarray,
-        initial_offset:tuple[int,int],
-        strategy_max_size:int=5,
-        metric:Callable[[np.ndarray,np.ndarray],float]=metric_difference_squared_mean,)->dict:
-    """
-    Full grid search strategy for difference gradient alignment.
-
-    Convenience function that wraps `strategy_scaled_grid` with `strategy_grid_scale=1`.
-    
-    Parameters
-    ----------
-    array_a : np.ndarray
-        Numpy array of image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    array_b : np.ndarray
-        Numpy array of image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    initial_offset : tuple[int,int]
-        An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
-        In (x,y) order.
-        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
-    strategy_max_size : int
-        Number of steps to check on each side of initial offset or `5` by default.
-        Example: `...=5` means an 11x11 set of offsets will be searched.
-    metric : Callable[[np.ndarray,np.ndarray],float]
-        Function that takes two numpy arrays and returns a value describing some aspect of them or `metric_difference_squared_mean` by default.
-        Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
-
-    Returns
-    -------
-    strategy_results : dict
-        Dictionary with results of full grid search.
-        `grid` : np.ndarray
-            Offsets that were searched.
-        `grid_results` : np.ndarray
-            Metric value at matching offset in `grid`.
-        `optimized_offset` : tuple[int,int]
-            Optimized offset based on minimum in metric value.
-        `initial_offset` : tuple[int,int]
-            Initial offset provided to strategy.
-    """
-    return strategy_scaled_grid(array_a=array_a,
-                                array_b=array_b,
-                                initial_offset=initial_offset,
-                                strategy_grid_scale=1,
-                                strategy_max_size=strategy_max_size,
-                                metric=metric)
-
-
-def strategy_local_minima_grid(
-        array_a:np.ndarray,
-        array_b:np.ndarray,
-        metric:Callable[[np.ndarray,np.ndarray],float],
-        initial_offset:tuple[int,int],
-        strategy_grid_scale:int=1,
-        strategy_max_size:int=20,
-        strategy_max_steps:int=20,
-        strategy_edge_avoid=20,
-        strategy_footprint:np.ndarray|None=None,
-        strategy_footprint_shape:tuple[int,int]=(3,3)
-        )->dict:
-    """
-    Gridded local minimization descent search strategy for difference gradient alignment.
-    
-    Parameters
-    ----------
-    array_a : np.ndarray
-        Numpy array of image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    array_b : np.ndarray
-        Numpy array of image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    metric : Callable[[np.ndarray,np.ndarray],float]
-        Function that takes two numpy arrays and returns a value describing some aspect of them or `metric_difference_squared_mean` by default.
-        Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
-    initial_offset : tuple[int,int]
-        An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
-        In (x,y) order.
-        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`.
-    strategy_grid_scale : int
-        Distance to space out search grid by.
-    strategy_max_size : int
-        Maximum number of offsets to check on each side of initial offset or `20` by default.
-        Example: `...=5` means an 11x11 set of offsets could be searched.
-    strategy_max_steps : int
-        Maximum number of steps to take for minimization or `20` by default.
-        Note: Footprint size will significantly affect the total space explored.
-    strategy_edge_avoid : int
-        Minimum amount of overlap to require between images. Default is 20.
-    strategy_footprint : np.ndarray|None
-        Footprint array or `None` by default.
-        i.e. `strategy_footprint=skimage.morphology.disk(radius=5),`
-    strategy_footprint_shape : tuple[int,int]
-        Shape for square footprint or `(3,3)` by default.
-        Overridden if `strategy_footprint` is not `None`.
-
-    Returns
-    -------
-    strategy_results : dict
-        Dictionary with results of sparse grid search.
-        `grid` : np.ndarray
-            Offsets that were searched.
-        `grid_results` : np.ndarray
-            Metric value at matching offset in `grid`.
-        `optimized_offset` : tuple[int,int]
-            Optimized offset based on minimum in metric value.
-        `initial_offset` : tuple[int,int]
-            Initial offset provided to strategy.
-    """
-    
-    # Calculate search region boundaries
-    x_min: int=np.max([-array_b.shape[1]+1+strategy_edge_avoid,initial_offset[0]-(strategy_max_size*strategy_grid_scale)])
-    x_max: int=np.min([array_a.shape[1]-strategy_edge_avoid,initial_offset[0]+(strategy_max_size*strategy_grid_scale)])
-    y_min: int=np.max([-array_b.shape[0]+1+strategy_edge_avoid,initial_offset[1]-(strategy_max_size*strategy_grid_scale)])
-    y_max: int=np.min([array_a.shape[0]-strategy_edge_avoid,initial_offset[1]+(strategy_max_size*strategy_grid_scale)])
-
-    # Create grid over full search space
-    grid: np.ndarray=np.stack(
-        arrays=np.meshgrid(
-            np.arange(start=x_min,stop=x_max+1,step=strategy_grid_scale),
-            np.arange(start=y_min,stop=y_max+1,step=strategy_grid_scale)
-            )
-        ).astype(int)
-    
-    # Setup nan-filled results grid
-    grid_results=np.full(grid[0].shape,np.nan)
-
-    # Check initial point in grid
-    
-    initial_ix=np.floor_divide((initial_offset[0]-x_min),strategy_grid_scale)
-    initial_iy=np.floor_divide((initial_offset[1]-y_min),strategy_grid_scale)
-    # grid_results[np.all((grid[0]==initial_offset[0],grid[1]==initial_offset[1]),axis=0)]=overlap_evaluate(array_a,array_b,
-    #         offset_ab=initial_offset,
-    #         metric=metric)
-    grid_results[initial_iy,initial_ix]=overlap_evaluate(array_a,array_b,
-            offset_ab=initial_offset,
-            metric=metric)
-
-    # Setup function for checking based on index.
-    def check_offset(iy,ix):
-        grid_results[iy,ix]=overlap_evaluate(
-                    array_a=array_a,
-                    array_b=array_b,
-                    offset_ab=grid[:,iy,ix],
-                    metric=metric)
-    # Setup function for checking values around index.
-    if strategy_footprint is None:
-        footprint_array:np.ndarray=np.ones(shape=strategy_footprint_shape)
-    else:
-        footprint_array:np.ndarray=strategy_footprint
-    def check_near(iy,ix):
-        ix_positions,iy_positions=np.meshgrid(
-            np.arange(ix-np.floor_divide(footprint_array.shape[0],2),ix+np.floor_divide(footprint_array.shape[0],2)+1),
-            np.arange(iy-np.floor_divide(footprint_array.shape[1],2),iy+np.floor_divide(footprint_array.shape[1],2)+1))
-        x_valid=np.logical_and(ix_positions>=0, ix_positions<grid_results.shape[0])
-        y_valid=np.logical_and(iy_positions>=0, iy_positions<grid_results.shape[1])
-        valid=np.all([x_valid,y_valid,footprint_array],axis=0)
-        
-        any_unsearched=True
-        for ix,iy in zip(ix_positions[valid].flatten(),iy_positions[valid].flatten()):
-            if np.isnan(grid_results[iy,ix]):
-                check_offset(iy,ix)
-                any_unsearched=False
-        return any_unsearched
-    
-    for i in range(strategy_max_steps):
-        iy,ix=np.unravel_index(np.nanargmin(grid_results), grid_results.shape)
-        if check_near(iy,ix):
-            break
-
-    # Get indeces of optimized offset
-    optimized_location:tuple=np.unravel_index(np.nanargmin(grid_results), grid_results.shape)
-    # Get optimized offset
-    optimized_offset:tuple[int,int]=tuple(grid[:,optimized_location[0],optimized_location[1]].tolist())
-    return {
-        "grid":grid,
-        "grid_results":grid_results,
-        "optimized_offset":optimized_offset,
-        "initial_offset":initial_offset
-        }
-
-#TODO potential strategy: `gaussian_minimization`
-    # gaussian process regression is used to fit the minimization trend and efficiently reach the minimum value.
-
-#TODO potential strategy: `gradient_descent`
-    # gradient is calculated and followed in decreasing direction to reach minimum value.
-
-#TODO consider downscaling for strategy/processing.
-
-
-"""
-Filter Functions
-"""
-
-## array-like class
-@runtime_checkable
-class array_like(Protocol):
-    """
-    Type hinting utility class for representing objects compatible with `numpy.asarray` and with `.shape` property.
-
-    MISImages are `array_like`.
-    """
-    def __array__(self)->np.ndarray:
+    @staticmethod
+    def scaled_grid(
+            array_a:np.ndarray,
+            array_b:np.ndarray,
+            initial_offset:tuple[int,int],
+            strategy_grid_scale:int,
+            strategy_max_size:int=5,
+            metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,)->dict:
         """
-        Get array.
+        Sparse grid search strategy for difference gradient alignment.
         
+        Parameters
+        ----------
+        array_a : np.ndarray
+            Numpy array of image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        array_b : np.ndarray
+            Numpy array of image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        initial_offset : tuple[int,int]
+            An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
+            In (x,y) order.
+            Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
+        strategy_grid_scale : int
+            Distance to space out search grid by.
+        strategy_max_size : int
+            Number of steps to check on each side of initial offset or `5` by default.
+            Example: `...=5` means an 11x11 set of offsets will be searched.
+        metric : Callable[[np.ndarray,np.ndarray],float]
+            Function that takes two numpy arrays and returns a value describing some aspect of them or `metric_difference_squared_mean` by default.
+            Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+
         Returns
         -------
-        array : np.ndarray
-            Numpy array.
+        strategy_results : dict
+            Dictionary with results of sparse grid search.
+            `grid` : np.ndarray
+                Offsets that were searched.
+            `grid_results` : np.ndarray
+                Metric value at matching offset in `grid`.
+            `optimized_offset` : tuple[int,int]
+                Optimized offset based on minimum in metric value.
+            `initial_offset` : tuple[int,int]
+                Initial offset provided to strategy.
         """
-        ...
-    @property
-    def shape(self)->tuple[int, ...]:
+        grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
+        grid=np.fromfunction(lambda y,x: np.array([initial_offset[0]+(strategy_grid_scale*(x-strategy_max_size)),
+                                                                                                initial_offset[1]+(strategy_grid_scale*(y-strategy_max_size))]),
+                                                                                                shape=grid_shape,dtype=int)
+        grid_results=np.full(grid_shape,np.nan)
+        grid_indeces=np.fromfunction(lambda row,col: np.array([row,col]),shape=grid_shape,dtype=int).reshape(2,-1)
+
+        for i,grid_index in enumerate(grid_indeces.T):
+            check_offset=grid[:,grid_index[0],grid_index[1]]
+            grid_results[grid_index[0],grid_index[1]]=overlap_evaluate(array_a,array_b,
+                offset_ab=check_offset,
+                metric=metric)
+        optimized_location=grid_results.reshape(-1).argmin()
+        optimized_offset=tuple([int(value) for value in grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]])
+        return {
+            "grid":grid,
+            "grid_results":grid_results,
+            "optimized_offset":optimized_offset,
+            "initial_offset":initial_offset
+            }
+    @staticmethod
+    def full_grid(
+            array_a:np.ndarray,
+            array_b:np.ndarray,
+            initial_offset:tuple[int,int],
+            strategy_max_size:int=5,
+            metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,)->dict:
         """
-        Get the shape of the array.
+        Full grid search strategy for difference gradient alignment.
+
+        Convenience function that wraps `strategy_scaled_grid` with `strategy_grid_scale=1`.
         
+        Parameters
+        ----------
+        array_a : np.ndarray
+            Numpy array of image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        array_b : np.ndarray
+            Numpy array of image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        initial_offset : tuple[int,int]
+            An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
+            In (x,y) order.
+            Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
+        strategy_max_size : int
+            Number of steps to check on each side of initial offset or `5` by default.
+            Example: `...=5` means an 11x11 set of offsets will be searched.
+        metric : Callable[[np.ndarray,np.ndarray],float]
+            Function that takes two numpy arrays and returns a value describing some aspect of them or `metric_difference_squared_mean` by default.
+            Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+
         Returns
         -------
-        shape : tuple[int]
-            Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
+        strategy_results : dict
+            Dictionary with results of full grid search.
+            `grid` : np.ndarray
+                Offsets that were searched.
+            `grid_results` : np.ndarray
+                Metric value at matching offset in `grid`.
+            `optimized_offset` : tuple[int,int]
+                Optimized offset based on minimum in metric value.
+            `initial_offset` : tuple[int,int]
+                Initial offset provided to strategy.
         """
-        ...
+        return Strategy.scaled_grid(array_a=array_a,
+                                    array_b=array_b,
+                                    initial_offset=initial_offset,
+                                    strategy_grid_scale=1,
+                                    strategy_max_size=strategy_max_size,
+                                    metric=metric)
+    @staticmethod
+    def local_minima_grid(
+            array_a:np.ndarray,
+            array_b:np.ndarray,
+            metric:Callable[[np.ndarray,np.ndarray],float],
+            initial_offset:tuple[int,int],
+            strategy_grid_scale:int=1,
+            strategy_max_size:int=20,
+            strategy_max_steps:int=20,
+            strategy_edge_avoid=20,
+            strategy_footprint:np.ndarray|None=None,
+            strategy_footprint_shape:tuple[int,int]=(3,3)
+            )->dict:
+        """
+        Gridded local minimization descent search strategy for difference gradient alignment.
+        
+        Parameters
+        ----------
+        array_a : np.ndarray
+            Numpy array of image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        array_b : np.ndarray
+            Numpy array of image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        metric : Callable[[np.ndarray,np.ndarray],float]
+            Function that takes two numpy arrays and returns a value describing some aspect of them or `metric_difference_squared_mean` by default.
+            Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+        initial_offset : tuple[int,int]
+            An initial estimate for the vector from the top left corner of image a to the top left corner of image b.
+            In (x,y) order.
+            Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`.
+        strategy_grid_scale : int
+            Distance to space out search grid by.
+        strategy_max_size : int
+            Maximum number of offsets to check on each side of initial offset or `20` by default.
+            Example: `...=5` means an 11x11 set of offsets could be searched.
+        strategy_max_steps : int
+            Maximum number of steps to take for minimization or `20` by default.
+            Note: Footprint size will significantly affect the total space explored.
+        strategy_edge_avoid : int
+            Minimum amount of overlap to require between images. Default is 20.
+        strategy_footprint : np.ndarray|None
+            Footprint array or `None` by default.
+            i.e. `strategy_footprint=skimage.morphology.disk(radius=5),`
+        strategy_footprint_shape : tuple[int,int]
+            Shape for square footprint or `(3,3)` by default.
+            Overridden if `strategy_footprint` is not `None`.
 
+        Returns
+        -------
+        strategy_results : dict
+            Dictionary with results of sparse grid search.
+            `grid` : np.ndarray
+                Offsets that were searched.
+            `grid_results` : np.ndarray
+                Metric value at matching offset in `grid`.
+            `optimized_offset` : tuple[int,int]
+                Optimized offset based on minimum in metric value.
+            `initial_offset` : tuple[int,int]
+                Initial offset provided to strategy.
+        """
+        
+        # Calculate search region boundaries
+        x_min: int=np.max([-array_b.shape[1]+1+strategy_edge_avoid,initial_offset[0]-(strategy_max_size*strategy_grid_scale)])
+        x_max: int=np.min([array_a.shape[1]-strategy_edge_avoid,initial_offset[0]+(strategy_max_size*strategy_grid_scale)])
+        y_min: int=np.max([-array_b.shape[0]+1+strategy_edge_avoid,initial_offset[1]-(strategy_max_size*strategy_grid_scale)])
+        y_max: int=np.min([array_a.shape[0]-strategy_edge_avoid,initial_offset[1]+(strategy_max_size*strategy_grid_scale)])
 
-def filter_simple(image:array_like)->np.ndarray:
-    """
-    Filter to get an array from an array-like and convert it to `np.float32`.
-    
-    Parameters
-    ----------
-    image : array_like
-        Array-like image.
+        # Create grid over full search space
+        grid: np.ndarray=np.stack(
+            arrays=np.meshgrid(
+                np.arange(start=x_min,stop=x_max+1,step=strategy_grid_scale),
+                np.arange(start=y_min,stop=y_max+1,step=strategy_grid_scale)
+                )
+            ).astype(int)
+        
+        # Setup nan-filled results grid
+        grid_results=np.full(grid[0].shape,np.nan)
 
-    Returns
-    -------
-    array : np.ndarray
-        Converted array.
-    """
-    return np.asarray(image).astype(np.float32)
-def filter_rgb_gray_mean(image:array_like)->np.ndarray:
-    """
-    Filter to get an array from an array-like, reduce it from RGB to grayscale by taking the mean, and convert it to `np.float32`.
-    
-    Parameters
-    ----------
-    image : array_like
-        Array-like image with shape (Rows,Columns,Depth).
+        # Check initial point in grid
+        
+        initial_ix=np.floor_divide((initial_offset[0]-x_min),strategy_grid_scale)
+        initial_iy=np.floor_divide((initial_offset[1]-y_min),strategy_grid_scale)
+        # grid_results[np.all((grid[0]==initial_offset[0],grid[1]==initial_offset[1]),axis=0)]=overlap_evaluate(array_a,array_b,
+        #         offset_ab=initial_offset,
+        #         metric=metric)
+        grid_results[initial_iy,initial_ix]=overlap_evaluate(array_a,array_b,
+                offset_ab=initial_offset,
+                metric=metric)
 
-    Returns
-    -------
-    array : np.ndarray
-        Converted array.
-    """
-    return np.mean(image,axis=-1).astype(np.float32)
+        # Setup function for checking based on index.
+        def check_offset(iy,ix):
+            grid_results[iy,ix]=overlap_evaluate(
+                        array_a=array_a,
+                        array_b=array_b,
+                        offset_ab=grid[:,iy,ix],
+                        metric=metric)
+        # Setup function for checking values around index.
+        if strategy_footprint is None:
+            footprint_array:np.ndarray=np.ones(shape=strategy_footprint_shape)
+        else:
+            footprint_array:np.ndarray=strategy_footprint
+        def check_near(iy,ix):
+            ix_positions,iy_positions=np.meshgrid(
+                np.arange(ix-np.floor_divide(footprint_array.shape[0],2),ix+np.floor_divide(footprint_array.shape[0],2)+1),
+                np.arange(iy-np.floor_divide(footprint_array.shape[1],2),iy+np.floor_divide(footprint_array.shape[1],2)+1))
+            x_valid=np.logical_and(ix_positions>=0, ix_positions<grid_results.shape[0])
+            y_valid=np.logical_and(iy_positions>=0, iy_positions<grid_results.shape[1])
+            valid=np.all([x_valid,y_valid,footprint_array],axis=0)
+            
+            any_unsearched=True
+            for ix,iy in zip(ix_positions[valid].flatten(),iy_positions[valid].flatten()):
+                if np.isnan(grid_results[iy,ix]):
+                    check_offset(iy,ix)
+                    any_unsearched=False
+            return any_unsearched
+        
+        for i in range(strategy_max_steps):
+            iy,ix=np.unravel_index(np.nanargmin(grid_results), grid_results.shape)
+            if check_near(iy,ix):
+                break
 
-def modifier_filter_simple_crop(filter,
-        left:int|None=None,right:int|None=None,
-        top:int|None=None,bottom:int|None=None
-        )->Callable[[array_like],np.ndarray]:
-    """
-    Modifier to combine with another filter. Adds cropping to the filter it is applied to.
+        # Get indeces of optimized offset
+        optimized_location:tuple=np.unravel_index(np.nanargmin(grid_results), grid_results.shape)
+        # Get optimized offset
+        optimized_offset:tuple[int,int]=tuple(grid[:,optimized_location[0],optimized_location[1]].tolist())
+        return {
+            "grid":grid,
+            "grid_results":grid_results,
+            "optimized_offset":optimized_offset,
+            "initial_offset":initial_offset
+            }
 
-    Cropping is applied assuming (rows,columns) ordering with the top left at (0,0) i.e. `filter(image)[top:bottom,left:right]`
-    
-    Parameters
-    ----------
-    filter : Callable[[array_like],np.ndarray]
-        Filter function to modify.
-    left : int | None
-        Left index of crop or `None` by default.
-    right : int | None
-        Right index of crop or `None` by default.
-        Note: `right` is expected to be larger than `left`.
-    top : int | None
-        Top index of crop or `None` by default.
-    bottom : int | None
-        Bottom index of crop or `None` by default.
-        Note: `bottom` is expected to be larger than `top`.
+    #TODO potential strategy: `gaussian_minimization`
+        # gaussian process regression is used to fit the minimization trend and efficiently reach the minimum value.
 
-    Returns
-    -------
-    modified_filter : Callable[[array_like],np.ndarray]
-        Filter provided with cropping added.
-    """
-    def modified_filter(image:array_like)->np.ndarray:
-        return filter(image)[top:bottom,left:right]
-    return modified_filter
+    #TODO potential strategy: `gradient_descent`
+        # gradient is calculated and followed in decreasing direction to reach minimum value.
+
+    #TODO consider downscaling for strategy/processing.
 
 """
 Difference Gradient Analysis Function
@@ -569,9 +587,9 @@ def difference_gradient_analysis(
         image_a:MISImage|array_like,
         image_b:MISImage|array_like,
         relation:MISRelation|tuple[int,int]|None,
-        strategy:Callable[...,dict]=strategy_full_grid,
-        metric:Callable[[np.ndarray,np.ndarray],float]=metric_difference_squared_mean,
-        filter:Callable[[array_like],np.ndarray]=filter_simple,
+        strategy:Callable[...,dict]=Strategy.full_grid,
+        metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,
+        filter:Callable[[array_like],np.ndarray]=Filter.float,
         **kwargs)->dict:
     """
     Uses a metric to evaluate overlaps of a pair of images at multiple offsets to identify the best offset.
@@ -583,7 +601,7 @@ def difference_gradient_analysis(
     strategy : Callable[...,dict]
         Function that takes keyword arguments `array_a`, `array_b`, `initial_offset`, `metric`, and all other `kwargs`.
         Returns a dictionary of results that must include `optimized_offset`.
-        `strategy_full_grid` by default.
+        `Strategy.full_grid` by default.
     metric : Callable[[np.ndarray,np.ndarray],float]
         Function that takes two numpy arrays and returns a value describing some aspect of them.
         `metric_difference_squared_mean` by default.
@@ -656,127 +674,56 @@ except ImportError:
 else:
     _if_scpy = True
 
-### Difference Gradient Analysis Full Search Metrics
-def metric_highlow_inverse(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
-    """
-    Calculates the 1/(max-min) for each overlap region and returns the higher value.
-
-    Weights against low-feature overlapping regions.
-
-    Parameters
-    ----------
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-
-    Returns
-    -------
-    overlap_metric : float
-        Result of taking the higher of the inverse of the difference of max and min of each overlap.
-    """
-    return np.max([1/(np.ptp(overlap_a)),1/(np.ptp(overlap_b))])
-
-def metric_difference_max(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
-    """
-    Calculates the max of the absolute difference of two arrays.
-
-    Weights strongly against misalignment in features.
-
-    Parameters
-    ----------
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-
-    Returns
-    -------
-    overlap_metric : float
-        Result of taking the max of the absolute difference of the arrays.
-    """
-
-    diff=(overlap_a-overlap_b)
-    np.abs(diff,out=diff)
-    return np.max(diff)
-
-def metric_linear_edge_penalty(overlap_a:np.ndarray,overlap_b:np.ndarray,penalty:float=0.2,distance:float=300):
-    """
-    Calculates a linear penalty based on the shape of the overlap region. Thinner regions higher penalties.
-
-    Weights against low-overlap distances.
-
-    Parameters
-    ----------
-    overlap_a : np.ndarray
-        Numpy array of the overlap region in image a.
-    overlap_b : np.ndarray
-        Numpy array of the overlap region in image b.
-        Note: Not used. Only overlap_a's shape is considered.
-    Penalty : float | int
-        Maximum value for penalty.
-    distance : float | int
-        Distance at which penalty should reach 0.
-        Note: Linear gradient is used between this distance and 1 pixel overlap.
-
-    Returns
-    -------
-    overlap_metric : float
-        Result of linear penalty.
-    """
-    distance_from_edge=np.min(overlap_a.shape[:2])
-    if distance_from_edge>distance:
-        return 0
-    else:
-        return (1-(distance_from_edge/distance))*penalty
 
 ### Difference Gradient Analysis Full Search Modifier Filters
-
-def modifier_filter_median_disk(filter,radius:int=2)->Callable[[array_like],np.ndarray]:
+class ModifierSkimage():
     """
-    Modifier to combine with another filter. Adds a radius-based median filter to the filter it is applied to.
+    Group of functions which modify filters using scikit-image functions.
 
-    Simple wrapped around `skimage.filters.median`.
-    
-    Parameters
-    ----------
-    filter : Callable[[array_like],np.ndarray]
-        Filter function to modify.
-    radius : int
-        Radius to use with `skimage.morphology.disk(radius)` for median filter.
-
-    Returns
-    -------
-    modified_filter : Callable[[array_like],np.ndarray]
-        Filter provided with median filter added.
+    Modifiers take a filter and apply effects such as median or edge-detection.
     """
-    def modified_filter(image:array_like)->np.ndarray:
-        return skimage.filters.median(filter(image),footprint=skimage.morphology.disk(radius))
-    return modified_filter
+    @staticmethod
+    def median_disk(filter,radius:int=2)->Callable[[array_like],np.ndarray]:
+        """
+        Modifier to combine with another filter. Adds a radius-based median filter to the filter it is applied to.
 
-def modifier_filter_scharr_edge(filter)->Callable[[array_like],np.ndarray]:
-    """
-    Modifier to combine with another filter. Adds Scharr transform to convert image into edge magnitudes.
+        Simple wrapped around `skimage.filters.median`.
+        
+        Parameters
+        ----------
+        filter : Callable[[array_like],np.ndarray]
+            Filter function to modify.
+        radius : int
+            Radius to use with `skimage.morphology.disk(radius)` for median filter.
 
-    Simple wrapper around `skimage.filters.scharr`.
-    
-    Parameters
-    ----------
-    filter : Callable[[array_like],np.ndarray]
-        Filter function to modify.
+        Returns
+        -------
+        modified_filter : Callable[[array_like],np.ndarray]
+            Filter provided with median filter added.
+        """
+        def modified_filter(image:array_like)->np.ndarray:
+            return skimage.filters.median(filter(image),footprint=skimage.morphology.disk(radius))
+        return modified_filter
+    @staticmethod
+    def scharr_edge(filter)->Callable[[array_like],np.ndarray]:
+        """
+        Modifier to combine with another filter. Adds Scharr transform to convert image into edge magnitudes.
 
-    Returns
-    -------
-    modified_filter : Callable[[array_like],np.ndarray]
-        Filter provided with Scharr transform added.
-    """
-    def modified_filter(image:array_like)->np.ndarray:
-        return skimage.filters.scharr(filter(image))
-    return modified_filter
+        Simple wrapper around `skimage.filters.scharr`.
+        
+        Parameters
+        ----------
+        filter : Callable[[array_like],np.ndarray]
+            Filter function to modify.
+
+        Returns
+        -------
+        modified_filter : Callable[[array_like],np.ndarray]
+            Filter provided with Scharr transform added.
+        """
+        def modified_filter(image:array_like)->np.ndarray:
+            return skimage.filters.scharr(filter(image))
+        return modified_filter
 
 ### Difference Gradient Analysis Full Search Strategy
 
@@ -1086,9 +1033,9 @@ def calibrate_metrics_initial(
         image_b:MISImage|array_like,
         relation_offset:MISRelation|tuple[int,int]|None,
         metrics:dict[str,Callable[[np.ndarray,np.ndarray],float]],
-        filter:Callable[[array_like],np.ndarray]=filter_simple,
+        filter:Callable[[array_like],np.ndarray],
         strategies:dict[str,Callable]={
-                "grid":strategy_full_grid,
+                "grid":Strategy.full_grid,
                 "sparse":strategy_full_search_interpolated_adaptive_grid,
             },
         strategy_kwargs:dict[str,dict]={
@@ -1124,23 +1071,6 @@ def calibrate_metrics_initial(
                 metric=metric,
                 **strategy_kwargs[strategy_name],
                 )
-
-    # if initial_rectangular_offset is not None:
-    #     calibration_results_initial["full_grid"]=dict()
-    #     for name,metric in metrics.items():
-    #         calibration_results_initial["full_grid"][name]=strategy_full_grid(
-    #             array_a,array_b,
-    #             initial_offset=initial_rectangular_offset,
-    #             strategy_max_size=20,
-    #             metric=metric)
-    
-    
-    # calibration_results_initial["full_sparse"]=dict()
-    # for name,metric in metrics.items():
-    #     calibration_results_initial["full_sparse"][name]=strategy_full_search_grid(
-    #         array_a,array_b,
-    #         strategy_full_search_progression=[dict(initial_grid_number=40)],
-    #         metric=metric)
 
     return calibration_results_initial
 
