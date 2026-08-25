@@ -539,3 +539,129 @@ def setup_image(**image_data)->MISImage:
     return image_types[image_data["image_type"]](**image_data)
 
 #TODO add filters to unit tests.
+
+## array-like class
+@runtime_checkable
+class array_like(Protocol):
+    """
+    Type hinting utility class for representing objects compatible with `numpy.asarray` and with `.shape` property.
+
+    MISImages are `array_like`.
+    """
+    def __array__(self)->np.ndarray:
+        """
+        Get array.
+        
+        Returns
+        -------
+        array : np.ndarray
+            Numpy array.
+        """
+        ...
+    @property
+    def shape(self)->tuple[int, ...]:
+        """
+        Get the shape of the array.
+        
+        Returns
+        -------
+        shape : tuple[int]
+            Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
+        """
+        ...
+
+class Filter():
+    """
+    Group of filter functions for `..._filter` methods of MISImages.
+
+    Filters get arrays from array-like objects and apply effects such as type conversion or RGB-to-grayscale.
+    """
+    @staticmethod
+    def simple(image:array_like)->np.ndarray:
+        """
+        Filter to get an array from an array-like and convert it to `np.uint8`.
+        
+        Parameters
+        ----------
+        image : array_like
+            Array-like image.
+
+        Returns
+        -------
+        array : np.ndarray
+            Converted array.
+        """
+        return np.asarray(image).astype(dtype=np.uint8)
+
+    @staticmethod
+    def float(image:array_like)->np.ndarray:
+        """
+        Filter to get an array from an array-like and convert it to `np.float32`.
+        
+        Parameters
+        ----------
+        image : array_like
+            Array-like image.
+
+        Returns
+        -------
+        array : np.ndarray
+            Converted array.
+        """
+        return np.asarray(image).astype(dtype=np.float32)
+
+    @staticmethod
+    def rgb_gray_mean(image:array_like)->np.ndarray:
+        """
+        Filter to get an array from an array-like, reduce it from RGB to grayscale by taking the mean of RGB, and convert it to `np.float32`.
+        
+        Parameters
+        ----------
+        image : array_like
+            Array-like image with shape (Rows,Columns,Depth).
+
+        Returns
+        -------
+        array : np.ndarray
+            Converted array.
+        """
+        return np.mean(np.asarray(image),axis=-1).astype(dtype=np.float32)
+
+class Modifier():
+    """
+    Group of functions which modify filters.
+
+    Modifiers take a filter and apply effects such as cropping.
+    """
+    def crop(filter:Callable[[array_like],np.ndarray],
+            left:int|None=None,right:int|None=None,
+            top:int|None=None,bottom:int|None=None
+            )->Callable[[array_like],np.ndarray]:
+        """
+        Modifier to combine with another filter. Adds cropping to the filter it is applied to.
+
+        Cropping is applied assuming (rows,columns) ordering with the top left at (0,0) i.e. `filter(image)[top:bottom,left:right]`
+        
+        Parameters
+        ----------
+        filter : Callable[[array_like],np.ndarray]
+            Filter function to modify.
+        left : int | None
+            Left index of crop or `None` by default.
+        right : int | None
+            Right index of crop or `None` by default.
+            Note: `right` is expected to be larger than `left`.
+        top : int | None
+            Top index of crop or `None` by default.
+        bottom : int | None
+            Bottom index of crop or `None` by default.
+            Note: `bottom` is expected to be larger than `top`.
+
+        Returns
+        -------
+        modified_filter : Callable[[array_like],np.ndarray]
+            Filter provided with cropping added.
+        """
+        def modified_filter(image:array_like)->np.ndarray:
+            return filter(image)[top:bottom,left:right]
+        return modified_filter
