@@ -32,25 +32,32 @@ for key,value in image_sets.items():
 Alignment code in `align.ipynb`:
 ```
 mis_filepath="../example/project_e/project_e-2-no_rel-cal.mis.json"
+mis_project=MISProjectJSON.load(mis_filepath)
+from misalign.model.image import Filter, Modifier
+mis_project.set_image_filter(Modifier.crop(bottom=1672,filter=Filter.simple))
 ...
 imrc=IMRControls(mis_project,imshow_kwargs=dict(cmap="gray",vmin=0,vmax=255))
 ...
-mis_filepath="../example/project_e/demo-project_e-2-rel-cal.mis.json.mis.json"
+mis_filepath="../example/project_e/demo-project_e-2-rel-cal.mis.json"
 ```
 
 ```
 mis_filepath="../example/project_e/project_e-8-no_rel-cal.mis.json"
+mis_project=MISProjectJSON.load(mis_filepath)
+from misalign.model.image import Filter, Modifier
+mis_project.set_image_filter(Modifier.crop(bottom=1672,filter=Filter.simple))
 ...
 imrc=IMRControls(mis_project,imshow_kwargs=dict(cmap="gray",vmin=0,vmax=255))
 ...
-mis_filepath="../example/project_e/demo-project_e-8-rel-cal.mis.json.mis.json"
+mis_filepath="../example/project_e/demo-project_e-8-rel-cal.mis.json"
 ```
 
 Render code in `render.ipynb`:
 ```
 mis_filepath=r"../example/project_e/project_e-2-rel-cal.mis.json"
 mis_project=MISProjectJSON.load(mis_filepath)
-mis_project.set_image_filter(filter=lambda array:array[:1672])
+from misalign.model.image import Filter, Modifier
+mis_project.set_image_filter(Modifier.crop(bottom=1672,filter=Filter.simple))
 ...
 selected_image=selected_image.transpose(Transpose.ROTATE_90)
 ...
@@ -64,7 +71,8 @@ image_with_scale_bar(
 ```
 mis_filepath=r"../example/project_e/project_e-8-rel-cal.mis.json"
 mis_project=MISProjectJSON.load(mis_filepath)
-mis_project.set_image_filter(filter=lambda array:array[:1672])
+from misalign.model.image import Filter, Modifier
+mis_project.set_image_filter(Modifier.crop(bottom=1672,filter=Filter.simple))
 ...
 selected_image=selected_image.transpose(Transpose.ROTATE_90)
 ...
