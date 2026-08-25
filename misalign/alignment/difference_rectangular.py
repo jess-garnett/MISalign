@@ -2,15 +2,17 @@
 Difference- & Overlap-based Automated Rectangular Alignment Module
 """
 
-import numpy as np
 from collections.abc import Callable
-# from typing import runtime_checkable, Protocol
 import logging
 from math import dist
+
+import numpy as np
+from matplotlib import pyplot as plt
 
 from misalign.model.image import MISImage, array_like, Filter, Modifier  # noqa: F401
     # `Filter` and `Modifier` are largely imported so they can be used with DGA
 from misalign.model.relation import MISRelation
+import misalign.canvas.canvas_rectangular as cr
 
 """
 Axis and Overlap Functions
@@ -653,6 +655,164 @@ Result Visualization Functions
 
 #TODO plotting functions from `difference_gradient.py`
 
+def _plot_grid_result(
+        dga_grid_results:dict,
+        overlays=True):
+    plt.imshow(dga_grid_results["grid_results"],
+        extent=(np.min(dga_grid_results["grid"][0])-0.5,
+                np.max(dga_grid_results["grid"][0])+0.5,
+                np.max(dga_grid_results["grid"][1])+0.5,
+                np.min(dga_grid_results["grid"][1])-0.5,), #xmin,xmax,ymin,ymax
+        )
+    plt.xlabel("Rectangular X-offset")
+    plt.ylabel("Rectangular Y-offset")
+    plt.colorbar(label="Difference Gradient Analysis Metric")
+
+    if overlays:
+        legend=False
+        if "initial_offset" in dga_grid_results:
+            plt.scatter(
+                x=dga_grid_results["initial_offset"][0],
+                y=dga_grid_results["initial_offset"][1],
+                marker="o",
+                color="tab:red",
+                label=f'Initial: {dga_grid_results["initial_offset"]}')
+            legend=True
+        if "optimized_offset" in dga_grid_results:
+            plt.scatter(
+                x=dga_grid_results["optimized_offset"][0],
+                y=dga_grid_results["optimized_offset"][1],
+                marker="X",
+                color="tab:pink",
+                label=f'Optimized: {dga_grid_results["optimized_offset"]}')
+            legend=True
+        if "initial_offset" in dga_grid_results and "optimized_offset" in dga_grid_results:
+            plt.annotate("", 
+                xytext=dga_grid_results["initial_offset"],
+                xy=dga_grid_results["optimized_offset"],
+                arrowprops=dict(arrowstyle="->",color="w"),)
+        if legend:
+            plt.legend()
+
+def _render_rectangular_pair(
+        image_a:MISImage,
+        image_b:MISImage,
+        offset:tuple[int,int],
+        weight=cr.weight_flat,
+        return_canvas_relative_offsets=False
+        ):
+    origin_relative_offsets=cr.rectangular_solve(
+        relations=[{"ref":(image_a.name,image_b.name),"rel":offset}],
+        image_names=[image_a.name,image_b.name],
+        origin=image_a.name
+        )
+
+    origin_relative_extents=cr.find_relative_extents(
+        image_names=[image_a.name,image_b.name],
+        origin_relative_offsets=origin_relative_offsets,
+        image_shapes={image_a.name:image_a.shape,image_b.name:image_b.shape}
+        )
+
+    canvas_extents, canvas_offsets=cr.resolve_extents(origin_relative_extents)
+
+    canvas_relative_offsets=cr.place_in_canvas(
+        image_names=[image_a.name,image_b.name],
+        origin_relative_offsets=origin_relative_offsets,
+        canvas_extents=canvas_extents,
+        canvas_offsets=canvas_offsets)
+
+    normalizer=cr.build_normalization(
+        image_arrays={image_a.name:image_a,image_b.name:image_b},
+        canvas_relative_offsets=canvas_relative_offsets,
+        canvas_extents=canvas_extents,
+        weight=cr.weight_flat,
+        )
+    render=cr.render_blended(
+        image_arrays={image_a.name:image_a,image_b.name:image_b},
+        canvas_relative_offsets=canvas_relative_offsets,
+        canvas_extents=canvas_extents,
+        weight=cr.weight_flat,
+        normalizer=normalizer,
+        )
+
+    if return_canvas_relative_offsets:
+        return render, canvas_relative_offsets
+    else:
+        return render
+
+def plot_rectangular_pair(
+        image_a:MISImage,
+        image_b:MISImage,
+        offset:tuple[int,int],
+        weight=cr.weight_flat,
+        focus_overlap=False,
+        focus_expand=50
+        ):
+    render, canvas_relative_offsets=_render_rectangular_pair(
+        image_a=image_a,
+        image_b=image_b,
+        offset=offset,
+        weight=weight,
+        return_canvas_relative_offsets=True)
+    plt.imshow(render)
+    if focus_overlap:
+        a_spans,b_spans=overlap_spans(
+            offset_vector=offset,
+            a_shape=image_a.shape,
+            b_shape=image_b.shape)
+        plt.xlim(
+            left=canvas_relative_offsets[image_a.name][0]+a_spans[0][0]-focus_expand,
+            right=canvas_relative_offsets[image_a.name][0]+a_spans[0][1]+focus_expand)
+        plt.ylim(
+            top=canvas_relative_offsets[image_a.name][1]+a_spans[1][0]-focus_expand,
+            bottom=canvas_relative_offsets[image_a.name][1]+a_spans[1][1]+focus_expand)
+
+def plot_grid_difference_gradient_analysis(
+        image_a:MISImage,
+        image_b:MISImage,
+        dga_grid_result:dict,
+        figwidth=12,
+        figheight=4,
+        overlays=True
+        ):
+    if "initial_offset" in dga_grid_result:
+        fig,axs=plt.subplot_mosaic(
+            mosaic=[
+                ["dga_map","initial"],
+                ["dga_map","optimized"]])
+    else:
+        fig,axs=plt.subplot_mosaic(
+            mosaic=[
+                ["dga_map","optimized"]])
+    fig.set_figwidth(figwidth)
+    fig.set_figheight(figheight)
+    plt.tight_layout(pad=1.5,h_pad=2,w_pad=2)
+
+    plt.sca(axs["dga_map"])
+    plt.title("Difference Gradient Analysis")
+    _plot_grid_result(
+        dga_grid_results=dga_grid_result,
+        overlays=overlays)
+
+    if "initial_offset" in dga_grid_result:
+        plt.sca(axs["initial"])
+        plt.title("Initial Flat Blend")
+        plot_rectangular_pair(
+            image_a=image_a,
+            image_b=image_b,
+            offset=dga_grid_result["initial_offset"],
+            weight=cr.weight_dfe,
+            focus_overlap=True)
+
+    plt.sca(axs["optimized"])
+    plt.title("Optimized Flat Blend")
+    plot_rectangular_pair(
+        image_a=image_a,
+        image_b=image_b,
+        offset=dga_grid_result["optimized_offset"],
+        weight=cr.weight_dfe,
+        focus_overlap=True)
+
 """
 Difference Gradient Analysis Metric and Strategy Functions
 """
@@ -778,306 +938,502 @@ class LocateMetricSkimage():
 
 ### Difference Gradient Analysis Full Search Strategy
 
-def interpolate_nearest_neighbor(
-    grid:np.ndarray,
-    grid_results:np.ndarray,
-    )->np.ndarray:
-    interp=NearestNDInterpolator(
-        np.array([
-            grid[0].flatten()[~np.isnan(grid_results.flatten())],
-            grid[1].flatten()[~np.isnan(grid_results.flatten())]]).T,
-        grid_results.flatten()[~np.isnan(grid_results.flatten())])
-    interp_results=interp(grid[0].flatten(),grid[1].flatten()).reshape(grid_results.shape)
-    return interp_results
 
-#TODO handle initial offset.
-def strategy_full_search_interpolated_adaptive_grid(
-        array_a:np.ndarray,
-        array_b:np.ndarray,
-        metric:Callable[[np.ndarray,np.ndarray],float],
-        initial_offset:tuple[int,int]|None=None,
-        strategy_interpolate:Callable=interpolate_nearest_neighbor,
-        strategy_edge_avoid=20,
-        strategy_logger:logging.Logger=logging.getLogger(),
-        strategy_initial_grid_number=20,
-        strategy_metric_comparison:float=1,
-        **kwargs)->dict:
+class InterpolateSkimage():
     """
-    Full search strategy based on iteratively refined sparse grids and interpolating.
-
-    Strategy uses sparse grids and quantile-based refinement to search entire rectangular offset space.
-    It is recommended to calibrate parameters on a few known offsets within a data set.
-    
-    Parameters
-    ----------
-    array_a : np.ndarray
-        Numpy array of image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    array_b : np.ndarray
-        Numpy array of image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    initial_offset : tuple[int,int] | None
-        An initial estimate for the vector from the top left corner of image a to the top left corner of image b or Default `None`.
-        In (x,y) order.
-        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
-    metric : Callable[[np.ndarray,np.ndarray],float]
-        Function that takes two numpy arrays and returns a value describing some aspect of them.
-        Note: For full search it is likely that a custom combination of a metric which matches location and a metric which avoids low-feature regions will be needed.
-        Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
-    strategy_interpolate : Callable[[np.ndarray,np.ndarray],np.ndarray]
-        Function that takes grid of offsets and grid of results and un-checked `np.nan` and interpolates for all `np.nan` values.
-        `interpolate_nearest_neighbor` by default.
-    strategy_edge_avoid : int
-        Minimum amount of overlap to require between images. Default is 20.
-    strategy_logger : logging.Logger
-        Logger to use for logging full search steps. By Default root logger.
-    strategy_initial_grid_number : int
-        Number of points to use per direction in initial sparse grid. Default is 20.
-        Used in simple search progression.
-        Overridden by kwarg `strategy_full_search_progression`.
-    strategy_metric_comparison : float
-        Value of metric that is considered likely to be a true solution.
-        Used in simple search progression.
-        Overridden by kwarg `strategy_full_search_progression`.
-    kwargs
-        `strategy_full_search_progression` : list[dict]
-
-    Returns
-    -------
-    strategy_results : dict
-        Dictionary with results of sparse grid search.
-        `grid` : np.ndarray
-            Offsets that were searched.
-        `grid_results` : np.ndarray
-            Metric value at matching offset in `grid`.
-        `interp_results` : np.ndarray
-            Interpolation of results to grid.
-        `optimized_offset` : tuple[int,int]
-            Optimized offset based on minimum in metric value.
+    Group of functions which take offsets and results to interpolate using scikit-image functions.
     """
+    @staticmethod
+    def nearest_neighbor(
+        grid:np.ndarray,
+        grid_results:np.ndarray,
+        )->np.ndarray:
+        interp=NearestNDInterpolator(
+            np.array([
+                grid[0].flatten()[~np.isnan(grid_results.flatten())],
+                grid[1].flatten()[~np.isnan(grid_results.flatten())]]).T,
+            grid_results.flatten()[~np.isnan(grid_results.flatten())])
+        interp_results=interp(grid[0].flatten(),grid[1].flatten()).reshape(grid_results.shape)
+        return interp_results
 
-    # Calculate full search size
-    x_min: int=-array_b.shape[1]+1+strategy_edge_avoid
-    x_max: int=array_a.shape[1]-strategy_edge_avoid
-    y_min: int=-array_b.shape[0]+1+strategy_edge_avoid
-    y_max: int=+array_a.shape[0]-strategy_edge_avoid
+class PredictSkimage():
+    """
+    Group of functions which take two arrays and an offset and predicts an aligned offset using scikit-image functions.
+    """
+    @staticmethod
+    def phase_cross_correlation(
+            array_a:np.ndarray,
+            array_b:np.ndarray,
+            offset_ab:tuple[int,int]|np.ndarray,
+            ):
+        ## Find overlap spans
+        a_spans,b_spans=overlap_spans(tuple(offset_ab),array_a.shape,array_b.shape)
+        ## Extract overlap regions
+        overlap_a=array_a[a_spans[1][0]:a_spans[1][1],a_spans[0][0]:a_spans[0][1]]
+        overlap_b=array_b[b_spans[1][0]:b_spans[1][1],b_spans[0][0]:b_spans[0][1]]
+        ## Calculate phase cross correlation
+        shift_yx,error,phasediff=skimage.registration.phase_cross_correlation(
+            reference_image=overlap_a,
+            moving_image=overlap_b,
+            disambiguate=True)
+        return {
+            "offset":(int(offset_ab[0]-shift_yx[1]),int(offset_ab[1]-shift_yx[0])),
+            "shift":shift_yx,
+            "error":error,
+            "phasediff":phasediff}
 
-    # Generate grid of offsets
-    grid: np.ndarray=np.stack(
-        arrays=np.meshgrid(
-            np.arange(x_min,x_max),
-            np.arange(y_min,y_max)
-            )
-        )
-    # Get column and row indices for grid of offsets
-    grid_columns,grid_rows=np.meshgrid(
-            np.arange(0,grid.shape[2]),
-            np.arange(0,grid.shape[1]),
-            )
-    # Create `nan`-filled array for results of checking offsets
-    grid_results=np.full(grid.shape[1:],np.nan)
-    # Create `nan`-filled array as place-holder for interpolation
-    interp_results=np.full(grid.shape[1:],np.nan)
+class StrategyFullSearch():
+    """
+    Group of full search difference gradient alignment strategies.
 
+    Strategies evaluate arrays at various offsets with the goal of finding the global minima with no initial information.
+    """
+    #TODO handle initial offset.
+    @staticmethod
+    def interpolated_adaptive_grid(
+            array_a:np.ndarray,
+            array_b:np.ndarray,
+            metric:Callable[[np.ndarray,np.ndarray],float],
+            initial_offset:tuple[int,int]|None=None,
+            strategy_interpolate:Callable=InterpolateSkimage.nearest_neighbor,
+            strategy_edge_avoid=20,
+            strategy_logger:logging.Logger=logging.getLogger(),
+            strategy_initial_grid_number=20,
+            strategy_metric_comparison:float=1,
+            **kwargs)->dict:
+        """
+        Full search strategy based on iteratively refined sparse grids and interpolating.
 
-    # Define function that applies metric at iy,ix and updates grid_results[iy,ix]
-    def check_offset(iy,ix):
-        grid_results[iy,ix]=overlap_evaluate(
-                    array_a=array_a,
-                    array_b=array_b,
-                    offset_ab=grid[:,iy,ix],
-                    metric=metric)
-    
-
-    def initial_grid_check(initial_grid_number:int):
-        # Offsets that match grid columns.
-        match_col:np.ndarray=np.isin(
-            element=grid_columns,
-            test_elements=np.linspace(start=0,stop=grid.shape[2]-1,num=initial_grid_number).astype(int))
-        # Offsets that match grid rows.
-        match_row:np.ndarray=np.isin(
-            element=grid_rows,
-            test_elements=np.linspace(start=0,stop=grid.shape[1]-1,num=initial_grid_number).astype(int))
-        # Positions that match initial grid spacing.
-        match_all:np.ndarray=np.all([match_col,match_row],axis=0)
-
-        # Log initial check.
-        strategy_logger.info(f"Initial Number: {initial_grid_number} Checking: {np.sum(match_all):,} / {grid_results.size:,}")
-        # print(f"Initial Number: {strategy_initial_grid_number} Checking: {np.sum(match_all)} / {grid_results.size:,}")
-
-        # Check initial set of offsets.
-        for iy,ix in zip(grid_rows[match_all].flatten(),grid_columns[match_all].flatten()):
-            check_offset(iy,ix)
-
-        # Interpolate on initial set of offset results.
-        return strategy_interpolate(grid=grid,grid_results=grid_results)
-
-    # Define function that does quantile and grid filtering and checking.
-    def quantile_filter_check(
-        interp_results:np.ndarray,
-        quantile:float,
-        number:int|None=None,
-        spacing:int|None=None,
-        skeleton:bool=False,
-        check_all=1000):
-        #TODO could add a maximum number here so if this is selecting i.e. 10,000 points it reduce to 1000.
-
-        # Quantile for threshold.
-        quantile_cutoff=np.quantile(interp_results,quantile)
-
-        # Interpolation results within quantile threshold.
-        match_quantile:np.ndarray=interp_results<=quantile_cutoff
-
-        # Offsets that have not been checked.
-        match_unchecked:np.ndarray=np.isnan(grid_results)
-
-        # Offsets that have not been checked and are within quantile threshold.
-        match_remaining=np.all([match_quantile,match_unchecked],axis=0)
-
-        # If the total remaining positions are less than the `check_all` threshold, just check all of them.
-        if np.sum(match_remaining)<=check_all:
-            match_all=match_remaining
-            strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Checking all: {np.sum(match_all):,} / {np.sum(match_remaining):,}")
+        Strategy uses sparse grids and quantile-based refinement to search entire rectangular offset space.
+        It is recommended to calibrate parameters on a few known offsets within a data set.
         
-        # Otherwise, apply reducing filter and then check.
-        else:
-            # Reducing filter based on an evenly spaced grid with a certain number of points.
-        
-            #TODO consider splitting this into grid matching function > take a row array and a col array to match against > would also integrate initial grid
-            if number is not None:
-                # Offsets that match grid columns.
-                match_col=np.isin(element=grid_columns,
-                    test_elements=np.linspace(start=0,stop=grid.shape[2]-1,num=number).astype(int))
+        Parameters
+        ----------
+        array_a : np.ndarray
+            Numpy array of image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        array_b : np.ndarray
+            Numpy array of image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        initial_offset : tuple[int,int] | None
+            An initial estimate for the vector from the top left corner of image a to the top left corner of image b or Default `None`.
+            In (x,y) order.
+            Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
+        metric : Callable[[np.ndarray,np.ndarray],float]
+            Function that takes two numpy arrays and returns a value describing some aspect of them.
+            Note: For full search it is likely that a custom combination of a metric which matches location and a metric which avoids low-feature regions will be needed.
+            Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+        strategy_interpolate : Callable[[np.ndarray,np.ndarray],np.ndarray]
+            Function that takes grid of offsets and grid of results and un-checked `np.nan` and interpolates for all `np.nan` values.
+            `interpolate_nearest_neighbor` by default.
+        strategy_edge_avoid : int
+            Minimum amount of overlap to require between images. Default is 20.
+        strategy_logger : logging.Logger
+            Logger to use for logging full search steps. By Default root logger.
+        strategy_initial_grid_number : int
+            Number of points to use per direction in initial sparse grid. Default is 20.
+            Used in simple search progression.
+            Overridden by kwarg `strategy_full_search_progression`.
+        strategy_metric_comparison : float
+            Value of metric that is considered likely to be a true solution.
+            Used in simple search progression.
+            Overridden by kwarg `strategy_full_search_progression`.
+        kwargs
+            `strategy_full_search_progression` : list[dict]
 
-                # Offsets that match grid rows.
-                match_row=np.isin(element=grid_rows,
-                    test_elements=np.linspace(start=0,stop=grid.shape[1]-1,num=number).astype(int))
+        Returns
+        -------
+        strategy_results : dict
+            Dictionary with results of sparse grid search.
+            `grid` : np.ndarray
+                Offsets that were searched.
+            `grid_results` : np.ndarray
+                Metric value at matching offset in `grid`.
+            `interp_results` : np.ndarray
+                Interpolation of results to grid.
+            `optimized_offset` : tuple[int,int]
+                Optimized offset based on minimum in metric value.
+        """
 
-                # Offsets that match grid search positions.
-                match_all=np.all([match_col,match_row,match_remaining],axis=0)
-                
-                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Checking: {np.sum(match_all):,} / {np.sum(match_remaining):,}")
-            elif spacing is not None:
-                # Offsets that match grid columns.
-                match_col=np.isin(element=grid_columns,
-                    test_elements=np.arange(0,stop=grid.shape[2]-1,step=spacing).astype(int))
+        # Calculate full search size
+        x_min: int=-array_b.shape[1]+1+strategy_edge_avoid
+        x_max: int=array_a.shape[1]-strategy_edge_avoid
+        y_min: int=-array_b.shape[0]+1+strategy_edge_avoid
+        y_max: int=+array_a.shape[0]-strategy_edge_avoid
 
-                # Offsets that match grid rows.
-                match_row=np.isin(element=grid_rows,
-                    test_elements=np.arange(0,stop=grid.shape[1]-1,step=spacing).astype(int))
-
-                # Offsets that match grid search positions.
-                match_all=np.all([match_col,match_row,match_remaining],axis=0)
-
-                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} Spacing: {spacing} Checking: {np.sum(match_all)} / {np.sum(match_remaining):,}")
-            elif skeleton:
-                # Get spine of quantile filtered region(s).
-                skeleton_smooth=skimage.filters.gaussian(interp_results,sigma=10) # Smooth out interpolation to avoid excess branches.
-                skeleton_binary=skeleton_smooth<quantile_cutoff # Smooth interpolation results within quantile threshold.
-                skeleton_spine=skimage.morphology.skeletonize(skeleton_binary) # Spine of skeleton
-                match_skeleton=skimage.morphology.dilation(skeleton_spine,skimage.morphology.footprints.disk(1)) #expanded
-
-                # Overlay spacing 3 on 3 wide line to sparse out line slightly
-                spacing=3
-                # Offsets that match grid columns.
-                match_col=np.isin(element=grid_columns,
-                    test_elements=np.arange(0,stop=grid.shape[2]-1,step=spacing).astype(int))
-
-                # Offsets that match grid rows.
-                match_row=np.isin(element=grid_rows,
-                    test_elements=np.arange(0,stop=grid.shape[1]-1,step=spacing).astype(int))
-
-                # Offsets in spine without repeats
-                match_all=np.all([match_col,match_row,match_skeleton,match_remaining],axis=0) #match_col,match_row,
-                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Skeleton - Checking: {np.sum(match_all)} / {np.sum(match_skeleton):,}")
-            else:
-                #TODO decide if this should be check all behavior implicitely or should be an error for not including number/spacing
-                # If neighter number or spacing are given then brute force check all remaining offsets.
-                match_all=match_remaining
-                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Checking all: {np.sum(match_all)} / {np.sum(match_remaining):,}")
-        
-        # Check set of offsets
-        for iy,ix in zip(grid_rows[match_all].flatten(),grid_columns[match_all].flatten()):
-            check_offset(iy,ix)
-
-        # Return Interpolation
-        return strategy_interpolate(
-            grid=grid,
-            grid_results=grid_results
-            )
-    
-    # Strategy to use for full search.
-    if "strategy_full_search_progression" in kwargs:
-        strategy_full_search_progression=kwargs["strategy_full_search_progression"]
-    else:
-        strategy_full_search_progression: list[dict]=[
-            dict(initial_grid_number=strategy_initial_grid_number),
-            dict(quantile=0.1,spacing=32,), #number=100
-            dict(quantile=0.01,spacing=16,), #number=200
-            dict(quantile=0.001,spacing=8,), #number=400
-            dict(quantile=0.0001,spacing=4,), #number=800
-            dict(compare=strategy_metric_comparison),
-            dict(quantile=0.05,skeleton=True,),
-            dict(quantile=0.0001,spacing=4,), #number=800
-            dict(compare=strategy_metric_comparison),
-            dict(quantile=0.05,spacing=16,), #number=200
-            dict(quantile=0.005,spacing=8,), #number=400
-            dict(quantile=0.0005,spacing=4,), #number=800
-            dict(compare=strategy_metric_comparison),
-            dict(quantile=0.001,spacing=4,check_all=10000), #number=800
-            ]
-
-    # Looping through full search progression
-    for step in strategy_full_search_progression:
-
-        if "initial_grid_number" in step:
-            interp_results=initial_grid_check(initial_grid_number=step["initial_grid_number"])
-        elif "quantile" in step:
-            interp_results=quantile_filter_check(
-                interp_results=interp_results,
-                **step
+        # Generate grid of offsets
+        grid: np.ndarray=np.stack(
+            arrays=np.meshgrid(
+                np.arange(x_min,x_max),
+                np.arange(y_min,y_max)
                 )
-        elif "compare" in step:
-            # If minimum metric is less than compare threshold, a near-true-solution has probably been found.
-                # Do any final search and then break the progression.
-                # If not then continue.
-            if np.nanmin(grid_results)<=step["compare"]:
-                #TODO potentially a final search to make sure area near minimum point has been checked.
-                    # possible use full grid 5x5 on optimized location and inject into the grid results.
-                strategy_logger.info(f"Metric: {np.nanmin(grid_results):0.3f} is below threshold {step["compare"]} - Stopping.")
-                break
-            else:
-                strategy_logger.info(f"Metric: {np.nanmin(grid_results):0.3f} is above threshold {step["compare"]} - Continuing.")
-                pass
-        elif "search_function" in step:
-            interp_results=step["search_function"](step,locals())
-        elif "compare_function" in step:
-            compare_result=step["compare_function"](step,locals())
-            if compare_result:
-                break
-            else:
-                pass
-        else:
-            strategy_logger.warning(msg=f"Encountered unknown strategy step: {step}")
-            pass
+            )
+        # Get column and row indices for grid of offsets
+        grid_columns,grid_rows=np.meshgrid(
+                np.arange(0,grid.shape[2]),
+                np.arange(0,grid.shape[1]),
+                )
+        # Create `nan`-filled array for results of checking offsets
+        grid_results=np.full(grid.shape[1:],np.nan)
+        # Create `nan`-filled array as place-holder for interpolation
+        interp_results=np.full(grid.shape[1:],np.nan)
+
+
+        # Define function that applies metric at iy,ix and updates grid_results[iy,ix]
+        def check_offset(iy,ix):
+            grid_results[iy,ix]=overlap_evaluate(
+                        array_a=array_a,
+                        array_b=array_b,
+                        offset_ab=grid[:,iy,ix],
+                        metric=metric)
+        
+
+        def initial_grid_check(initial_grid_number:int):
+            # Offsets that match grid columns.
+            match_col:np.ndarray=np.isin(
+                element=grid_columns,
+                test_elements=np.linspace(start=0,stop=grid.shape[2]-1,num=initial_grid_number).astype(int))
+            # Offsets that match grid rows.
+            match_row:np.ndarray=np.isin(
+                element=grid_rows,
+                test_elements=np.linspace(start=0,stop=grid.shape[1]-1,num=initial_grid_number).astype(int))
+            # Positions that match initial grid spacing.
+            match_all:np.ndarray=np.all([match_col,match_row],axis=0)
+
+            # Log initial check.
+            strategy_logger.info(f"Initial Number: {initial_grid_number} Checking: {np.sum(match_all):,} / {grid_results.size:,}")
+            # print(f"Initial Number: {strategy_initial_grid_number} Checking: {np.sum(match_all)} / {grid_results.size:,}")
+
+            # Check initial set of offsets.
+            for iy,ix in zip(grid_rows[match_all].flatten(),grid_columns[match_all].flatten()):
+                check_offset(iy,ix)
+
+            # Interpolate on initial set of offset results.
+            return strategy_interpolate(grid=grid,grid_results=grid_results)
+
+        # Define function that does quantile and grid filtering and checking.
+        def quantile_filter_check(
+            interp_results:np.ndarray,
+            quantile:float,
+            number:int|None=None,
+            spacing:int|None=None,
+            skeleton:bool=False,
+            check_all=1000):
+            #TODO could add a maximum number here so if this is selecting i.e. 10,000 points it reduce to 1000.
+
+            # Quantile for threshold.
+            quantile_cutoff=np.quantile(interp_results,quantile)
+
+            # Interpolation results within quantile threshold.
+            match_quantile:np.ndarray=interp_results<=quantile_cutoff
+
+            # Offsets that have not been checked.
+            match_unchecked:np.ndarray=np.isnan(grid_results)
+
+            # Offsets that have not been checked and are within quantile threshold.
+            match_remaining=np.all([match_quantile,match_unchecked],axis=0)
+
+            # If the total remaining positions are less than the `check_all` threshold, just check all of them.
+            if np.sum(match_remaining)<=check_all:
+                match_all=match_remaining
+                strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Checking all: {np.sum(match_all):,} / {np.sum(match_remaining):,}")
             
+            # Otherwise, apply reducing filter and then check.
+            else:
+                # Reducing filter based on an evenly spaced grid with a certain number of points.
+            
+                #TODO consider splitting this into grid matching function > take a row array and a col array to match against > would also integrate initial grid
+                if number is not None:
+                    # Offsets that match grid columns.
+                    match_col=np.isin(element=grid_columns,
+                        test_elements=np.linspace(start=0,stop=grid.shape[2]-1,num=number).astype(int))
 
-    # Get indeces of optimized offset
-    optimized_location:tuple=np.unravel_index(np.nanargmin(grid_results), grid_results.shape)
-    # Get optimized offset
-    optimized_offset:tuple[int,int]=tuple(grid[:,optimized_location[0],optimized_location[1]].tolist())
+                    # Offsets that match grid rows.
+                    match_row=np.isin(element=grid_rows,
+                        test_elements=np.linspace(start=0,stop=grid.shape[1]-1,num=number).astype(int))
 
-    strategy_logger.info(f"Optimized metric: {np.nanmin(grid_results):0.3f}")
+                    # Offsets that match grid search positions.
+                    match_all=np.all([match_col,match_row,match_remaining],axis=0)
+                    
+                    strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Checking: {np.sum(match_all):,} / {np.sum(match_remaining):,}")
+                elif spacing is not None:
+                    # Offsets that match grid columns.
+                    match_col=np.isin(element=grid_columns,
+                        test_elements=np.arange(0,stop=grid.shape[2]-1,step=spacing).astype(int))
 
-    #TODO add option for including initial regular relation in initial grid OR in interpolation at the very end.
+                    # Offsets that match grid rows.
+                    match_row=np.isin(element=grid_rows,
+                        test_elements=np.arange(0,stop=grid.shape[1]-1,step=spacing).astype(int))
 
-    return {
-        "grid":grid,
-        "grid_results":grid_results,
-        "interp_results":interp_results,
-        "optimized_offset":optimized_offset,
-        }
+                    # Offsets that match grid search positions.
+                    match_all=np.all([match_col,match_row,match_remaining],axis=0)
 
+                    strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} Spacing: {spacing} Checking: {np.sum(match_all)} / {np.sum(match_remaining):,}")
+                elif skeleton:
+                    # Get spine of quantile filtered region(s).
+                    skeleton_smooth=skimage.filters.gaussian(interp_results,sigma=10) # Smooth out interpolation to avoid excess branches.
+                    skeleton_binary=skeleton_smooth<quantile_cutoff # Smooth interpolation results within quantile threshold.
+                    skeleton_spine=skimage.morphology.skeletonize(skeleton_binary) # Spine of skeleton
+                    match_skeleton=skimage.morphology.dilation(skeleton_spine,skimage.morphology.footprints.disk(1)) #expanded
+
+                    # Overlay spacing 3 on 3 wide line to sparse out line slightly
+                    spacing=3
+                    # Offsets that match grid columns.
+                    match_col=np.isin(element=grid_columns,
+                        test_elements=np.arange(0,stop=grid.shape[2]-1,step=spacing).astype(int))
+
+                    # Offsets that match grid rows.
+                    match_row=np.isin(element=grid_rows,
+                        test_elements=np.arange(0,stop=grid.shape[1]-1,step=spacing).astype(int))
+
+                    # Offsets in spine without repeats
+                    match_all=np.all([match_col,match_row,match_skeleton,match_remaining],axis=0) #match_col,match_row,
+                    strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Skeleton - Checking: {np.sum(match_all)} / {np.sum(match_skeleton):,}")
+                else:
+                    #TODO decide if this should be check all behavior implicitely or should be an error for not including number/spacing
+                    # If neighter number or spacing are given then brute force check all remaining offsets.
+                    match_all=match_remaining
+                    strategy_logger.info(f"Quantile: {quantile}/{quantile_cutoff:0.3f} - Checking all: {np.sum(match_all)} / {np.sum(match_remaining):,}")
+            
+            # Check set of offsets
+            for iy,ix in zip(grid_rows[match_all].flatten(),grid_columns[match_all].flatten()):
+                check_offset(iy,ix)
+
+            # Return Interpolation
+            return strategy_interpolate(
+                grid=grid,
+                grid_results=grid_results
+                )
+        
+        # Strategy to use for full search.
+        if "strategy_full_search_progression" in kwargs:
+            strategy_full_search_progression=kwargs["strategy_full_search_progression"]
+        else:
+            strategy_full_search_progression: list[dict]=[
+                dict(initial_grid_number=strategy_initial_grid_number),
+                dict(quantile=0.1,spacing=32,), #number=100
+                dict(quantile=0.01,spacing=16,), #number=200
+                dict(quantile=0.001,spacing=8,), #number=400
+                dict(quantile=0.0001,spacing=4,), #number=800
+                dict(compare=strategy_metric_comparison),
+                dict(quantile=0.05,skeleton=True,),
+                dict(quantile=0.0001,spacing=4,), #number=800
+                dict(compare=strategy_metric_comparison),
+                dict(quantile=0.05,spacing=16,), #number=200
+                dict(quantile=0.005,spacing=8,), #number=400
+                dict(quantile=0.0005,spacing=4,), #number=800
+                dict(compare=strategy_metric_comparison),
+                dict(quantile=0.001,spacing=4,check_all=10000), #number=800
+                ]
+
+        # Looping through full search progression
+        for step in strategy_full_search_progression:
+
+            if "initial_grid_number" in step:
+                interp_results=initial_grid_check(initial_grid_number=step["initial_grid_number"])
+            elif "quantile" in step:
+                interp_results=quantile_filter_check(
+                    interp_results=interp_results,
+                    **step
+                    )
+            elif "compare" in step:
+                # If minimum metric is less than compare threshold, a near-true-solution has probably been found.
+                    # Do any final search and then break the progression.
+                    # If not then continue.
+                if np.nanmin(grid_results)<=step["compare"]:
+                    #TODO potentially a final search to make sure area near minimum point has been checked.
+                        # possible use full grid 5x5 on optimized location and inject into the grid results.
+                    strategy_logger.info(f"Metric: {np.nanmin(grid_results):0.3f} is below threshold {step["compare"]} - Stopping.")
+                    break
+                else:
+                    strategy_logger.info(f"Metric: {np.nanmin(grid_results):0.3f} is above threshold {step["compare"]} - Continuing.")
+                    pass
+            elif "search_function" in step:
+                interp_results=step["search_function"](step,locals())
+            elif "compare_function" in step:
+                compare_result=step["compare_function"](step,locals())
+                if compare_result:
+                    break
+                else:
+                    pass
+            else:
+                strategy_logger.warning(msg=f"Encountered unknown strategy step: {step}")
+                pass
+                
+
+        # Get indeces of optimized offset
+        optimized_location:tuple=np.unravel_index(np.nanargmin(grid_results), grid_results.shape)
+        # Get optimized offset
+        optimized_offset:tuple[int,int]=tuple(grid[:,optimized_location[0],optimized_location[1]].tolist())
+
+        strategy_logger.info(f"Optimized metric: {np.nanmin(grid_results):0.3f}")
+
+        #TODO add option for including initial regular relation in initial grid OR in interpolation at the very end.
+
+        return {
+            "grid":grid,
+            "grid_results":grid_results,
+            "interp_results":interp_results,
+            "optimized_offset":optimized_offset,
+            }
+
+    @staticmethod
+    def prediction_grid(
+            array_a:np.ndarray,
+            array_b:np.ndarray,
+            metric:Callable[[np.ndarray,np.ndarray],float],
+            initial_offset:tuple[int,int]|None=None,
+            strategy_predict:Callable=PredictSkimage.phase_cross_correlation,
+            strategy_edge_avoid=20,
+            strategy_initial_grid_number=9,
+            strategy_repeat_cycles=0,
+            strategy_downsample:int=1,
+            strategy_logger:logging.Logger=logging.getLogger(),
+            **kwargs)->dict:
+        """
+        Full search strategy based on applying an alignment prediction method across a sparse grid of initial offsets.
+
+        Strategy uses a very sparse grid of starting offsets and applies a alignment prediction method such as phase cross correlation to suggest overlap between images.
+        Resulting points from the prediction are tested with the provided metric.
+        
+        Parameters
+        ----------
+        array_a : np.ndarray
+            Numpy array of image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        array_b : np.ndarray
+            Numpy array of image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        metric : Callable[[np.ndarray,np.ndarray],float]
+            Function that takes two numpy arrays and returns a value describing some aspect of them.
+            Note: For full search it is likely that a custom combination of a metric which matches location and a metric which avoids low-feature regions will be needed.
+            Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+        initial_offset : tuple[int,int] | None
+            An initial estimate for the vector from the top left corner of image a to the top left corner of image b or Default `None`.
+            In (x,y) order.
+            Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
+        strategy_predict : Callable[[np.ndarray,np.ndarray,tuple[int,int]],dict]
+            Function that takes `array_a`, `array_b` and `offset_ab` and returns a dictionary with keys `offset`
+            that is the predicted true offset as a pair of ints and `shift` that is the change in position as a pair of ints.
+            `overlap_phase_cross_correlation` by default.
+        strategy_edge_avoid : int
+            Minimum amount of overlap to require between images. Default is 20.
+        strategy_initial_grid_number : int
+            Number of points to use per direction in initial sparse grid. Default is 9.
+        strategy_repeat_cycles : int
+            Number of times to repeat the prediction process on the points from the previous cycle. Default is 0.
+        strategy_downsample : int
+            Simple downsample to apply to image arrays before applying prediction function.
+            Analogous to `array[::n][::n]` for a downsample `n`
+        strategy_logger : logging.Logger
+            Logger to use for logging full search steps. By Default root logger.
+        kwargs
+            None
+
+        Returns
+        -------
+        strategy_results : dict
+            Dictionary with results of prediction-based grid search.
+            `optimized_offset` : tuple[int,int]
+                Optimized offset based on minimum in metric value.
+        """
+
+        # Calculate full search size
+        x_min: int=-array_b.shape[1]+1+strategy_edge_avoid
+        x_max: int=array_a.shape[1]-strategy_edge_avoid
+        y_min: int=-array_b.shape[0]+1+strategy_edge_avoid
+        y_max: int=+array_a.shape[0]-strategy_edge_avoid
+
+        # Create grid over full search space
+        grid: np.ndarray=np.stack(
+            arrays=np.meshgrid(
+                np.linspace(x_min,x_max,strategy_initial_grid_number),
+                np.linspace(y_min,y_max,strategy_initial_grid_number)
+                )
+            ).astype(int)
+
+        # Create index-arrays for grid
+        grid_columns,grid_rows=np.meshgrid(
+                np.arange(0,grid.shape[2]),
+                np.arange(0,grid.shape[1]),
+                )
+        
+        # If an initial offset is given then setup a list for recording distances to the reference.
+        if initial_offset is not None:
+            reference_offset_distances=list()
+        
+        # Setup lists for offsets that have been searched, results of prediction for each search, and distance between search and prediction.
+        searched_offsets:list[tuple[int,int]]=list()
+        searched_results:list[dict]=list()
+        predicted_offsets:list[tuple[int,int]]=list()
+        search_prediction_distances:list[float]=list()
+        
+        # Handle downsampling of array for prediction
+            #TODO add the ability for user defined downsampling/modification functions.
+        def simple_downsample(array):
+            return array[::strategy_downsample,::strategy_downsample]
+        if strategy_downsample==1:
+            prediction_array_a=array_a
+            prediction_array_b=array_b
+        elif strategy_downsample>1:
+            prediction_array_a=simple_downsample(array_a)
+            prediction_array_b=simple_downsample(array_b)
+
+        # Function for running prediction function from just an offset and updating associated lists.
+        def predict(offset_ab):
+            searched_offsets.append(offset_ab)
+            correlation_result:dict=strategy_predict(
+                array_a=prediction_array_a,
+                array_b=prediction_array_b,
+                offset_ab=([int(value/strategy_downsample) for value in offset_ab]),
+            )
+            searched_results.append(correlation_result)
+            predicted_offset=tuple([strategy_downsample*value for value in correlation_result["offset"]])
+            predicted_offsets.append(predicted_offset)
+            search_prediction_distance =dist((0,0),correlation_result["shift"])*strategy_downsample
+            search_prediction_distances.append(search_prediction_distance)
+            if initial_offset is not None:
+                reference_offset_distance=dist(predicted_offset,initial_offset)
+                reference_offset_distances.append(reference_offset_distance)
+        
+        # First cycle of predictions.
+        for col,row in zip(grid_columns.flatten(),grid_rows.flatten()):
+            predict(tuple(grid[:,col,row]))
+        
+        # Run additional cycles of predictions only on points that have not already been searched and are inside the boundaries.
+        for cycle in range(strategy_repeat_cycles):
+            predicted_offsets_reduced=list({offset for offset in predicted_offsets if x_min<=offset[0]<=x_max and y_min<=offset[1]<=y_max})
+            for offset in predicted_offsets_reduced:
+                if offset not in searched_offsets:
+                    predict(offset)
+        #TODO should it be possible to apply additional filtering on the cycles here so bad points aren't being checked?
+        
+        # Get final reduced set of predicted offsets
+        predicted_offsets_reduced=list({offset for offset in predicted_offsets if x_min<=offset[0]<=x_max and y_min<=offset[1]<=y_max})
+
+        # Evaluate metric at reduced set of predicted offsets.
+        evaluated_metric:np.ndarray=np.array([overlap_evaluate(array_a,array_b,offset_ab=offset,metric=metric) 
+            for offset in predicted_offsets_reduced])
+
+        # Optimized offset is offset which has lowest metric value
+            # Note: If a simple metric(i.e. the mean of the absolute difference) is used there is a high chance for false positives.
+            # This happens because low-feature areas frequently have better metric performance than true-solutions or near-true-solutions.
+            # `metric=lambda a,b:1-skimage.measure.pearson_corr_coeff(a,b)[0],` was used for initial testing with the prediction grid approach and performed well.
+        optimized_offset=predicted_offsets_reduced[np.argmin(evaluated_metric)]
+
+        results={
+            "grid":grid,
+            "offsets_searched":searched_offsets,
+            "offsets_predicted":predicted_offsets,
+            "offsets_reduced":predicted_offsets_reduced,
+            "offsets_metric":evaluated_metric,
+            "optimized_offset":optimized_offset,
+            }
+
+        if initial_offset is not None:
+            results["reference_comparison"]=reference_offset_distances
+        
+        return results
 
 def calibrate_metrics_initial(
         image_a:MISImage|array_like,
@@ -1087,7 +1443,7 @@ def calibrate_metrics_initial(
         filter:Callable[[array_like],np.ndarray],
         strategies:dict[str,Callable]={
                 "grid":Strategy.full_grid,
-                "sparse":strategy_full_search_interpolated_adaptive_grid,
+                "sparse":StrategyFullSearch.interpolated_adaptive_grid,
             },
         strategy_kwargs:dict[str,dict]={
                 "grid":dict(strategy_max_size=20),
@@ -1124,181 +1480,3 @@ def calibrate_metrics_initial(
                 )
 
     return calibration_results_initial
-
-def predict_phase_cross_correlation(
-        array_a:np.ndarray,
-        array_b:np.ndarray,
-        offset_ab:tuple[int,int]|np.ndarray,
-        ):
-    ## Find overlap spans
-    a_spans,b_spans=overlap_spans(tuple(offset_ab),array_a.shape,array_b.shape)
-    ## Extract overlap regions
-    overlap_a=array_a[a_spans[1][0]:a_spans[1][1],a_spans[0][0]:a_spans[0][1]]
-    overlap_b=array_b[b_spans[1][0]:b_spans[1][1],b_spans[0][0]:b_spans[0][1]]
-    ## Calculate phase cross correlation
-    shift_yx,error,phasediff=skimage.registration.phase_cross_correlation(
-        reference_image=overlap_a,
-        moving_image=overlap_b,
-        disambiguate=True)
-    return {
-        "offset":(int(offset_ab[0]-shift_yx[1]),int(offset_ab[1]-shift_yx[0])),
-        "shift":shift_yx,
-        "error":error,
-        "phasediff":phasediff}
-
-def strategy_full_search_prediction_grid(
-        array_a:np.ndarray,
-        array_b:np.ndarray,
-        metric:Callable[[np.ndarray,np.ndarray],float],
-        initial_offset:tuple[int,int]|None=None,
-        strategy_predict:Callable=predict_phase_cross_correlation,
-        strategy_edge_avoid=20,
-        strategy_initial_grid_number=9,
-        strategy_repeat_cycles=0,
-        strategy_downsample:int=1,
-        strategy_logger:logging.Logger=logging.getLogger(),
-        **kwargs)->dict:
-    """
-    Full search strategy based on applying an alignment prediction method across a sparse grid of initial offsets.
-
-    Strategy uses a very sparse grid of starting offsets and applies a alignment prediction method such as phase cross correlation to suggest overlap between images.
-    Resulting points from the prediction are tested with the provided metric.
-    
-    Parameters
-    ----------
-    array_a : np.ndarray
-        Numpy array of image a.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    array_b : np.ndarray
-        Numpy array of image b.
-        Note: Unsigned integer arrays may underflow and should not be used.
-    metric : Callable[[np.ndarray,np.ndarray],float]
-        Function that takes two numpy arrays and returns a value describing some aspect of them.
-        Note: For full search it is likely that a custom combination of a metric which matches location and a metric which avoids low-feature regions will be needed.
-        Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
-    initial_offset : tuple[int,int] | None
-        An initial estimate for the vector from the top left corner of image a to the top left corner of image b or Default `None`.
-        In (x,y) order.
-        Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
-    strategy_predict : Callable[[np.ndarray,np.ndarray,tuple[int,int]],dict]
-        Function that takes `array_a`, `array_b` and `offset_ab` and returns a dictionary with keys `offset`
-        that is the predicted true offset as a pair of ints and `shift` that is the change in position as a pair of ints.
-        `overlap_phase_cross_correlation` by default.
-    strategy_edge_avoid : int
-        Minimum amount of overlap to require between images. Default is 20.
-    strategy_initial_grid_number : int
-        Number of points to use per direction in initial sparse grid. Default is 9.
-    strategy_repeat_cycles : int
-        Number of times to repeat the prediction process on the points from the previous cycle. Default is 0.
-    strategy_downsample : int
-        Simple downsample to apply to image arrays before applying prediction function.
-        Analogous to `array[::n][::n]` for a downsample `n`
-    strategy_logger : logging.Logger
-        Logger to use for logging full search steps. By Default root logger.
-    kwargs
-        None
-
-    Returns
-    -------
-    strategy_results : dict
-        Dictionary with results of prediction-based grid search.
-        `optimized_offset` : tuple[int,int]
-            Optimized offset based on minimum in metric value.
-    """
-
-    # Calculate full search size
-    x_min: int=-array_b.shape[1]+1+strategy_edge_avoid
-    x_max: int=array_a.shape[1]-strategy_edge_avoid
-    y_min: int=-array_b.shape[0]+1+strategy_edge_avoid
-    y_max: int=+array_a.shape[0]-strategy_edge_avoid
-
-    # Create grid over full search space
-    grid: np.ndarray=np.stack(
-        arrays=np.meshgrid(
-            np.linspace(x_min,x_max,strategy_initial_grid_number),
-            np.linspace(y_min,y_max,strategy_initial_grid_number)
-            )
-        ).astype(int)
-
-    # Create index-arrays for grid
-    grid_columns,grid_rows=np.meshgrid(
-            np.arange(0,grid.shape[2]),
-            np.arange(0,grid.shape[1]),
-            )
-    
-    # If an initial offset is given then setup a list for recording distances to the reference.
-    if initial_offset is not None:
-        reference_offset_distances=list()
-    
-    # Setup lists for offsets that have been searched, results of prediction for each search, and distance between search and prediction.
-    searched_offsets:list[tuple[int,int]]=list()
-    searched_results:list[dict]=list()
-    predicted_offsets:list[tuple[int,int]]=list()
-    search_prediction_distances:list[float]=list()
-    
-    # Handle downsampling of array for prediction
-        #TODO add the ability for user defined downsampling/modification functions.
-    def simple_downsample(array):
-        return array[::strategy_downsample,::strategy_downsample]
-    if strategy_downsample==1:
-        prediction_array_a=array_a
-        prediction_array_b=array_b
-    elif strategy_downsample>1:
-        prediction_array_a=simple_downsample(array_a)
-        prediction_array_b=simple_downsample(array_b)
-
-    # Function for running prediction function from just an offset and updating associated lists.
-    def predict(offset_ab):
-        searched_offsets.append(offset_ab)
-        correlation_result:dict=strategy_predict(
-            array_a=prediction_array_a,
-            array_b=prediction_array_b,
-            offset_ab=([int(value/strategy_downsample) for value in offset_ab]),
-        )
-        searched_results.append(correlation_result)
-        predicted_offset=tuple([strategy_downsample*value for value in correlation_result["offset"]])
-        predicted_offsets.append(predicted_offset)
-        search_prediction_distance =dist((0,0),correlation_result["shift"])*strategy_downsample
-        search_prediction_distances.append(search_prediction_distance)
-        if initial_offset is not None:
-            reference_offset_distance=dist(predicted_offset,initial_offset)
-            reference_offset_distances.append(reference_offset_distance)
-    
-    # First cycle of predictions.
-    for col,row in zip(grid_columns.flatten(),grid_rows.flatten()):
-        predict(tuple(grid[:,col,row]))
-    
-    # Run additional cycles of predictions only on points that have not already been searched and are inside the boundaries.
-    for cycle in range(strategy_repeat_cycles):
-        predicted_offsets_reduced=list({offset for offset in predicted_offsets if x_min<=offset[0]<=x_max and y_min<=offset[1]<=y_max})
-        for offset in predicted_offsets_reduced:
-            if offset not in searched_offsets:
-                predict(offset)
-    #TODO should it be possible to apply additional filtering on the cycles here so bad points aren't being checked?
-    
-    # Get final reduced set of predicted offsets
-    predicted_offsets_reduced=list({offset for offset in predicted_offsets if x_min<=offset[0]<=x_max and y_min<=offset[1]<=y_max})
-
-    # Evaluate metric at reduced set of predicted offsets.
-    evaluated_metric:np.ndarray=np.array([overlap_evaluate(array_a,array_b,offset_ab=offset,metric=metric) 
-        for offset in predicted_offsets_reduced])
-
-    # Optimized offset is offset which has lowest metric value
-        # Note: If a simple metric(i.e. the mean of the absolute difference) is used there is a high chance for false positives.
-        # This happens because low-feature areas frequently have better metric performance than true-solutions or near-true-solutions.
-        # `metric=lambda a,b:1-skimage.measure.pearson_corr_coeff(a,b)[0],` was used for initial testing with the prediction grid approach and performed well.
-    optimized_offset=predicted_offsets_reduced[np.argmin(evaluated_metric)]
-
-    results={
-        "grid":grid,
-        "offsets_searched":searched_offsets,
-        "offsets_predicted":predicted_offsets,
-        "offsets_reduced":predicted_offsets_reduced,
-        "offsets_metric":evaluated_metric,
-        "optimized_offset":optimized_offset,
-        }
-
-    if initial_offset is not None:
-        results["reference_comparison"]=reference_offset_distances
-    
-    return results
