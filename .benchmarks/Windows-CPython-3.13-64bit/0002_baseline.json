@@ -1,0 +1,831 @@
+{
+    "machine_info": {
+        "node": "Jess-Laptop",
+        "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+        "machine": "AMD64",
+        "python_compiler": "MSC v.1944 64 bit (AMD64)",
+        "python_implementation": "CPython",
+        "python_implementation_version": "3.13.11",
+        "python_version": "3.13.11",
+        "python_build": [
+            "tags/v3.13.11:6278944",
+            "Dec  5 2025 16:26:58"
+        ],
+        "release": "11",
+        "system": "Windows",
+        "cpu": {
+            "python_version": "3.13.11.final.0 (64 bit)",
+            "cpuinfo_version": [
+                9,
+                0,
+                0
+            ],
+            "cpuinfo_version_string": "9.0.0",
+            "arch": "X86_64",
+            "bits": 64,
+            "count": 20,
+            "arch_string_raw": "AMD64",
+            "vendor_id_raw": "GenuineIntel",
+            "brand_raw": "12th Gen Intel(R) Core(TM) i7-12700H",
+            "hz_actual_friendly": "2.3000 GHz",
+            "hz_actual": [
+                2300000000,
+                0
+            ],
+            "l2_cache_size": 12058624,
+            "stepping": 3,
+            "model": 154,
+            "family": 6,
+            "l3_cache_size": 25165824,
+            "hz_advertised_friendly": "2.6880 GHz",
+            "hz_advertised": [
+                2688000000,
+                0
+            ],
+            "flags": [
+                "3dnow",
+                "3dnowprefetch",
+                "abm",
+                "acpi",
+                "adx",
+                "aes",
+                "apic",
+                "avx",
+                "avx2",
+                "bmi1",
+                "bmi2",
+                "clflush",
+                "clflushopt",
+                "clwb",
+                "cmov",
+                "cx16",
+                "cx8",
+                "de",
+                "dts",
+                "erms",
+                "est",
+                "f16c",
+                "fma",
+                "fpu",
+                "fxsr",
+                "gfni",
+                "ht",
+                "hypervisor",
+                "ia64",
+                "intel_pt",
+                "invpcid",
+                "lahf_lm",
+                "mca",
+                "mce",
+                "mmx",
+                "monitor",
+                "movbe",
+                "msr",
+                "mtrr",
+                "osxsave",
+                "pae",
+                "pat",
+                "pbe",
+                "pcid",
+                "pclmulqdq",
+                "pdcm",
+                "pge",
+                "pni",
+                "popcnt",
+                "pse",
+                "pse36",
+                "rdpid",
+                "rdrnd",
+                "rdseed",
+                "sep",
+                "serial",
+                "sha",
+                "smap",
+                "smep",
+                "ss",
+                "sse",
+                "sse2",
+                "sse4_1",
+                "sse4_2",
+                "ssse3",
+                "tm",
+                "tm2",
+                "tsc",
+                "tscdeadline",
+                "umip",
+                "vaes",
+                "vme",
+                "vpclmulqdq",
+                "x2apic",
+                "xsave",
+                "xtpr"
+            ],
+            "l2_cache_line_size": 1280,
+            "l2_cache_associativity": 7
+        }
+    },
+    "commit_info": {
+        "id": "2ed03e5c375b66cd06980452eb36bef02271c932",
+        "time": "2026-08-25T15:37:35-04:00",
+        "author_time": "2026-08-25T15:37:35-04:00",
+        "dirty": true,
+        "project": "MISalign",
+        "branch": "feature_dga_update2"
+    },
+    "benchmarks": [
+        {
+            "group": null,
+            "name": "test_metric_dtypes[float32]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_dtypes[float32]",
+            "params": {
+                "dtype": "UNSERIALIZABLE[<class 'numpy.float32'>]"
+            },
+            "param": "float32",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 5.799985956400633e-06,
+                "max": 0.0002905000001192093,
+                "mean": 7.297319820706161e-06,
+                "stddev": 2.8786713851195544e-06,
+                "rounds": 34699,
+                "median": 7.199996616691351e-06,
+                "iqr": 1.200009137392044e-06,
+                "q1": 6.499991286545992e-06,
+                "q3": 7.700000423938036e-06,
+                "iqr_outliers": 494,
+                "stddev_outliers": 439,
+                "outliers": "439;494",
+                "ld15iqr": 5.799985956400633e-06,
+                "hd15iqr": 9.599956683814526e-06,
+                "ops": 137036.6140678798,
+                "total": 0.2532097004586831,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_dtypes[float64]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_dtypes[float64]",
+            "params": {
+                "dtype": "UNSERIALIZABLE[<class 'numpy.float64'>]"
+            },
+            "param": "float64",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 5.399982910603285e-06,
+                "max": 0.005067699996288866,
+                "mean": 6.981489539589594e-06,
+                "stddev": 1.6306993419357138e-05,
+                "rounds": 103520,
+                "median": 6.599992047995329e-06,
+                "iqr": 5.00003807246685e-07,
+                "q1": 6.399990525096655e-06,
+                "q3": 6.89999433234334e-06,
+                "iqr_outliers": 8204,
+                "stddev_outliers": 479,
+                "outliers": "479;8204",
+                "ld15iqr": 5.699985194951296e-06,
+                "hd15iqr": 7.699942216277122e-06,
+                "ops": 143235.90894598476,
+                "total": 0.7227237971383147,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_dtypes[int16]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_dtypes[int16]",
+            "params": {
+                "dtype": "UNSERIALIZABLE[<class 'numpy.int16'>]"
+            },
+            "param": "int16",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 7.099995855242014e-06,
+                "max": 0.0004482999793253839,
+                "mean": 8.493355669873678e-06,
+                "stddev": 3.315866836527112e-06,
+                "rounds": 86059,
+                "median": 8.300004992634058e-06,
+                "iqr": 9.00006853044033e-07,
+                "q1": 7.700000423938036e-06,
+                "q3": 8.600007276982069e-06,
+                "iqr_outliers": 1756,
+                "stddev_outliers": 1047,
+                "outliers": "1047;1756",
+                "ld15iqr": 7.099995855242014e-06,
+                "hd15iqr": 9.999959729611874e-06,
+                "ops": 117739.09381271362,
+                "total": 0.7309296955936588,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_dtypes[uint8]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_dtypes[uint8]",
+            "params": {
+                "dtype": "UNSERIALIZABLE[<class 'numpy.uint8'>]"
+            },
+            "param": "uint8",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 6.89999433234334e-06,
+                "max": 0.00028090004343539476,
+                "mean": 8.465475078375187e-06,
+                "stddev": 2.8517514333763353e-06,
+                "rounds": 81434,
+                "median": 8.300004992634058e-06,
+                "iqr": 1.100008375942707e-06,
+                "q1": 7.700000423938036e-06,
+                "q3": 8.800008799880743e-06,
+                "iqr_outliers": 1431,
+                "stddev_outliers": 1204,
+                "outliers": "1204;1431",
+                "ld15iqr": 6.89999433234334e-06,
+                "hd15iqr": 1.0499963536858559e-05,
+                "ops": 118126.86125017027,
+                "total": 0.689377497532405,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[mean_squared_difference]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_locate_simple_1[mean_squared_difference]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetric.mean_squared_difference at 0x0000024950AA7740>]"
+            },
+            "param": "mean_squared_difference",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.209997572004795e-05,
+                "max": 0.0005808999994769692,
+                "mean": 1.4508967029271854e-05,
+                "stddev": 5.673632936691641e-06,
+                "rounds": 77161,
+                "median": 1.4199991710484028e-05,
+                "iqr": 1.5999539755284786e-06,
+                "q1": 1.3200042303651571e-05,
+                "q3": 1.479999627918005e-05,
+                "iqr_outliers": 2064,
+                "stddev_outliers": 1207,
+                "outliers": "1207;2064",
+                "ld15iqr": 1.209997572004795e-05,
+                "hd15iqr": 1.7199956346303225e-05,
+                "ops": 68922.89423378653,
+                "total": 1.1195264049456455,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[mean_absolute_difference]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_locate_simple_1[mean_absolute_difference]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetric.mean_absolute_difference at 0x0000024950AA7880>]"
+            },
+            "param": "mean_absolute_difference",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.1499971151351929e-05,
+                "max": 0.002014499972574413,
+                "mean": 2.1750763812764048e-05,
+                "stddev": 1.993297185586266e-05,
+                "rounds": 71943,
+                "median": 1.4099990949034691e-05,
+                "iqr": 9.899958968162537e-06,
+                "q1": 1.290004001930356e-05,
+                "q3": 2.2799998987466097e-05,
+                "iqr_outliers": 9970,
+                "stddev_outliers": 5657,
+                "outliers": "5657;9970",
+                "ld15iqr": 1.1499971151351929e-05,
+                "hd15iqr": 3.7699996028095484e-05,
+                "ops": 45975.396938160295,
+                "total": 1.564815200981684,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[max_absolute_difference]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_locate_simple_1[max_absolute_difference]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetric.max_absolute_difference at 0x0000024950AA7920>]"
+            },
+            "param": "max_absolute_difference",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 8.09994526207447e-06,
+                "max": 0.00031099998159334064,
+                "mean": 1.3729448596459608e-05,
+                "stddev": 1.1496434991917706e-05,
+                "rounds": 79240,
+                "median": 1.0000017937272787e-05,
+                "iqr": 2.0999577827751637e-06,
+                "q1": 9.400013368576765e-06,
+                "q3": 1.1499971151351929e-05,
+                "iqr_outliers": 14597,
+                "stddev_outliers": 7620,
+                "outliers": "7620;14597",
+                "ld15iqr": 8.09994526207447e-06,
+                "hd15iqr": 1.4699995517730713e-05,
+                "ops": 72836.13707966892,
+                "total": 1.0879215067834593,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[root_mean_squared_difference]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_locate_simple_1[root_mean_squared_difference]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetric.root_mean_squared_difference at 0x0000024950AA77E0>]"
+            },
+            "param": "root_mean_squared_difference",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.2199976481497288e-05,
+                "max": 0.001754899974912405,
+                "mean": 2.835829022653885e-05,
+                "stddev": 2.6687574294115027e-05,
+                "rounds": 75529,
+                "median": 1.5900004655122757e-05,
+                "iqr": 2.2999942302703857e-05,
+                "q1": 1.3200042303651571e-05,
+                "q3": 3.619998460635543e-05,
+                "iqr_outliers": 3573,
+                "stddev_outliers": 5838,
+                "outliers": "5838;3573",
+                "ld15iqr": 1.2199976481497288e-05,
+                "hd15iqr": 7.069995626807213e-05,
+                "ops": 35263.05683493425,
+                "total": 2.1418733025202528,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[modified_pearson]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_locate_simple_1[modified_pearson]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetricSkimage.modified_pearson at 0x00000249787F4860>]"
+            },
+            "param": "modified_pearson",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00020520004909485579,
+                "max": 0.000632900046184659,
+                "mean": 0.00026926364940167827,
+                "stddev": 0.00012204048844039019,
+                "rounds": 11,
+                "median": 0.0002305000089108944,
+                "iqr": 3.3999953302554786e-05,
+                "q1": 0.00022022503253538162,
+                "q3": 0.0002542249858379364,
+                "iqr_outliers": 1,
+                "stddev_outliers": 1,
+                "outliers": "1;1",
+                "ld15iqr": 0.00020520004909485579,
+                "hd15iqr": 0.000632900046184659,
+                "ops": 3713.8321575231803,
+                "total": 0.002961900143418461,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[modified_mutual_information]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_locate_simple_1[modified_mutual_information]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetricSkimage.modified_mutual_information at 0x00000249787F4A40>]"
+            },
+            "param": "modified_mutual_information",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0007522000232711434,
+                "max": 0.0020898000220768154,
+                "mean": 0.0009208280016900971,
+                "stddev": 0.0002660897276405116,
+                "rounds": 100,
+                "median": 0.0008345500100404024,
+                "iqr": 8.955004159361124e-05,
+                "q1": 0.0008033999765757471,
+                "q3": 0.0008929500181693584,
+                "iqr_outliers": 12,
+                "stddev_outliers": 10,
+                "outliers": "10;12",
+                "ld15iqr": 0.0007522000232711434,
+                "hd15iqr": 0.0010531999869272113,
+                "ops": 1085.9791385194517,
+                "total": 0.09208280016900972,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_weight_simple_1[highlow_inverse]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_weight_simple_1[highlow_inverse]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function WeightMetric.highlow_inverse at 0x0000024950AA79C0>]",
+                "expected_value": 0.00020824657
+            },
+            "param": "highlow_inverse",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.5700003132224083e-05,
+                "max": 0.0014847000129520893,
+                "mean": 2.4704987272916302e-05,
+                "stddev": 1.893658152816482e-05,
+                "rounds": 92937,
+                "median": 1.9099970813840628e-05,
+                "iqr": 3.0999653972685337e-06,
+                "q1": 1.7600017599761486e-05,
+                "q3": 2.069998299703002e-05,
+                "iqr_outliers": 13144,
+                "stddev_outliers": 11463,
+                "outliers": "11463;13144",
+                "ld15iqr": 1.5700003132224083e-05,
+                "hd15iqr": 2.5399960577487946e-05,
+                "ops": 40477.65695861275,
+                "total": 2.2960074021830224,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_weight_simple_1[metric_linear_edge_penalty]",
+            "fullname": "tests/test_difference_rectangular.py::TestMetric::test_metric_weight_simple_1[metric_linear_edge_penalty]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function WeightMetric.linear_edge_penalty at 0x0000024950AA7A60>]",
+                "expected_value": 0.1366666666666667
+            },
+            "param": "metric_linear_edge_penalty",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.3999676816165447e-06,
+                "max": 0.00070090004010126,
+                "mean": 6.1840396793947996e-06,
+                "stddev": 7.075592884294079e-06,
+                "rounds": 142046,
+                "median": 4.499976057559252e-06,
+                "iqr": 8.999486453831196e-07,
+                "q1": 4.00003045797348e-06,
+                "q3": 4.8999791033566e-06,
+                "iqr_outliers": 28381,
+                "stddev_outliers": 4537,
+                "outliers": "4537;28381",
+                "ld15iqr": 3.3999676816165447e-06,
+                "hd15iqr": 6.299989763647318e-06,
+                "ops": 161706.59501619902,
+                "total": 0.8784181002993137,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_strategy_scaled_grid_simple_1[initial_offset0-1-5]",
+            "fullname": "tests/test_difference_rectangular.py::TestStrategy::test_strategy_scaled_grid_simple_1[initial_offset0-1-5]",
+            "params": {
+                "initial_offset": [
+                    -5,
+                    -5
+                ],
+                "strategy_grid_scale": 1,
+                "strategy_max_size": 5
+            },
+            "param": "initial_offset0-1-5",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0016639999812468886,
+                "max": 0.014557400019839406,
+                "mean": 0.002886833285957058,
+                "stddev": 0.0017878527353813664,
+                "rounds": 685,
+                "median": 0.001995400001760572,
+                "iqr": 0.0011094500223407522,
+                "q1": 0.0018995249847648665,
+                "q3": 0.0030089750071056187,
+                "iqr_outliers": 101,
+                "stddev_outliers": 101,
+                "outliers": "101;101",
+                "ld15iqr": 0.0016639999812468886,
+                "hd15iqr": 0.004690899979323149,
+                "ops": 346.40032899179863,
+                "total": 1.9774808008805849,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_strategy_scaled_grid_simple_1[initial_offset1-1-5]",
+            "fullname": "tests/test_difference_rectangular.py::TestStrategy::test_strategy_scaled_grid_simple_1[initial_offset1-1-5]",
+            "params": {
+                "initial_offset": [
+                    -7,
+                    -1
+                ],
+                "strategy_grid_scale": 1,
+                "strategy_max_size": 5
+            },
+            "param": "initial_offset1-1-5",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0017248000367544591,
+                "max": 0.015898900048341602,
+                "mean": 0.003182631291189952,
+                "stddev": 0.002276869762692784,
+                "rounds": 620,
+                "median": 0.0021555499988608062,
+                "iqr": 0.0012299500231165439,
+                "q1": 0.0019401999888941646,
+                "q3": 0.0031701500120107085,
+                "iqr_outliers": 112,
+                "stddev_outliers": 103,
+                "outliers": "103;112",
+                "ld15iqr": 0.0017248000367544591,
+                "hd15iqr": 0.0050333000253885984,
+                "ops": 314.2054195118878,
+                "total": 1.9732314005377702,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_strategy_scaled_grid_simple_1[initial_offset2-1-10]",
+            "fullname": "tests/test_difference_rectangular.py::TestStrategy::test_strategy_scaled_grid_simple_1[initial_offset2-1-10]",
+            "params": {
+                "initial_offset": [
+                    1,
+                    4
+                ],
+                "strategy_grid_scale": 1,
+                "strategy_max_size": 10
+            },
+            "param": "initial_offset2-1-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.005968800047412515,
+                "max": 0.04389670002274215,
+                "mean": 0.008766165478933522,
+                "stddev": 0.004237840526732169,
+                "rounds": 646,
+                "median": 0.007105850032530725,
+                "iqr": 0.002142900018952787,
+                "q1": 0.006779999996069819,
+                "q3": 0.008922900015022606,
+                "iqr_outliers": 78,
+                "stddev_outliers": 70,
+                "outliers": "70;78",
+                "ld15iqr": 0.005968800047412515,
+                "hd15iqr": 0.01218179997522384,
+                "ops": 114.07496269642157,
+                "total": 5.662942899391055,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_difference_gradient_analysis_simple[small]",
+            "fullname": "tests/test_difference_rectangular.py::TestDifferenceGradientAnalysis::test_difference_gradient_analysis_simple[small]",
+            "params": {
+                "size": 5,
+                "kwargs": {
+                    "metric": "UNSERIALIZABLE[<function LocateMetric.mean_squared_difference at 0x0000024950AA7740>]"
+                }
+            },
+            "param": "small",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.1591243000002578,
+                "max": 0.45972129999427125,
+                "mean": 0.23016451481143357,
+                "stddev": 0.07153208774704392,
+                "rounds": 27,
+                "median": 0.21249710000120103,
+                "iqr": 0.0742960499774199,
+                "q1": 0.17956042500736658,
+                "q3": 0.2538564749847865,
+                "iqr_outliers": 1,
+                "stddev_outliers": 5,
+                "outliers": "5;1",
+                "ld15iqr": 0.1591243000002578,
+                "hd15iqr": 0.45972129999427125,
+                "ops": 4.344718389015214,
+                "total": 6.2144418999087065,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_difference_gradient_analysis_simple[small-medium]",
+            "fullname": "tests/test_difference_rectangular.py::TestDifferenceGradientAnalysis::test_difference_gradient_analysis_simple[small-medium]",
+            "params": {
+                "size": 10,
+                "kwargs": {
+                    "metric": "UNSERIALIZABLE[<function LocateMetric.mean_squared_difference at 0x0000024950AA7740>]"
+                }
+            },
+            "param": "small-medium",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.49366909998934716,
+                "max": 0.6650127000175416,
+                "mean": 0.555749419995118,
+                "stddev": 0.053242438764282404,
+                "rounds": 10,
+                "median": 0.5471487499889918,
+                "iqr": 0.06287950003752485,
+                "q1": 0.5128086999757215,
+                "q3": 0.5756882000132464,
+                "iqr_outliers": 0,
+                "stddev_outliers": 3,
+                "outliers": "3;0",
+                "ld15iqr": 0.49366909998934716,
+                "hd15iqr": 0.6650127000175416,
+                "ops": 1.799372098325869,
+                "total": 5.557494199951179,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_difference_gradient_analysis_simple[medium]",
+            "fullname": "tests/test_difference_rectangular.py::TestDifferenceGradientAnalysis::test_difference_gradient_analysis_simple[medium]",
+            "params": {
+                "size": 20,
+                "kwargs": {
+                    "metric": "UNSERIALIZABLE[<function LocateMetric.mean_squared_difference at 0x0000024950AA7740>]"
+                }
+            },
+            "param": "medium",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.8863637000322342,
+                "max": 2.567478399956599,
+                "mean": 2.2298462399921846,
+                "stddev": 0.24085632767891824,
+                "rounds": 10,
+                "median": 2.2177714499703143,
+                "iqr": 0.4533122999710031,
+                "q1": 2.0245494000264443,
+                "q3": 2.4778616999974474,
+                "iqr_outliers": 0,
+                "stddev_outliers": 5,
+                "outliers": "5;0",
+                "ld15iqr": 1.8863637000322342,
+                "hd15iqr": 2.567478399956599,
+                "ops": 0.44846141499133363,
+                "total": 22.298462399921846,
+                "iterations": 1
+            }
+        }
+    ],
+    "datetime": "2026-08-25T19:56:11.969523+00:00",
+    "version": "5.2.3"
+}

@@ -140,26 +140,26 @@ class TestMetric():
     @pytest.mark.parametrize(argnames="dtype",argvalues=[np.float32,np.float64,np.int16,pytest.param(np.uint8, marks=pytest.mark.xfail)])
     def test_metric_dtypes(self,benchmark,dtype):
         """
-        Tests `metric_difference_squared_mean` with  simplified arrays.
+        Tests `LocateMetric.mean_squared_difference` with  simplified arrays.
         """
         
         overlap_a=np.full(shape=(50,50),fill_value=100,dtype=dtype)
         overlap_b=np.full(shape=(50,50),fill_value=200,dtype=dtype)
-        overlap_metric=benchmark(dr.metric_difference_squared_mean,
+        overlap_metric=benchmark(dr.LocateMetric.mean_squared_difference,
             overlap_a=overlap_a,
             overlap_b=overlap_b
             )
         assert overlap_metric==100**2
 
     @pytest.mark.parametrize(argnames="metric",argvalues=[
-        pytest.param(dr.metric_difference_squared_mean,id="metric_difference_squared_mean"),
-        pytest.param(dr.metric_difference_squared_mean_norm,id="metric_difference_squared_mean_norm"),
-        pytest.param(dr.metric_difference_absolute_mean,id="metric_difference_absolute_mean"),
-        pytest.param(dr.metric_difference_absolute_mean_norm,id="metric_difference_absolute_mean_norm"),
-        pytest.param(dr.metric_difference_max_norm,id="metric_difference_max_norm"),
-        pytest.param(dr.metric_combined_simple_norm,id="metric_combined_simple_norm"),
+        pytest.param(dr.LocateMetric.mean_squared_difference,id="mean_squared_difference"),
+        pytest.param(dr.LocateMetric.mean_absolute_difference,id="mean_absolute_difference"),
+        pytest.param(dr.LocateMetric.max_absolute_difference,id="max_absolute_difference"),
+        pytest.param(dr.LocateMetric.root_mean_squared_difference,id="root_mean_squared_difference"),
+        pytest.param(dr.LocateMetricSkimage.modified_pearson,id="modified_pearson"),
+        pytest.param(dr.LocateMetricSkimage.modified_mutual_information,id="modified_mutual_information"),
         ])
-    def test_metric_location_simple_1(self,benchmark,simple_parabolic_arrays_1,metric):
+    def test_metric_locate_simple_1(self,benchmark,simple_parabolic_arrays_1,metric):
         """
         Tests metric that have a minima at the true match with simplified parabolic array.
         """
@@ -174,10 +174,10 @@ class TestMetric():
         assert overlap_metric<1e-3
     
     @pytest.mark.parametrize(argnames="metric,expected_value",argvalues=[
-        pytest.param(dr.metric_highlow_inverse_norm,0.0033319450449198484,id="metric_difference_max_norm"),
-        pytest.param(dr.metric_linear_edge_penalty,0.1366666666666667,id="metric_linear_edge_penalty"),
+        pytest.param(dr.WeightMetric.highlow_inverse,0.00020824657,id="highlow_inverse"),
+        pytest.param(dr.WeightMetric.linear_edge_penalty,0.1366666666666667,id="metric_linear_edge_penalty"),
         ])
-    def test_metric_other_simple_1(self,benchmark,simple_parabolic_arrays_1,metric,expected_value):
+    def test_metric_weight_simple_1(self,benchmark,simple_parabolic_arrays_1,metric,expected_value):
         """
         Tests metric which are not expected to consistently have a minima at the true solution.
         """
@@ -206,7 +206,7 @@ class TestStrategy():
         array_a,array_b,planned_offset=simple_parabolic_arrays_1
         assert array_a[50,50]==0 and array_b[45,47]==0
         
-        results=benchmark(dr.strategy_scaled_grid,
+        results=benchmark(dr.Strategy.scaled_grid,
             array_a=array_a,
             array_b=array_b,
             initial_offset=initial_offset,
@@ -242,7 +242,7 @@ class TestStrategy():
         
         assert array_a[50,50]==0 and array_b[95,55]==0
         
-        results=dr.strategy_full_grid(
+        results=dr.Strategy.full_grid(
             array_a=array_a,
             array_b=array_b,
             initial_offset=(2,48),
@@ -256,9 +256,9 @@ class TestStrategy():
 class TestDifferenceGradientAnalysis():
     # (12,-1088) is (3,1) from true solution
     @pytest.mark.parametrize(argnames="size,kwargs",argvalues=[
-        pytest.param(5,dict(metric=dr.metric_difference_squared_mean),id="small"),
-        pytest.param(10,dict(metric=dr.metric_difference_squared_mean),id="small-medium"),
-        pytest.param(20,dict(metric=dr.metric_difference_squared_mean),id="medium"),
+        pytest.param(5,dict(metric=dr.LocateMetric.mean_squared_difference),id="small"),
+        pytest.param(10,dict(metric=dr.LocateMetric.mean_squared_difference),id="small-medium"),
+        pytest.param(20,dict(metric=dr.LocateMetric.mean_squared_difference),id="medium"),
     ])
     def test_difference_gradient_analysis_simple(self,benchmark,size,kwargs):
         reference_optimized_relation=(9, -1087)
