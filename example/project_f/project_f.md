@@ -28,7 +28,7 @@ mis_project.find_image_paths(mis_filepath,update=True)
 from misalign.model.image import Filter, Modifier
 mis_project.set_image_filter(Modifier.crop(bottom=4096,right=4096,filter=Filter.simple_uint16))
 ...
-imrc=IMRControls(mis_project,imshow_kwargs=dict(cmap="gray",vmin=0,vmax=65535))
+imrc=IMRControls(mis_project,imshow_kwargs=dict(cmap="gray",vmin=0,vmax=255))
 ...
 mis_filepath="../example/project_f/demo-project_f-relations-calibrated.mis.json"
 ```
