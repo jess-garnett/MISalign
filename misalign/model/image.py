@@ -515,10 +515,212 @@ class MISImageHDF5():
         else:
             return None
 
+
+class MISImageNPZ():
+    """
+    Access image data and information from a numpy file.
+    """
+    _image_type="npz"
+    def __init__(self,
+        npz_filepath:Path|str|None=None,
+        npz_key:str|None=None,
+        image_name:str|None=None,
+        **image_data)->None:
+        """
+        Initialize a MISImageNPZ from an NPZ filepath, NPZ key, and image name.
+
+        Parameters
+        ----------
+        npz_filepath : Path | str | None
+            File path to a `.npz` file.
+        npz_key : str | None
+            Key inside the npz to the image dataset.
+        image_name : str | None
+            Name for the image.
+        **image_data : kwargs
+            Any other passed kwargs will be kept in `self._dict` and should be JSON dump-able objects.
+        """
+        if npz_filepath is None:
+            raise ValueError("`npz_filepath` cannot be None.")
+        if npz_key is None:
+            raise ValueError("`npz_key` cannot be None.")
+        if image_name is None:
+            raise ValueError("`image_name` cannot be None.")
+        self.npz_filepath=Path(npz_filepath)
+        self.npz_key:str=npz_key
+        self.name:str=image_name
+        self._dict:dict=image_data
+        self._shape:None|tuple[int, ...]=None
+        self._filter:None|Callable[[np.ndarray],np.ndarray]=None
+        self._filter_changed:bool=False
+    def __str__(self):
+        """
+        String representation of the Image.
+
+        Returns
+        -------
+        str
+            Description including image name and shape.
+        """
+        return "Image '"+self.name+"' with shape:"+str(self.shape)
+    def __array__(self)->np.ndarray:
+        """
+        Get image array.
+        
+        Returns
+        -------
+        array : np.ndarray
+            Numpy array of the npz dataset with 1-length axes squeezed.
+        """
+        with np.load(self.npz_filepath, "r",allow_pickle=False) as f:
+            array= np.squeeze(f[self.npz_key])
+        if self._filter is not None:
+            array=self._filter(array)
+        return array
+    @property
+    def shape(self)->tuple[int, ...]:
+        """
+        Get the shape of the image.
+        
+        Returns
+        -------
+        shape : tuple[int]
+            Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
+
+        Notes
+        -----
+        If a filter is not applied then `shape` is taken from the npz object shape and does not require accessing the full array.
+        """
+        
+        if self._filter is None:
+            with np.load(self.npz_filepath, "r",allow_pickle=False) as f:
+                shape=tuple([int(dimension) for dimension in f[self.npz_key].shape if dimension!=1])
+        else:
+            if self._shape is None or self._filter_changed is True:
+                self._shape=self.__array__().shape
+                self._filter_changed=False
+            shape=self._shape
+        return shape
+    def set_filter(self,filter:None|Callable[[np.ndarray],np.ndarray]=None)->None:
+        """
+        Sets a default filter for the image array.
+
+        Applies when `.__array__` or `.shape` are used.
+
+        Parameters
+        ----------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter to apply to the image array or `None` by default.
+            `None` removes the default filter.
+        """
+        self._filter=filter
+        self._filter_changed=True
+        self._shape=None # Resets self._shape as the filter may have changed the default shape.
+    def get_filter(self)->None|Callable[[np.ndarray],np.ndarray]:
+        """
+        Gets the default filter of the image array.
+
+        The default filter is applied when `.__array__` or `.shape` are used.
+
+        Returns
+        -------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter being applied to the image array or `None` if no default filter is set.
+        """
+        return self._filter
+    def with_filter(self,filter:None|Callable[[np.ndarray],np.ndarray]=None,apply_default=True)->np.ndarray:
+        """
+        Returns the image array with a filter applied.
+        
+        Parameters
+        ----------
+        filter : None | Callable[[np.ndarray],np.ndarray]
+            Filter to apply to the image array or `None` by default.
+        apply_default : None | Callable[[np.ndarray],np.ndarray]
+            Whether to use the default filter before the parameter filter. `True` by default.
+        """
+        if apply_default is False:
+            default_filter=self.get_filter()
+            default_shape=self.shape
+            self.set_filter(filter=None)
+        
+        array=self.__array__()
+        if filter is not None:
+            array=filter(array)
+
+        if apply_default is False:
+            self.set_filter(filter=default_filter)
+            self._shape=default_shape
+            self._filter_changed=False
+        
+        return array
+    def for_json(self)->dict:
+        """
+        Returns a dictionary compatible with JSON.dump().
+        
+        Returns
+        -------
+        image_data : dict
+            JSON dump-able representation of image information.
+        """
+        return {
+            **self._dict, # loaded dict first and then get the current values
+            "image_type":self._image_type,
+            "npz_filepath":self.npz_filepath.as_posix(),
+            "npz_path":self.npz_key,
+            "image_name":self.name
+            }
+    def check_npz_path(self)->bool:
+        """
+        Checks if npz filepath is a file.
+
+        Returns
+        -------
+        bool
+            True if `self.npz_filepath` is a file.
+        """
+        return self.npz_filepath.is_file()
+    def find_image_path(self,
+            mis_fp:Path|str,
+            update:bool=True
+            )->Path|None:
+        """
+        Find, and optionally update, npz filepaths.
+        
+        Checks stored location. Checks mis filepath folder for matching name.
+
+        Parameters
+        ----------
+        mis_fp:Path|str,
+            Filepath to MISProject, expected to be in the same folder as the npz file.
+        update:bool=True
+            If true when a matching file is found it will replace `self.npz_filepath`.
+
+        Returns
+        -------
+        return_path : Path | None
+            If a matching path is found it is returned, else `None` is returned.
+        """
+        filepath=Path(mis_fp)
+        return_path=Path("")
+        if self.check_npz_path():
+            return_path=self.npz_filepath
+        else:
+            check_path=filepath.parent.joinpath(self.npz_filepath.name)
+            if check_path.is_file():
+                return_path=check_path
+        if update and return_path!=Path(""):
+            self.npz_filepath=return_path
+            return return_path
+        else:
+            return None
+
 image_types:dict[str,Any]={
     MISImageFile._image_type:MISImageFile,
-    MISImageHDF5._image_type:MISImageHDF5
+    MISImageHDF5._image_type:MISImageHDF5,
+    MISImageNPZ._image_type:MISImageNPZ
 }
+
 def setup_image(**image_data)->MISImage:
     """
     Construct `MISImage` from image data.

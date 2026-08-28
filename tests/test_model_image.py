@@ -139,3 +139,6 @@ class TestMISImageHDF5():
         test_image=MISImageHDF5(**test_image_data)
         test_img_arr_fp="tests/test_files/model_image/test_image_a01.npy"
         assert np.all(np.asarray(test_image)==np.load(test_img_arr_fp))
+
+#TODO add MISImageNPZ tests
+#TODO update image tests to compare with reference data.
