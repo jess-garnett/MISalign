@@ -209,6 +209,30 @@ class LocateMetric():
 
         return np.mean((overlap_a-overlap_b)**2)**0.5
     @staticmethod
+    def norm_root_mean_squared_difference(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
+        """
+        Calculates the square root of the mean of the squared difference of two arrays and then divides by the minimum standard deviation of the two arrays.
+
+        This locating metric is more resistant to false-positives in low-features areas than most(all) of the other simple locating metrics.
+        This means it is more suitable for usage with full-search strategies.
+
+        Parameters
+        ----------
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        overlap_a : np.ndarray
+            Numpy array of the overlap region in image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+
+        Returns
+        -------
+        overlap_metric : float
+            Result of taking the square root of the mean of the square of the difference of the arrays divided by the minimum of the standard deviation of each array.
+        """
+
+        return (np.mean((overlap_a-overlap_b)**2)**0.5)/min(np.std(overlap_a),np.std(overlap_b))
+    @staticmethod
     def mean_absolute_difference(overlap_a:np.ndarray,overlap_b:np.ndarray)->float:
         """
         Calculates the mean of the absolute difference of two arrays.

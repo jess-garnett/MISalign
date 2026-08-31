@@ -156,6 +156,7 @@ class TestMetric():
         pytest.param(dr.LocateMetric.mean_absolute_difference,id="mean_absolute_difference"),
         pytest.param(dr.LocateMetric.max_absolute_difference,id="max_absolute_difference"),
         pytest.param(dr.LocateMetric.root_mean_squared_difference,id="root_mean_squared_difference"),
+        pytest.param(dr.LocateMetric.norm_root_mean_squared_difference,id="norm_root_mean_squared_difference"),
         pytest.param(dr.LocateMetricSkimage.modified_pearson,id="modified_pearson"),
         pytest.param(lambda a,b:dr.LocateMetricSkimage.modified_pearson(a[::10,::10],b[::10,::10]),id="modified_pearson_downsample"),
         pytest.param(dr.LocateMetricSkimage.modified_mutual_information,id="modified_mutual_information"),
