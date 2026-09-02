@@ -4,7 +4,7 @@ import pytest
 # from misalign.model.project import MISProjectJSON
 from misalign.model.image import MISImageFile
 from misalign.model.relation import MISRelationRectangular
-import misalign.alignment.difference_rectangular as dr
+from misalign.alignment import difference_rectangular
 
 
 @pytest.fixture
@@ -34,7 +34,7 @@ class TestOverlap():
 
         Based on x-axis of `('image_a01.jpg', 'image_a02.jpg')` in `example/project_a/project_a-relations-calibrated.mis.json`.
         """
-        a_span,b_span=dr.axis_span(
+        a_span,b_span=difference_rectangular.axis_span(
             offset_vector=12,
             a_shape=1600,
             b_shape=1600)
@@ -45,7 +45,7 @@ class TestOverlap():
 
         Based on y-axis of `('image_a01.jpg', 'image_a02.jpg')` in `example/project_a/project_a-relations-calibrated.mis.json`.
         """
-        a_span,b_span=dr.axis_span(
+        a_span,b_span=difference_rectangular.axis_span(
             offset_vector=-1088,
             a_shape=1200,
             b_shape=1200)
@@ -54,7 +54,7 @@ class TestOverlap():
         """
         Tests `axis_span` with matching shapes and zero offset.
         """
-        a_span,b_span=dr.axis_span(
+        a_span,b_span=difference_rectangular.axis_span(
             offset_vector=0,
             a_shape=1200,
             b_shape=1200)
@@ -69,7 +69,7 @@ class TestOverlap():
 
         Based on `('image_a01.jpg', 'image_a02.jpg')` in `example/project_a/project_a-relations-calibrated.mis.json`.
         """
-        (ax_span,ay_span),(bx_span,by_span)=dr.overlap_spans(
+        (ax_span,ay_span),(bx_span,by_span)=difference_rectangular.overlap_spans(
                 offset_vector=(12,-1088),
                 a_shape=(1200,1600),
                 b_shape=(1200,1600)
@@ -80,25 +80,25 @@ class TestOverlap():
         Tests `overlap_spans` with offset vectors that do not overlap.
         """
         with pytest.raises(expected_exception=ValueError):
-            dr.overlap_spans(
+            difference_rectangular.overlap_spans(
                     offset_vector=(1600,0),
                     a_shape=(1200,1600),
                     b_shape=(1200,1600)
                 )
         with pytest.raises(expected_exception=ValueError):
-            dr.overlap_spans(
+            difference_rectangular.overlap_spans(
                     offset_vector=(-1600,0),
                     a_shape=(1200,1600),
                     b_shape=(1200,1600)
                 )
         with pytest.raises(expected_exception=ValueError):
-            dr.overlap_spans(
+            difference_rectangular.overlap_spans(
                     offset_vector=(0,1200),
                     a_shape=(1200,1600),
                     b_shape=(1200,1600)
                 )
         with pytest.raises(expected_exception=ValueError):
-            dr.overlap_spans(
+            difference_rectangular.overlap_spans(
                     offset_vector=(0,-1200),
                     a_shape=(1200,1600),
                     b_shape=(1200,1600)
@@ -113,7 +113,7 @@ class TestOverlap():
         """
         def metric_sum(overlap_a,overlap_b):
             return np.sum((overlap_a,overlap_b))
-        overlap_metric=dr.overlap_evaluate(
+        overlap_metric=difference_rectangular.overlap_evaluate(
             array_a=np.full(shape=(100,100),fill_value=100,dtype=np.float32),
             array_b=np.full(shape=(100,100),fill_value=200,dtype=np.float32),
             offset_ab=(50,50),
@@ -129,7 +129,7 @@ class TestOverlap():
         """
         def metric_sum(overlap_a,overlap_b):
             return np.sum((overlap_a,overlap_b))
-        difference=dr.overlap_difference(
+        difference=difference_rectangular.overlap_difference(
             array_a=np.full(shape=(100,100),fill_value=100,dtype=np.float32),
             array_b=np.full(shape=(100,100),fill_value=200,dtype=np.float32),
             offset_ab=(50,50),
@@ -145,21 +145,21 @@ class TestMetric():
         
         overlap_a=np.full(shape=(50,50),fill_value=100,dtype=dtype)
         overlap_b=np.full(shape=(50,50),fill_value=200,dtype=dtype)
-        overlap_metric=benchmark(dr.LocateMetric.mean_squared_difference,
+        overlap_metric=benchmark(difference_rectangular.LocateMetric.mean_squared_difference,
             overlap_a=overlap_a,
             overlap_b=overlap_b
             )
         assert overlap_metric==100**2
 
     @pytest.mark.parametrize(argnames="metric",argvalues=[
-        pytest.param(dr.LocateMetric.mean_squared_difference,id="mean_squared_difference"),
-        pytest.param(dr.LocateMetric.mean_absolute_difference,id="mean_absolute_difference"),
-        pytest.param(dr.LocateMetric.max_absolute_difference,id="max_absolute_difference"),
-        pytest.param(dr.LocateMetric.root_mean_squared_difference,id="root_mean_squared_difference"),
-        pytest.param(dr.LocateMetric.norm_root_mean_squared_difference,id="norm_root_mean_squared_difference"),
-        pytest.param(dr.LocateMetricSkimage.modified_pearson,id="modified_pearson"),
-        pytest.param(lambda a,b:dr.LocateMetricSkimage.modified_pearson(a[::10,::10],b[::10,::10]),id="modified_pearson_downsample"),
-        pytest.param(dr.LocateMetricSkimage.modified_mutual_information,id="modified_mutual_information"),
+        pytest.param(difference_rectangular.LocateMetric.mean_squared_difference,id="mean_squared_difference"),
+        pytest.param(difference_rectangular.LocateMetric.mean_absolute_difference,id="mean_absolute_difference"),
+        pytest.param(difference_rectangular.LocateMetric.max_absolute_difference,id="max_absolute_difference"),
+        pytest.param(difference_rectangular.LocateMetric.root_mean_squared_difference,id="root_mean_squared_difference"),
+        pytest.param(difference_rectangular.LocateMetric.norm_root_mean_squared_difference,id="norm_root_mean_squared_difference"),
+        pytest.param(difference_rectangular.LocateMetricSkimage.modified_pearson,id="modified_pearson"),
+        pytest.param(lambda a,b:difference_rectangular.LocateMetricSkimage.modified_pearson(a[::10,::10],b[::10,::10]),id="modified_pearson_downsample"),
+        pytest.param(difference_rectangular.LocateMetricSkimage.modified_mutual_information,id="modified_mutual_information"),
         ])
     def test_metric_locate_simple_1(self,benchmark,simple_parabolic_arrays_1,metric):
         """
@@ -167,7 +167,7 @@ class TestMetric():
         """
         array_a,array_b,planned_offset=simple_parabolic_arrays_1
 
-        overlap_metric=benchmark(dr.overlap_evaluate,
+        overlap_metric=benchmark(difference_rectangular.overlap_evaluate,
             array_a=array_a,
             array_b=array_b,
             offset_ab=planned_offset,
@@ -176,8 +176,8 @@ class TestMetric():
         assert overlap_metric<1e-3
     
     @pytest.mark.parametrize(argnames="metric,expected_value",argvalues=[
-        pytest.param(dr.WeightMetric.highlow_inverse,0.00020824657,id="highlow_inverse"),
-        pytest.param(dr.WeightMetric.linear_edge_penalty,0.1366666666666667,id="metric_linear_edge_penalty"),
+        pytest.param(difference_rectangular.WeightMetric.highlow_inverse,0.00020824657,id="highlow_inverse"),
+        pytest.param(difference_rectangular.WeightMetric.linear_edge_penalty,0.1366666666666667,id="metric_linear_edge_penalty"),
         ])
     def test_metric_weight_simple_1(self,benchmark,simple_parabolic_arrays_1,metric,expected_value):
         """
@@ -185,7 +185,7 @@ class TestMetric():
         """
         array_a,array_b,planned_offset=simple_parabolic_arrays_1
 
-        overlap_metric=benchmark(dr.overlap_evaluate,
+        overlap_metric=benchmark(difference_rectangular.overlap_evaluate,
             array_a=array_a,
             array_b=array_b,
             offset_ab=planned_offset,
@@ -208,7 +208,7 @@ class TestStrategy():
         array_a,array_b,planned_offset=simple_parabolic_arrays_1
         assert array_a[50,50]==0 and array_b[45,47]==0
         
-        results=benchmark(dr.Strategy.scaled_grid,
+        results=benchmark(difference_rectangular.StrategyLocal.scaled_grid,
             array_a=array_a,
             array_b=array_b,
             initial_offset=initial_offset,
@@ -244,7 +244,7 @@ class TestStrategy():
         
         assert array_a[50,50]==0 and array_b[95,55]==0
         
-        results=dr.Strategy.full_grid(
+        results=difference_rectangular.StrategyLocal.full_grid(
             array_a=array_a,
             array_b=array_b,
             initial_offset=(2,48),
@@ -258,9 +258,9 @@ class TestStrategy():
 class TestDifferenceGradientAnalysis():
     # (12,-1088) is (3,1) from true solution
     @pytest.mark.parametrize(argnames="size,kwargs",argvalues=[
-        pytest.param(5,dict(metric=dr.LocateMetric.mean_squared_difference),id="small"),
-        pytest.param(10,dict(metric=dr.LocateMetric.mean_squared_difference),id="small-medium"),
-        pytest.param(20,dict(metric=dr.LocateMetric.mean_squared_difference),id="medium"),
+        pytest.param(5,dict(metric=difference_rectangular.LocateMetric.mean_squared_difference),id="small"),
+        pytest.param(10,dict(metric=difference_rectangular.LocateMetric.mean_squared_difference),id="small-medium"),
+        pytest.param(20,dict(metric=difference_rectangular.LocateMetric.mean_squared_difference),id="medium"),
     ])
     def test_difference_gradient_analysis_simple(self,benchmark,size,kwargs):
         reference_optimized_relation=(9, -1087)
@@ -273,7 +273,7 @@ class TestDifferenceGradientAnalysis():
             image_pair=(image_a.name,image_b.name),
             rectangular=reference_initial_relation)
         
-        dga_results=benchmark(dr.difference_gradient_analysis,
+        dga_results=benchmark(difference_rectangular.pairwise_registration,
             image_a=image_a,
             image_b=image_b,
             relation=relation,

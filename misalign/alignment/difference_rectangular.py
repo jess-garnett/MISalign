@@ -1,6 +1,7 @@
 """
-Difference- & Overlap-based Automated Rectangular Alignment Module
+Automated Rectangular Alignment Module
 """
+from typing import Optional
 
 from collections.abc import Callable
 import logging
@@ -11,6 +12,7 @@ from matplotlib import pyplot as plt
 
 from misalign.model.image import MISImage, array_like, Filter, Modifier  # noqa: F401
     # `Filter` and `Modifier` are largely imported so they can be used with DGA
+    # Might be good for something like PEP 843 – Export Statement for DRY Re-exports
 from misalign.model.relation import MISRelation
 import misalign.canvas.canvas_rectangular as cr
 
@@ -53,7 +55,7 @@ def axis_span(offset_vector:int,a_shape:int,b_shape:int)->tuple[tuple[int,int],t
     return a_span,b_span
 
 
-def overlap_spans(offset_vector:tuple[int,int],a_shape:tuple[int,int],b_shape:tuple[int,int])->tuple[tuple[tuple[int,int],tuple[int,int]],tuple[tuple[int,int],tuple[int,int]]]:
+def overlap_spans(offset_vector:tuple[int,int],a_shape:tuple[int,...],b_shape:tuple[int,...])->tuple[tuple[tuple[int,int],tuple[int,int]],tuple[tuple[int,int],tuple[int,int]]]:
     """
     Calculates overlapping spans of two images given an offset vector and shapes.
 
@@ -342,9 +344,9 @@ class WeightMetric():
 """
 Basic Strategy Functions
 """
-class Strategy():
+class StrategyLocal():
     """
-    Group of simple local difference gradient alignment strategies.
+    Group of simple local rectangular pairwise registration strategies.
 
     Strategies evaluate arrays at various offsets with the goal of finding the local minimum in the metrics.
     """
@@ -457,7 +459,7 @@ class Strategy():
             `initial_offset` : tuple[int,int]
                 Initial offset provided to strategy.
         """
-        return Strategy.scaled_grid(array_a=array_a,
+        return StrategyLocal.scaled_grid(array_a=array_a,
                                     array_b=array_b,
                                     initial_offset=initial_offset,
                                     strategy_grid_scale=1,
@@ -534,8 +536,8 @@ class Strategy():
         # Create grid over full search space
         grid: np.ndarray=np.stack(
             arrays=np.meshgrid(
-                np.arange(start=x_min,stop=x_max+1,step=strategy_grid_scale),
-                np.arange(start=y_min,stop=y_max+1,step=strategy_grid_scale)
+                np.arange(x_min,stop=x_max+1,step=strategy_grid_scale),
+                np.arange(y_min,stop=y_max+1,step=strategy_grid_scale)
                 )
             ).astype(int)
         
@@ -569,8 +571,8 @@ class Strategy():
             ix_positions,iy_positions=np.meshgrid(
                 np.arange(ix-np.floor_divide(footprint_array.shape[0],2),ix+np.floor_divide(footprint_array.shape[0],2)+1),
                 np.arange(iy-np.floor_divide(footprint_array.shape[1],2),iy+np.floor_divide(footprint_array.shape[1],2)+1))
-            x_valid=np.logical_and(ix_positions>=0, ix_positions<grid_results.shape[0])
-            y_valid=np.logical_and(iy_positions>=0, iy_positions<grid_results.shape[1])
+            x_valid=np.logical_and(ix_positions>=0, ix_positions<grid_results.shape[1])
+            y_valid=np.logical_and(iy_positions>=0, iy_positions<grid_results.shape[0])
             valid=np.all([x_valid,y_valid,footprint_array],axis=0)
             
             any_unsearched=True
@@ -605,49 +607,51 @@ class Strategy():
     #TODO consider downscaling for strategy/processing.
 
 """
-Difference Gradient Analysis Function
+Pairwise Registration
 """
 
 #TODO ----------------------------- update docstring on this.
-def difference_gradient_analysis(
+def pairwise_registration(
         image_a:MISImage|array_like,
         image_b:MISImage|array_like,
         relation:MISRelation|tuple[int,int]|None,
-        strategy:Callable[...,dict]=Strategy.full_grid,
+        strategy:Callable[...,dict]=StrategyLocal.full_grid,
         metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,
         filter:Callable[[array_like],np.ndarray]=Filter.float,
         **kwargs)->dict:
     """
-    Uses a metric to evaluate overlaps of a pair of images at multiple offsets to identify the best offset.
+    Applies the supplied strategy to the given images. Applies filter to given images before passing them to the strategy.
 
     Note: This functions primary purpose is to prepare MISImage and MISRelation objects to be passed to a strategy function.
 
     Parameters
     ----------
+    image_a : MISImage|array_like
+        MISImage or `numpy.asarray()` compatible object.
+    image_b : MISImage|array_like
+        MISImage or `numpy.asarray()` compatible object.
+    relation : MISRelation|tuple[int,int]|None
+        Initial relation between images.
+        Must be provided if a local strategy is used. May not be used by global strategy.
     strategy : Callable[...,dict]
         Function that takes keyword arguments `array_a`, `array_b`, `initial_offset`, `metric`, and all other `kwargs`.
         Returns a dictionary of results that must include `optimized_offset`.
-        `Strategy.full_grid` by default.
+        `StrategyLocal.full_grid` by default.
     metric : Callable[[np.ndarray,np.ndarray],float]
         Function that takes two numpy arrays and returns a value describing some aspect of them.
-        `metric_difference_squared_mean` by default.
+        `LocateMetric.mean_squared_difference` by default.
         Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
     filter : Callable[[array_like],np.ndarray]
-        Filter to convert array_like to array, convert dtypes, or apply other effects such as gaussian or median filters.
-        `filter_simple` by default.
+        Filter to convert array_like to array, convert dtypes, or apply other effects such as crops, gaussian, or median filters.
+        `Filter.Float` by default.
     kwargs
         All keyword arguments are passed to the strategy function.
 
-    dga_results : dict
+    Returns
+    -------
+    registration_results : dict
         Dictionary with results of difference gradient alignment. Contents will depend on strategy used.
-        `grid` : np.ndarray : optional
-            Offsets that were searched.
-        `grid_results` : np.ndarray : optional
-            Metric value at matching offset in `grid`.
-        `optimized_offset` : tuple[int,int]
-            Optimized offset based on minimum in metric value.
-        `initial_offset` : tuple[int,int] | None : optional
-            Initial offset provided to strategy.
+
     """
     ## Get image arrays
     array_a:np.ndarray=filter(image_a)
@@ -680,40 +684,40 @@ Result Visualization Functions
 #TODO plotting functions from `difference_gradient.py`
 
 def _plot_grid_result(
-        dga_grid_results:dict,
+        registration_result_grid:dict,
         overlays=True):
-    plt.imshow(dga_grid_results["grid_results"],
-        extent=(np.min(dga_grid_results["grid"][0])-0.5,
-                np.max(dga_grid_results["grid"][0])+0.5,
-                np.max(dga_grid_results["grid"][1])+0.5,
-                np.min(dga_grid_results["grid"][1])-0.5,), #xmin,xmax,ymin,ymax
+    plt.imshow(registration_result_grid["grid_results"],
+        extent=(np.min(registration_result_grid["grid"][0])-0.5,
+                np.max(registration_result_grid["grid"][0])+0.5,
+                np.max(registration_result_grid["grid"][1])+0.5,
+                np.min(registration_result_grid["grid"][1])-0.5,), #xmin,xmax,ymin,ymax
         )
     plt.xlabel("Rectangular X-offset")
     plt.ylabel("Rectangular Y-offset")
-    plt.colorbar(label="Difference Gradient Analysis Metric")
+    plt.colorbar(label="Metric Results")
 
     if overlays:
         legend=False
-        if "initial_offset" in dga_grid_results:
+        if "initial_offset" in registration_result_grid:
             plt.scatter(
-                x=dga_grid_results["initial_offset"][0],
-                y=dga_grid_results["initial_offset"][1],
+                x=registration_result_grid["initial_offset"][0],
+                y=registration_result_grid["initial_offset"][1],
                 marker="o",
                 color="tab:red",
-                label=f'Initial: {dga_grid_results["initial_offset"]}')
+                label=f'Initial: {registration_result_grid["initial_offset"]}')
             legend=True
-        if "optimized_offset" in dga_grid_results:
+        if "optimized_offset" in registration_result_grid:
             plt.scatter(
-                x=dga_grid_results["optimized_offset"][0],
-                y=dga_grid_results["optimized_offset"][1],
+                x=registration_result_grid["optimized_offset"][0],
+                y=registration_result_grid["optimized_offset"][1],
                 marker="X",
                 color="tab:pink",
-                label=f'Optimized: {dga_grid_results["optimized_offset"]}')
+                label=f'Optimized: {registration_result_grid["optimized_offset"]}')
             legend=True
-        if "initial_offset" in dga_grid_results and "optimized_offset" in dga_grid_results:
+        if "initial_offset" in registration_result_grid and "optimized_offset" in registration_result_grid:
             plt.annotate("", 
-                xytext=dga_grid_results["initial_offset"],
-                xy=dga_grid_results["optimized_offset"],
+                xytext=registration_result_grid["initial_offset"],
+                xy=registration_result_grid["optimized_offset"],
                 arrowprops=dict(arrowstyle="->",color="w"),)
         if legend:
             plt.legend()
@@ -749,13 +753,13 @@ def _render_rectangular_pair(
         image_arrays={image_a.name:image_a,image_b.name:image_b},
         canvas_relative_offsets=canvas_relative_offsets,
         canvas_extents=canvas_extents,
-        weight=cr.weight_flat,
+        weight=weight,
         )
     render=cr.render_blended(
         image_arrays={image_a.name:image_a,image_b.name:image_b},
         canvas_relative_offsets=canvas_relative_offsets,
         canvas_extents=canvas_extents,
-        weight=cr.weight_flat,
+        weight=weight,
         normalizer=normalizer,
         )
 
@@ -791,40 +795,40 @@ def plot_rectangular_pair(
             top=canvas_relative_offsets[image_a.name][1]+a_spans[1][0]-focus_expand,
             bottom=canvas_relative_offsets[image_a.name][1]+a_spans[1][1]+focus_expand)
 
-def plot_grid_difference_gradient_analysis(
+def plot_registration_result_grid(
         image_a:MISImage,
         image_b:MISImage,
-        dga_grid_result:dict,
+        registration_result_grid:dict,
         figwidth=12,
         figheight=4,
         overlays=True
         ):
-    if "initial_offset" in dga_grid_result:
+    if "initial_offset" in registration_result_grid:
         fig,axs=plt.subplot_mosaic(
             mosaic=[
-                ["dga_map","initial"],
-                ["dga_map","optimized"]])
+                ["metric_map","initial"],
+                ["metric_map","optimized"]])
     else:
         fig,axs=plt.subplot_mosaic(
             mosaic=[
-                ["dga_map","optimized"]])
+                ["metric_map","optimized"]])
     fig.set_figwidth(figwidth)
     fig.set_figheight(figheight)
     plt.tight_layout(pad=1.5,h_pad=2,w_pad=2)
 
-    plt.sca(axs["dga_map"])
-    plt.title("Difference Gradient Analysis")
+    plt.sca(axs["metric_map"])
+    plt.title("Registration Grid Result")
     _plot_grid_result(
-        dga_grid_results=dga_grid_result,
+        registration_result_grid=registration_result_grid,
         overlays=overlays)
 
-    if "initial_offset" in dga_grid_result:
+    if "initial_offset" in registration_result_grid:
         plt.sca(axs["initial"])
         plt.title("Initial Flat Blend")
         plot_rectangular_pair(
             image_a=image_a,
             image_b=image_b,
-            offset=dga_grid_result["initial_offset"],
+            offset=registration_result_grid["initial_offset"],
             weight=cr.weight_dfe,
             focus_overlap=True)
 
@@ -833,9 +837,38 @@ def plot_grid_difference_gradient_analysis(
     plot_rectangular_pair(
         image_a=image_a,
         image_b=image_b,
-        offset=dga_grid_result["optimized_offset"],
+        offset=registration_result_grid["optimized_offset"],
         weight=cr.weight_dfe,
         focus_overlap=True)
+
+def plot_registration_result_prediction(
+        # image_a:MISImage,
+        # image_b:MISImage,
+        registration_results:dict,
+        figwidth=12,
+        figheight=4,
+        reference_optimized:Optional[tuple[int,int]]=None
+    ):
+    search_offsets=np.array(registration_results["offsets_searched"])
+    found_offsets=registration_results["offsets_predicted"]
+    reduced_offsets=np.asarray(registration_results["offsets_reduced"])
+    fig, (ax)=plt.subplots(1,1,)
+    fig.set_figwidth(figwidth)
+    fig.set_figheight(figheight)
+    fig.set_layout_engine('constrained')
+    for i,offset in enumerate(found_offsets):
+        ax.annotate("", xytext=search_offsets[i], xy=offset,
+                arrowprops=dict(arrowstyle="->",alpha=0.5),)
+    ax.yaxis.set_inverted(True)
+    ax.scatter(search_offsets[:,0],search_offsets[:,1],marker='s',c='k',alpha=0.5,label="Search Offsets",zorder=0)
+    combined_scatter=plt.scatter(reduced_offsets[:,0],reduced_offsets[:,1],c=registration_results["offsets_metric"],label="Search Results",zorder=1)
+    plt.colorbar(combined_scatter)
+    if reference_optimized is not None:
+        ax.scatter(*np.array(reference_optimized),marker='x', c='r',zorder=10,label="Reference Optimized")#(1/downsample)*()
+    ax.scatter(*registration_results["optimized_offset"],marker='D', facecolors='none', edgecolors='r',zorder=11,label="Prediction Optimized")
+    fig.legend(loc="outside right")
+    ax.set_aspect(1)
+    plt.show()
 
 """
 Difference Gradient Analysis Metric and Strategy Functions
@@ -979,6 +1012,37 @@ class InterpolateSkimage():
             grid_results.flatten()[~np.isnan(grid_results.flatten())])
         interp_results=interp(grid[0].flatten(),grid[1].flatten()).reshape(grid_results.shape)
         return interp_results
+
+class Predict():
+    """
+    Group of functions which take two arrays and an offset and predicts an aligned offset.
+    """
+    @staticmethod
+    def scaled_local_minima(
+            array_a:np.ndarray,
+            array_b:np.ndarray,
+            offset_ab:tuple[int,int]|np.ndarray,
+            ):
+        search_results=StrategyLocal.local_minima_grid(
+            array_a=array_a,
+            array_b=array_b,
+            metric=lambda a,b:
+                LocateMetric.norm_root_mean_squared_difference(a,b)+
+                # (LocateMetric.max_absolute_difference(a,b)/100)+
+                (np.quantile(np.abs(a-b),0.75))+
+                (200*WeightMetric.highlow_inverse(a,b)), #TODO passing metric through?
+            initial_offset=tuple(offset_ab),
+            strategy_grid_scale=1,
+            strategy_max_size=50,
+            strategy_max_steps=50,
+            strategy_footprint_shape=(11,11)
+        )
+
+        return {
+            "offset":search_results["optimized_offset"],
+            "shift":(offset_ab[1]-search_results["optimized_offset"][1],offset_ab[0]-search_results["optimized_offset"][0]),
+            "search_results":search_results
+            }
 
 class PredictSkimage():
     """
@@ -1466,7 +1530,7 @@ def calibrate_metrics_initial(
         metrics:dict[str,Callable[[np.ndarray,np.ndarray],float]],
         filter:Callable[[array_like],np.ndarray],
         strategies:dict[str,Callable]={
-                "grid":Strategy.full_grid,
+                "grid":StrategyLocal.full_grid,
                 "sparse":StrategyFullSearch.interpolated_adaptive_grid,
             },
         strategy_kwargs:dict[str,dict]={
