@@ -47,7 +47,7 @@ class MISImage(Protocol):
         """
         ...
     @property
-    def shape(self)->tuple[int]:
+    def shape(self)->tuple[int, ...]:
         """
         Get the shape of the image.
         
