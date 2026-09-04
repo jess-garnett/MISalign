@@ -702,16 +702,16 @@ def _plot_grid_result(
             plt.scatter(
                 x=registration_result_grid["initial_offset"][0],
                 y=registration_result_grid["initial_offset"][1],
-                marker="o",
-                color="tab:red",
+                marker=".",
+                color="r",
                 label=f'Initial: {registration_result_grid["initial_offset"]}')
             legend=True
         if "optimized_offset" in registration_result_grid:
             plt.scatter(
                 x=registration_result_grid["optimized_offset"][0],
                 y=registration_result_grid["optimized_offset"][1],
-                marker="X",
-                color="tab:pink",
+                marker="o",
+                color="r",
                 label=f'Optimized: {registration_result_grid["optimized_offset"]}')
             legend=True
         if "initial_offset" in registration_result_grid and "optimized_offset" in registration_result_grid:
