@@ -11,7 +11,7 @@ from math import dist
 from dataclasses import dataclass
 
 import numpy as np
-from misalign.model.image import MISImage, array_like, Filter, Modifier  # noqa: F401
+from misalign.model.image import MISImage, HasArray, Filter, Modifier  # noqa: F401
     # `Filter` and `Modifier` are largely imported so they can be used with DGA
     # Might be good for something like PEP 843 – Export Statement for DRY Re-exports
 from misalign.model.relation import MISRelation,MISRelationRectangular
@@ -500,7 +500,7 @@ class ModifierSkimage():
     Modifiers take a filter and apply effects such as median or edge-detection.
     """
     @staticmethod
-    def median_disk(filter,radius:int=2)->Callable[[array_like],np.ndarray]:
+    def median_disk(filter,radius:int=2)->Callable[[HasArray],np.ndarray]:
         """
         Modifier to combine with another filter. Adds a radius-based median filter to the filter it is applied to.
 
@@ -508,21 +508,21 @@ class ModifierSkimage():
         
         Parameters
         ----------
-        filter : Callable[[array_like],np.ndarray]
+        filter : Callable[[HasArray],np.ndarray]
             Filter function to modify.
         radius : int
             Radius to use with `skimage.morphology.disk(radius)` for median filter.
 
         Returns
         -------
-        modified_filter : Callable[[array_like],np.ndarray]
+        modified_filter : Callable[[HasArray],np.ndarray]
             Filter provided with median filter added.
         """
-        def modified_filter(image:array_like)->np.ndarray:
+        def modified_filter(image:HasArray)->np.ndarray:
             return skimage.filters.median(filter(image),footprint=skimage.morphology.disk(radius))
         return modified_filter
     @staticmethod
-    def scharr_edge(filter)->Callable[[array_like],np.ndarray]:
+    def scharr_edge(filter)->Callable[[HasArray],np.ndarray]:
         """
         Modifier to combine with another filter. Adds Scharr transform to convert image into edge magnitudes.
 
@@ -530,17 +530,18 @@ class ModifierSkimage():
         
         Parameters
         ----------
-        filter : Callable[[array_like],np.ndarray]
+        filter : Callable[[HasArray],np.ndarray]
             Filter function to modify.
 
         Returns
         -------
-        modified_filter : Callable[[array_like],np.ndarray]
+        modified_filter : Callable[[HasArray],np.ndarray]
             Filter provided with Scharr transform added.
         """
-        def modified_filter(image:array_like)->np.ndarray:
+        def modified_filter(image:HasArray)->np.ndarray:
             return skimage.filters.scharr(filter(image))
         return modified_filter
+
 
 """
 Strategy Result Classes
@@ -878,12 +879,12 @@ class StrategyLocal():
 Pairwise Registration
 """
 def pairwise_registration(
-        image_a:MISImage|array_like,
-        image_b:MISImage|array_like,
+        image_a:MISImage|HasArray,
+        image_b:MISImage|HasArray,
         relation:Optional[MISRelation|tuple[int,int]]=None,
         strategy:Callable[...,RectangularRegistrationResult]=StrategyLocal.full_grid,
         metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,
-        filter:Callable[[array_like],np.ndarray]=Filter.float,
+        filter:Callable[[HasArray],np.ndarray]=Filter.float,
         **kwargs
         )->RectangularRegistrationResult:
     """
@@ -893,9 +894,9 @@ def pairwise_registration(
 
     Parameters
     ----------
-    image_a : MISImage|array_like
+    image_a : MISImage|HasArray
         MISImage or `numpy.asarray()` compatible object.
-    image_b : MISImage|array_like
+    image_b : MISImage|HasArray
         MISImage or `numpy.asarray()` compatible object.
     relation : MISRelation|tuple[int,int]|None
         Initial relation between images or `None` by default.
@@ -908,8 +909,8 @@ def pairwise_registration(
         Function that takes two numpy arrays and returns a value describing some aspect of them.
         `LocateMetric.mean_squared_difference` by default.
         Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
-    filter : Callable[[array_like],np.ndarray]
-        Filter to convert array_like to array, convert dtypes, or apply other effects such as crops, gaussian, or median filters.
+    filter : Callable[[HasArray],np.ndarray]
+        Filter to convert HasArray to array, convert dtypes, or apply other effects such as crops, gaussian, or median filters.
         `Filter.Float` by default.
     kwargs
         All keyword arguments are passed to the strategy function.
