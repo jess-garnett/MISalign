@@ -1,24 +1,31 @@
 from pathlib import Path
 import numpy as np
 
-from misalign.model.image import MISImage, MISImageFile, MISImageHDF5, setup_image
+from misalign.model.image import MISImage, MISImageFile, MISImageHDF5, setup_image, HasArray, HasArrayShape, HasArrayShapeName
 
 class Test_setup_image():
-    def test_setup_imagefile(self):
+    def test_setup_image_file(self):
         assert type(setup_image(
             image_type="file",
             image_filepath="tests/test_files/model_image/test_image_a01.png"
-        ))==MISImageFile
+        )) is MISImageFile
+    def test_setup_image_hdf5(self):
+        assert type(setup_image(
+            image_name="image_a01.jpg",
+            hdf5_filepath="tests/test_files/test_hdf5/test-project_a-rel-cal-comp.hdf5",
+            hdf5path="/MISContainer0/MISDataContainer0/image_a01.jpg",
+            image_type="hdf5",
+            PIL_mode="RGB"
+        )) is MISImageHDF5
 
 class TestMISImageFile():
     def test_protocol_isinstance(self):
-        assert isinstance(MISImageFile,MISImage)
+        assert isinstance(MISImageFile(image_filepath="tests/test_files/model_image/test_image_a01.png"),MISImage)
     def test_image_init(self):
         test_img_a01="tests/test_files/model_image/test_image_a01.png"
         test_image_data={
             "image_type":"file",
             "image_filepath":test_img_a01,
-
         }
         test_image=MISImageFile(**test_image_data)
         assert str(test_image)=="Image 'test_image_a01.png' with shape:(1200, 1600, 3)"
@@ -61,19 +68,14 @@ class TestMISImageFile():
 
     #TODO add tests for `check_image_path` and `find_image_path`
 
-class Test_setup_image():
-    def test_setup_imagefile(self):
-        assert type(setup_image(
-            image_name="image_a01.jpg",
+#TODO remove PIL mode from tests
+class TestMISImageHDF5():
+    def test_protocol_isinstance(self):
+        assert isinstance(MISImageHDF5(image_name="image_a01.jpg",
             hdf5_filepath="tests/test_files/test_hdf5/test-project_a-rel-cal-comp.hdf5",
             hdf5path="/MISContainer0/MISDataContainer0/image_a01.jpg",
             image_type="hdf5",
-            PIL_mode="RGB"
-        ))==MISImageHDF5
-
-class TestMISImageHDF5():
-    def test_protocol_isinstance(self):
-        assert isinstance(MISImageHDF5,MISImage)
+            PIL_mode="RGB"),MISImage)
     def test_image_init(self):
         test_image_data=dict(
             image_name="image_a01.jpg",
@@ -139,3 +141,14 @@ class TestMISImageHDF5():
         test_image=MISImageHDF5(**test_image_data)
         test_img_arr_fp="tests/test_files/model_image/test_image_a01.npy"
         assert np.all(np.asarray(test_image)==np.load(test_img_arr_fp))
+
+class TestImageProtocols():
+    def test_hasarray(self):
+        assert isinstance(MISImageFile(image_filepath="tests/test_files/model_image/test_image_a01.png"),HasArray)
+        assert isinstance(np.ndarray,HasArray)
+    def test_hasarrayshape(self):
+        assert isinstance(MISImageFile(image_filepath="tests/test_files/model_image/test_image_a01.png"),HasArrayShape)
+        assert isinstance(np.ndarray,HasArrayShape)
+    def test_hasarrayshapename(self):
+        assert isinstance(MISImageFile(image_filepath="tests/test_files/model_image/test_image_a01.png"),HasArrayShapeName)
+        assert not isinstance(np.ndarray,HasArrayShapeName)

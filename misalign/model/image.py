@@ -6,7 +6,7 @@ Includes `Protocol` model: `MISImage`
 
 from PIL import Image as PILImage
 import numpy as np
-from typing import Protocol, runtime_checkable, Any
+from typing import Protocol, runtime_checkable, Any, ClassVar
 from collections.abc import Callable
 from pathlib import Path
 import h5py
@@ -14,6 +14,8 @@ import h5py
 @runtime_checkable
 class MISImage(Protocol):
     """Protocol - Access image data and information."""
+    _image_type:ClassVar[str]
+    name:str
     def __init__(self,**image_data)->None:
         """
         Initialize a MISImage.
@@ -25,7 +27,7 @@ class MISImage(Protocol):
             Any other passed kwargs will be kept in `self._dict` and should be JSON dump-able objects.
         """
         self.name:str
-        self._filter:None|Callable[[np.ndarray],np.ndarray]
+        # self._filter:None|Callable[[np.ndarray],np.ndarray]
     def __str__(self)->str:
         """
         String representation of the Image.
@@ -135,7 +137,8 @@ class MISImageFile():
     """
     Access image data and information from an image file.
     """
-    _image_type="file"
+    _image_type:ClassVar[str]="file"
+    name:str
     def __init__(self,
         image_filepath:Path|str|None=None,
         **image_data):
@@ -318,7 +321,8 @@ class MISImageHDF5():
     """
     Access image data and information from an HDF5 file.
     """
-    _image_type="hdf5"
+    _image_type:ClassVar[str]="hdf5"
+    name:str
     """Access image data and information from a HDF5."""
     def __init__(self,
         hdf5_filepath:Path|str|None=None,
@@ -540,13 +544,14 @@ def setup_image(**image_data)->MISImage:
 
 #TODO add filters to unit tests.
 
-## array-like class
+## MISImage-like protocol classes
 @runtime_checkable
-class array_like(Protocol):
+class HasArray(Protocol):
     """
-    Type hinting utility class for representing objects compatible with `numpy.asarray` and with `.shape` property.
+    Type hinting utility class for representing objects compatible with `numpy.asarray`.
 
-    MISImages are `array_like`.
+    MISImages match for `HasArray` because they implement `.__array__`.
+    Numpy arrays also match `HasArray`.
     """
     def __array__(self)->np.ndarray:
         """
@@ -558,6 +563,14 @@ class array_like(Protocol):
             Numpy array.
         """
         ...
+@runtime_checkable
+class HasArrayShape(HasArray,Protocol):
+    """
+    Type hinting utility class for representing objects compatible with `numpy.asarray` and have `.shape` property.
+
+    MISImages match for `HasArrayShape` because they implement `.__array__` and have a `.shape` property.
+    Numpy arrays also match `HasArrayShape`.
+    """
     @property
     def shape(self)->tuple[int, ...]:
         """
@@ -569,7 +582,16 @@ class array_like(Protocol):
             Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
         """
         ...
+@runtime_checkable
+class HasArrayShapeName(HasArrayShape,Protocol):
+    """
+    Type hinting utility class for representing objects compatible with `numpy.asarray` and have `.shape` and `.name` properties.
 
+    MISImages match for `HasArrayShapeName` because they implement `.__array__` and have `.shape` and `.name` properties.
+    Numpy arrays do not match `HasArrayShapeName`.
+    """
+    name:str
+   
 class Filter():
     """
     Group of filter functions for `..._filter` methods of MISImages.
@@ -577,13 +599,13 @@ class Filter():
     Filters get arrays from array-like objects and apply effects such as type conversion or RGB-to-grayscale.
     """
     @staticmethod
-    def simple(image:array_like)->np.ndarray:
+    def simple(image:HasArray)->np.ndarray:
         """
         Filter to get an array from an array-like and convert it to `np.uint8`.
         
         Parameters
         ----------
-        image : array_like
+        image : HasArray
             Array-like image.
 
         Returns
@@ -593,13 +615,13 @@ class Filter():
         """
         return np.asarray(image).astype(dtype=np.uint8)
     @staticmethod
-    def simple_uint16(image:array_like)->np.ndarray:
+    def simple_uint16(image:HasArray)->np.ndarray:
         """
         Filter to get an array from a 16-bit image / `np.uint16` array-like and convert it to `np.uint8`.
         
         Parameters
         ----------
-        image : array_like
+        image : HasArray
             Array-like image.
 
         Returns
@@ -610,13 +632,13 @@ class Filter():
         return (np.asarray(image)//256).astype(dtype=np.uint8)
 
     @staticmethod
-    def float(image:array_like)->np.ndarray:
+    def float(image:HasArray)->np.ndarray:
         """
         Filter to get an array from an array-like and convert it to `np.float32`.
         
         Parameters
         ----------
-        image : array_like
+        image : HasArray
             Array-like image.
 
         Returns
@@ -627,13 +649,13 @@ class Filter():
         return np.asarray(image).astype(dtype=np.float32)
 
     @staticmethod
-    def rgb_gray_mean(image:array_like)->np.ndarray:
+    def rgb_gray_mean(image:HasArray)->np.ndarray:
         """
         Filter to get an array from an array-like, reduce it from RGB to grayscale by taking the mean of RGB, and convert it to `np.float32`.
         
         Parameters
         ----------
-        image : array_like
+        image : HasArray
             Array-like image with shape (Rows,Columns,Depth).
 
         Returns
@@ -649,10 +671,10 @@ class Modifier():
 
     Modifiers take a filter and apply effects such as cropping.
     """
-    def crop(filter:Callable[[array_like],np.ndarray],
+    def crop(filter:Callable[[HasArray],np.ndarray],
             left:int|None=None,right:int|None=None,
             top:int|None=None,bottom:int|None=None
-            )->Callable[[array_like],np.ndarray]:
+            )->Callable[[HasArray],np.ndarray]:
         """
         Modifier to combine with another filter. Adds cropping to the filter it is applied to.
 
@@ -660,7 +682,7 @@ class Modifier():
         
         Parameters
         ----------
-        filter : Callable[[array_like],np.ndarray]
+        filter : Callable[[HasArray],np.ndarray]
             Filter function to modify.
         left : int | None
             Left index of crop or `None` by default.
@@ -675,9 +697,9 @@ class Modifier():
 
         Returns
         -------
-        modified_filter : Callable[[array_like],np.ndarray]
+        modified_filter : Callable[[HasArray],np.ndarray]
             Filter provided with cropping added.
         """
-        def modified_filter(image:array_like)->np.ndarray:
+        def modified_filter(image:HasArray)->np.ndarray:
             return filter(image)[top:bottom,left:right]
         return modified_filter

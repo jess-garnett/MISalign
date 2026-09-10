@@ -7,11 +7,12 @@ Render that canvas either unblended or blended.
 
 `..._project` variants of functions implement the standard functions while simplifying certain data extraction/data formatting steps.
 """
-from typing import runtime_checkable, Protocol, Any
+from typing import runtime_checkable, Protocol, Any, Optional
 from collections.abc import Callable
 from PIL import Image as PILImage
 import numpy as np
 from misalign.model.project import MISProject
+from misalign.model.image import MISImage, HasArrayShape, HasArrayShapeName
 
 def simple_relation_map(relations:list[dict[str,tuple]],image_names:list[str],origin:str)->dict[str,list[tuple]]:
     """
@@ -288,38 +289,10 @@ def place_in_canvas(
         canvas_extents["height"]-(origin_relative_offsets[name][1]+canvas_offsets["y"])) 
         for name in image_names}
     return canvas_relative_offsets
-## Render array-like class
-@runtime_checkable
-class array_like(Protocol):
-    """
-    Type hinting utility class for representing objects compatible with `numpy.asarray` and with `.shape` property.
 
-    MISImages are `array_like`.
-    """
-    def __array__(self)->np.ndarray:
-        """
-        Get array.
-        
-        Returns
-        -------
-        array : np.ndarray
-            Numpy array.
-        """
-        ...
-    @property
-    def shape(self)->tuple[int, ...]:
-        """
-        Get the shape of the array.
-        
-        Returns
-        -------
-        shape : tuple[int]
-            Tuple of ints describing the shape in numpy order - row, col, depth - (1200,1600,3).
-        """
-        ...
 ## Rectangular Unblended Render
 def render_unblended(
-        image_arrays:dict[str,array_like],
+        image_arrays:dict[str,HasArrayShape],
         canvas_relative_offsets:dict,
         canvas_extents:dict,
         return_image:bool=True,
@@ -329,8 +302,8 @@ def render_unblended(
 
     Parameters
     ----------
-    image_arrays : dict[str, array_like],
-        Dictionary of the form `"image_name":array_like`
+    image_arrays : dict[str, HasArrayShape],
+        Dictionary of the form `"image_name":HasArrayShape`
     canvas_relative_offsets : dict[str, tuple[int, int]]
         Dictionary of the form `"image_name":(canvas-relative x, canvas-relative y)`
     canvas_extents : dict[str, int]
@@ -417,7 +390,7 @@ def render_unblended_project(
     """
     if image_names is None:
         image_names=project.get_image_names()
-    image_arrays: dict[str, array_like]={image_name:project.get_image(image_name) for image_name in image_names}
+    image_arrays: dict[str, HasArrayShape]={image_name:project.get_image(image_name) for image_name in image_names}
     return render_unblended(
         image_arrays=image_arrays,
         canvas_relative_offsets=canvas_relative_offsets,
@@ -468,7 +441,7 @@ def weight_flat(image_shape:tuple)->np.ndarray:
     return flat_array
     ### Normalization Array Building
 def build_normalization(
-    image_arrays:dict[str, array_like],
+    image_arrays:dict[str, HasArrayShape],
     canvas_relative_offsets:dict,
     canvas_extents:dict,
     weight:Callable
@@ -478,8 +451,8 @@ def build_normalization(
 
     Parameters
     ----------
-    image_arrays : dict[str, array_like],
-        Dictionary of the form `"image_name":array_like`
+    image_arrays : dict[str, HasArrayShape],
+        Dictionary of the form `"image_name":HasArrayShape`
     canvas_relative_offsets : dict[str, tuple[int, int]]
         Dictionary of the form `"image_name":(canvas-relative x, canvas-relative y)`
     canvas_extents : dict[str, int]
@@ -507,7 +480,7 @@ def build_normalization(
     return normalization_array
     ### Summation Blending
 def render_blended(
-    image_arrays:dict[str, array_like],
+    image_arrays:dict[str, HasArrayShape],
     canvas_relative_offsets:dict,
     canvas_extents:dict,
     weight,
@@ -519,8 +492,8 @@ def render_blended(
 
     Parameters
     ----------
-    image_arrays : dict[str, array_like],
-        Dictionary of the form `"image_name":array_like`
+    image_arrays : dict[str, HasArrayShape],
+        Dictionary of the form `"image_name":HasArrayShape`
     canvas_relative_offsets : dict[str, tuple[int, int]]
         Dictionary of the form `"image_name":(canvas-relative x, canvas-relative y)`
     canvas_extents : dict[str, int]
@@ -628,7 +601,7 @@ def render_blended_project(
     """
     if image_names is None:
         image_names=project.get_image_names()
-    image_arrays: dict[str, array_like]={image_name:project.get_image(image_name) for image_name in image_names}
+    image_arrays: dict[str, HasArrayShape]={image_name:project.get_image(image_name) for image_name in image_names}
     normalizer=build_normalization(
         image_arrays=image_arrays,
         canvas_relative_offsets=canvas_relative_offsets,
@@ -642,6 +615,69 @@ def render_blended_project(
         normalizer=normalizer,
         return_image=return_image
     )
+
+def render_pair(
+        image_a:MISImage|HasArrayShapeName,
+        image_b:MISImage|HasArrayShapeName,
+        offset:tuple[int,int],
+        weight:Optional[Callable]=weight_flat
+        )->dict:
+    origin_relative_offsets=rectangular_solve(
+        relations=[{"ref":(image_a.name,image_b.name),"rel":offset}],
+        image_names=[image_a.name,image_b.name],
+        origin=image_a.name
+        )
+
+    origin_relative_extents=find_relative_extents(
+        image_names=[image_a.name,image_b.name],
+        origin_relative_offsets=origin_relative_offsets,
+        image_shapes={image_a.name:image_a.shape,image_b.name:image_b.shape}
+        )
+
+    canvas_extents, canvas_offsets=resolve_extents(origin_relative_extents)
+
+    canvas_relative_offsets=place_in_canvas(
+        image_names=[image_a.name,image_b.name],
+        origin_relative_offsets=origin_relative_offsets,
+        canvas_extents=canvas_extents,
+        canvas_offsets=canvas_offsets)
+
+    results:dict=dict(
+        origin_relative_offsets=origin_relative_offsets,
+        origin_relative_extents=origin_relative_extents,
+        canvas_extents=canvas_extents,
+        canvas_offsets=canvas_offsets,
+        canvas_relative_offsets=canvas_relative_offsets,
+        )
+
+    if weight is None:
+        
+        render=render_unblended(
+            image_arrays={image_a.name:image_a,image_b.name:image_b},
+            canvas_relative_offsets=canvas_relative_offsets,
+            canvas_extents=canvas_extents,
+            )
+        results["render"]=render
+
+    else:
+        normalizer=build_normalization(
+            image_arrays={image_a.name:image_a,image_b.name:image_b},
+            canvas_relative_offsets=canvas_relative_offsets,
+            canvas_extents=canvas_extents,
+            weight=weight,
+            )
+        render=render_blended(
+            image_arrays={image_a.name:image_a,image_b.name:image_b},
+            canvas_relative_offsets=canvas_relative_offsets,
+            canvas_extents=canvas_extents,
+            weight=weight,
+            normalizer=normalizer,
+            )
+        results["normalizer"]=normalizer
+        results["render"]=render
+    
+    return results
+#TODO render_pair test
 
 #TODO canvas_rectangular unit tests
 #TODO canvas rectangular unit tests for 2D/0 depth images.
