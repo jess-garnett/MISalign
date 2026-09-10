@@ -8,12 +8,13 @@ import logging
 from collections.abc import Callable
 from typing import Optional
 from math import dist
+from dataclasses import dataclass
 
 import numpy as np
 from misalign.model.image import MISImage, array_like, Filter, Modifier  # noqa: F401
     # `Filter` and `Modifier` are largely imported so they can be used with DGA
     # Might be good for something like PEP 843 – Export Statement for DRY Re-exports
-from misalign.model.relation import MISRelation
+from misalign.model.relation import MISRelation,MISRelationRectangular
 
 try:
     # import scipy
@@ -21,14 +22,14 @@ try:
 except ImportError:
     _if_scipy = False
 else:
-    _if_scpy = True
+    _if_scipy = True
 
 try:
     import skimage
 except ImportError:
-    _if_scipy = False
+    _if_skimage = False
 else:
-    _if_scpy = True
+    _if_skimage = True
 
 
 """
@@ -542,6 +543,90 @@ class ModifierSkimage():
         return modified_filter
 
 """
+Strategy Result Classes
+"""
+@dataclass(frozen=True)
+class RectangularRegistrationResult:
+    """
+    Generic base class for a result from rectangular pairwise registration.
+
+    Attributes
+    ----------
+    optimized_offset : tuple[int,int]
+        Optimized offset from registration strategy.
+    """
+    optimized_offset: tuple[int,int]
+    def get_relation(self,image_a_name,image_b_name,)->MISRelation:
+        return MISRelationRectangular(image_pair=(image_a_name,image_b_name),rectangular=self.optimized_offset)
+
+@dataclass(frozen=True)
+class RectangularRegistrationResultLocalGrid(RectangularRegistrationResult):
+    """
+    Result from rectangular pairwise registration with a grid-based local strategy.
+
+    Attributes
+    ----------
+    grid : np.ndarray
+        Offsets that were searched.
+    grid_results : np.ndarray
+        Metric value at matching offset in `grid`.
+    initial_offset : tuple[int,int]
+        Initial offset provided to strategy.
+    optimized_offset : tuple[int,int]
+        Optimized offset based on minimum in metric value.
+    """
+    grid: np.ndarray
+    grid_results: np.ndarray
+    initial_offset: tuple[int,int]
+    optimized_offset: tuple[int,int]
+
+@dataclass(frozen=True)
+class RectangularRegistrationResultInterpolatedFullGrid(RectangularRegistrationResult):
+    """
+    Result from rectangular pairwise registration with an interpolated full search grid strategy.
+
+    Attributes
+    ----------
+    grid : np.ndarray
+        Offsets that were searched.
+    grid_results : np.ndarray
+        Metric value at matching offset in `grid`.
+    interp_results : np.ndarray
+        Interpolation of `grid_results` to fully cover `grid`.
+    optimized_offset : tuple[int,int]
+        Optimized offset based on minimum in metric value.
+    """
+    grid: np.ndarray
+    grid_results: np.ndarray
+    interp_results: np.ndarray
+    optimized_offset: tuple[int,int]
+
+@dataclass(frozen=True)
+class RectangularRegistrationResultPredictedFullSparse(RectangularRegistrationResult):
+    """
+    Result from rectangular pairwise registration with a prediction full search strategy.
+
+    Attributes
+    ----------
+    offsets_searched : np.ndarray
+        Offsets that were searched.
+    offsets_predicted : np.ndarray
+        Offsets that were predicted. Matches `offsets_searched` shape.
+    offsets_reduced : np.ndarray
+        Offsets that were predicted with duplicates removed.
+    offsets_metric : np.ndarray
+        Metric value at offsets. Matches `offsets_reduced` ordering.
+    optimized_offset : tuple[int,int]
+        Optimized offset based on minimum in metric value.
+    """
+    offsets_searched: np.ndarray
+    offsets_predicted: np.ndarray
+    offsets_reduced: np.ndarray
+    offsets_metric: np.ndarray
+    optimized_offset: tuple[int,int]
+
+
+"""
 Strategy Functions
 """
 class StrategyLocal():
@@ -557,7 +642,8 @@ class StrategyLocal():
             initial_offset:tuple[int,int],
             strategy_grid_scale:int,
             strategy_max_size:int=5,
-            metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,)->dict:
+            metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,
+            )->RectangularRegistrationResultLocalGrid:
         """
         Sparse grid search strategy for difference gradient alignment.
         
@@ -584,16 +670,8 @@ class StrategyLocal():
 
         Returns
         -------
-        strategy_results : dict
-            Dictionary with results of sparse grid search.
-            `grid` : np.ndarray
-                Offsets that were searched.
-            `grid_results` : np.ndarray
-                Metric value at matching offset in `grid`.
-            `optimized_offset` : tuple[int,int]
-                Optimized offset based on minimum in metric value.
-            `initial_offset` : tuple[int,int]
-                Initial offset provided to strategy.
+        strategy_results : RectangularRegistrationResultLocalGrid
+            Dataclass with results of scaled local grid search.
         """
         grid_shape=(1+strategy_max_size*2,1+strategy_max_size*2)
         grid=np.fromfunction(lambda y,x: np.array([initial_offset[0]+(strategy_grid_scale*(x-strategy_max_size)),
@@ -608,20 +686,21 @@ class StrategyLocal():
                 offset_ab=check_offset,
                 metric=metric)
         optimized_location=grid_results.reshape(-1).argmin()
-        optimized_offset=tuple([int(value) for value in grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]])
-        return {
-            "grid":grid,
-            "grid_results":grid_results,
-            "optimized_offset":optimized_offset,
-            "initial_offset":initial_offset
-            }
+        optimized_offset:tuple=tuple([int(value) for value in grid[:,grid_indeces[0][optimized_location],grid_indeces[1][optimized_location]]])
+        return RectangularRegistrationResultLocalGrid(
+            grid=grid,
+            grid_results=grid_results,
+            optimized_offset=optimized_offset,
+            initial_offset=initial_offset
+            )
     @staticmethod
     def full_grid(
             array_a:np.ndarray,
             array_b:np.ndarray,
             initial_offset:tuple[int,int],
             strategy_max_size:int=5,
-            metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,)->dict:
+            metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,
+            )->RectangularRegistrationResultLocalGrid:
         """
         Full grid search strategy for difference gradient alignment.
 
@@ -648,6 +727,9 @@ class StrategyLocal():
 
         Returns
         -------
+        strategy_results : RectangularRegistrationResultLocalGrid
+            Dataclass with results of full local grid search.
+            ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         strategy_results : dict
             Dictionary with results of full grid search.
             `grid` : np.ndarray
@@ -677,7 +759,7 @@ class StrategyLocal():
             strategy_edge_avoid=20,
             strategy_footprint:np.ndarray|None=None,
             strategy_footprint_shape:tuple[int,int]=(3,3)
-            )->dict:
+            )->RectangularRegistrationResultLocalGrid:
         """
         Gridded local minimization descent search strategy for difference gradient alignment.
         
@@ -715,16 +797,8 @@ class StrategyLocal():
 
         Returns
         -------
-        strategy_results : dict
-            Dictionary with results of sparse grid search.
-            `grid` : np.ndarray
-                Offsets that were searched.
-            `grid_results` : np.ndarray
-                Metric value at matching offset in `grid`.
-            `optimized_offset` : tuple[int,int]
-                Optimized offset based on minimum in metric value.
-            `initial_offset` : tuple[int,int]
-                Initial offset provided to strategy.
+        strategy_results : RectangularRegistrationResultLocalGrid
+            Dataclass with results of local minima grid search.
         """
         
         # Calculate search region boundaries
@@ -791,12 +865,12 @@ class StrategyLocal():
         optimized_location:tuple=np.unravel_index(np.nanargmin(grid_results), grid_results.shape)
         # Get optimized offset
         optimized_offset:tuple[int,int]=tuple(grid[:,optimized_location[0],optimized_location[1]].tolist())
-        return {
-            "grid":grid,
-            "grid_results":grid_results,
-            "optimized_offset":optimized_offset,
-            "initial_offset":initial_offset
-            }
+        return RectangularRegistrationResultLocalGrid(
+            grid=grid,
+            grid_results=grid_results,
+            optimized_offset=optimized_offset,
+            initial_offset=initial_offset
+            )
 
 
 
@@ -807,10 +881,11 @@ def pairwise_registration(
         image_a:MISImage|array_like,
         image_b:MISImage|array_like,
         relation:Optional[MISRelation|tuple[int,int]]=None,
-        strategy:Callable[...,dict]=StrategyLocal.full_grid,
+        strategy:Callable[...,RectangularRegistrationResult]=StrategyLocal.full_grid,
         metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,
         filter:Callable[[array_like],np.ndarray]=Filter.float,
-        **kwargs)->dict:
+        **kwargs
+        )->RectangularRegistrationResult:
     """
     Applies the supplied strategy to the given images. Applies filter to given images before passing them to the strategy.
 
@@ -825,9 +900,9 @@ def pairwise_registration(
     relation : MISRelation|tuple[int,int]|None
         Initial relation between images or `None` by default.
         Must be provided if a local strategy is used. If provided to global strategy may not be used.
-    strategy : Callable[...,dict]
+    strategy : Callable[...,RectangularRegistrationResult]
         Function that takes keyword arguments `array_a`, `array_b`, `initial_offset`, `metric`, and all other `kwargs`.
-        Returns a dictionary of results that must include `optimized_offset`.
+        Returns a `RectangularRegistrationResult` object.
         `StrategyLocal.full_grid` by default.
     metric : Callable[[np.ndarray,np.ndarray],float]
         Function that takes two numpy arrays and returns a value describing some aspect of them.
@@ -841,8 +916,8 @@ def pairwise_registration(
 
     Returns
     -------
-    registration_results : dict
-        Dictionary with results of difference gradient alignment. Contents will depend on strategy used.
+    registration_results : RectangularRegistrationResult
+        Object with results from registration strategy.
 
     """
     ## Get image arrays
@@ -874,6 +949,7 @@ class StrategyFullSearch():
     Strategies evaluate arrays at various offsets with the goal of finding the global minima with no initial information.
     """
     #TODO handle initial offset.
+
     @staticmethod
     def interpolated_adaptive_grid(
             array_a:np.ndarray,
@@ -885,7 +961,8 @@ class StrategyFullSearch():
             strategy_logger:logging.Logger=logging.getLogger(),
             strategy_initial_grid_number=20,
             strategy_metric_comparison:float=1,
-            **kwargs)->dict:
+            **kwargs
+            )->RectangularRegistrationResultInterpolatedFullGrid:
         """
         Full search strategy based on iteratively refined sparse grids and interpolating.
 
@@ -901,6 +978,7 @@ class StrategyFullSearch():
             Numpy array of image b.
             Note: Unsigned integer arrays may underflow and should not be used.
         initial_offset : tuple[int,int] | None
+            Note: Value is not used.
             An initial estimate for the vector from the top left corner of image a to the top left corner of image b or Default `None`.
             In (x,y) order.
             Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
@@ -928,16 +1006,8 @@ class StrategyFullSearch():
 
         Returns
         -------
-        strategy_results : dict
-            Dictionary with results of sparse grid search.
-            `grid` : np.ndarray
-                Offsets that were searched.
-            `grid_results` : np.ndarray
-                Metric value at matching offset in `grid`.
-            `interp_results` : np.ndarray
-                Interpolation of results to grid.
-            `optimized_offset` : tuple[int,int]
-                Optimized offset based on minimum in metric value.
+        strategy_results : RectangularRegistrationResultInterpolatedFullGrid
+            Result from rectangular pairwise registration with an interpolated full search grid strategy.
         """
 
         # Calculate full search size
@@ -1155,13 +1225,12 @@ class StrategyFullSearch():
 
         #TODO add option for including initial regular relation in initial grid OR in interpolation at the very end.
 
-        return {
-            "grid":grid,
-            "grid_results":grid_results,
-            "interp_results":interp_results,
-            "optimized_offset":optimized_offset,
-            }
-
+        return RectangularRegistrationResultInterpolatedFullGrid(
+            grid=grid,
+            grid_results=grid_results,
+            interp_results=interp_results,
+            optimized_offset=optimized_offset,
+            )
     @staticmethod
     def prediction_grid(
             array_a:np.ndarray,
@@ -1174,7 +1243,8 @@ class StrategyFullSearch():
             strategy_repeat_cycles=0,
             strategy_downsample:int=1,
             strategy_logger:logging.Logger=logging.getLogger(),
-            **kwargs)->dict:
+            **kwargs
+            )->RectangularRegistrationResultPredictedFullSparse:
         """
         Full search strategy based on applying an alignment prediction method across a sparse grid of initial offsets.
 
@@ -1194,6 +1264,7 @@ class StrategyFullSearch():
             Note: For full search it is likely that a custom combination of a metric which matches location and a metric which avoids low-feature regions will be needed.
             Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
         initial_offset : tuple[int,int] | None
+            Note: Value is not used.
             An initial estimate for the vector from the top left corner of image a to the top left corner of image b or Default `None`.
             In (x,y) order.
             Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
@@ -1217,10 +1288,8 @@ class StrategyFullSearch():
 
         Returns
         -------
-        strategy_results : dict
-            Dictionary with results of prediction-based grid search.
-            `optimized_offset` : tuple[int,int]
-                Optimized offset based on minimum in metric value.
+        strategy_results : RectangularRegistrationResultPredictedFullSparse
+            Result from rectangular pairwise registration with a prediction full search strategy.
         """
 
         # Calculate full search size
@@ -1242,10 +1311,6 @@ class StrategyFullSearch():
                 np.arange(0,grid.shape[2]),
                 np.arange(0,grid.shape[1]),
                 )
-        
-        # If an initial offset is given then setup a list for recording distances to the reference.
-        if initial_offset is not None:
-            reference_offset_distances=list()
         
         # Setup lists for offsets that have been searched, results of prediction for each search, and distance between search and prediction.
         searched_offsets:list[tuple[int,int]]=list()
@@ -1277,9 +1342,6 @@ class StrategyFullSearch():
             predicted_offsets.append(predicted_offset)
             search_prediction_distance =dist((0,0),correlation_result["shift"])*strategy_downsample
             search_prediction_distances.append(search_prediction_distance)
-            if initial_offset is not None:
-                reference_offset_distance=dist(predicted_offset,initial_offset)
-                reference_offset_distances.append(reference_offset_distance)
         
         # First cycle of predictions.
         for col,row in zip(grid_columns.flatten(),grid_rows.flatten()):
@@ -1305,37 +1367,33 @@ class StrategyFullSearch():
             # This happens because low-feature areas frequently have better metric performance than true-solutions or near-true-solutions.
             # `metric=lambda a,b:1-skimage.measure.pearson_corr_coeff(a,b)[0],` was used for initial testing with the prediction grid approach and performed well.
         optimized_offset=predicted_offsets_reduced[np.argmin(evaluated_metric)]
-
-        results={
-            "grid":grid,
-            "offsets_searched":searched_offsets,
-            "offsets_predicted":predicted_offsets,
-            "offsets_reduced":predicted_offsets_reduced,
-            "offsets_metric":evaluated_metric,
-            "optimized_offset":optimized_offset,
-            }
-
-        if initial_offset is not None:
-            results["reference_comparison"]=reference_offset_distances
         
-        return results
+        # return results
+        return RectangularRegistrationResultPredictedFullSparse(
+                    offsets_searched=np.array(searched_offsets),
+                    offsets_predicted=np.array(predicted_offsets),
+                    offsets_reduced=np.array(predicted_offsets_reduced),
+                    offsets_metric=evaluated_metric,
+                    optimized_offset=optimized_offset,
+        )
 
 
 
 """
 Plotting functions
 """
-# Generally want each plotting function to accept an ax(or set of ax) as well as the results from a certain strategy/family of stragies.
+# Generally want each plotting function to accept an ax(or set of ax) as well as the results from a certain strategy/family of strategies.
 
 
 
 """
 Automated Rectangular Alignment To-Do List
 """
-#TODO update docstring on pairwise_registration.
 #TODO add logging to all strategies
+    #TODO implement logging in prediction grid.
 #TODO project based interface for running pairwise registration.
     #TODO Ability to combine a full search and a local search
+    #TODO result object which contains other result objects and the final result
 
 #TODO pairwise_registration/strategies: make `filter_...` and `metric_...` kwargs passable through to their respective use case.
 #TODO consider adding downscaling for strategy/processing.

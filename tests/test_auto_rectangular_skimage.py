@@ -218,7 +218,7 @@ class TestStrategy():
             strategy_max_size=strategy_max_size
         )
 
-        assert results["optimized_offset"]==planned_offset
+        assert results.optimized_offset==planned_offset
         
         #TODO test more of the items in results.
         #TODO test with noise or other factors.
@@ -252,7 +252,7 @@ class TestStrategy():
             initial_offset=(2,48),
         )
 
-        assert results["optimized_offset"]==planned_offset
+        assert results.optimized_offset==planned_offset
 
         #TODO test more of the items in results.
         #TODO test with noise or other factors.
@@ -304,7 +304,7 @@ class TestRegistration():
             relation=relation,
             **kwargs)
         
-        assert dist(results['optimized_offset'],reference_optimized_offset)<2
+        assert dist(results.optimized_offset,reference_optimized_offset)<2
     @pytest.mark.parametrize(argnames="offset,kwargs",argvalues=[
         pytest.param((9, -1087),dict(
             image_a=MISImageFile(image_filepath="tests/test_files/auto_rectangular_skimage/test_image_a01.jpg"),
@@ -364,7 +364,7 @@ class TestRegistration():
             **kwargs
             )
         
-        assert dist(results['optimized_offset'],offset)<5
+        assert dist(results.optimized_offset,offset)<5
 
     #TODO Add more comprehensive tests to DGA
     #TODO figure out a good way to test `interpolated_adaptive_grid` because it is very slow.
