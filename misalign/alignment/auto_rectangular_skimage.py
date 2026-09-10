@@ -645,7 +645,7 @@ class StrategyLocal():
             metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,
             )->RectangularRegistrationResultLocalGrid:
         """
-        Sparse grid search strategy for difference gradient alignment.
+        Sparse grid search strategy for local pairwise registration.
         
         Parameters
         ----------
@@ -702,7 +702,7 @@ class StrategyLocal():
             metric:Callable[[np.ndarray,np.ndarray],float]=LocateMetric.mean_squared_difference,
             )->RectangularRegistrationResultLocalGrid:
         """
-        Full grid search strategy for difference gradient alignment.
+        Full grid search strategy for local pairwise registration.
 
         Convenience function that wraps `strategy_scaled_grid` with `strategy_grid_scale=1`.
         
@@ -761,7 +761,7 @@ class StrategyLocal():
             strategy_footprint_shape:tuple[int,int]=(3,3)
             )->RectangularRegistrationResultLocalGrid:
         """
-        Gridded local minimization descent search strategy for difference gradient alignment.
+        Gridded local minimization descent search strategy for local pairwise registration.
         
         Parameters
         ----------
@@ -944,7 +944,7 @@ def pairwise_registration(
 
 class StrategyFullSearch():
     """
-    Group of full search difference gradient alignment strategies.
+    Group of full search pairwise registration strategies.
 
     Strategies evaluate arrays at various offsets with the goal of finding the global minima with no initial information.
     """
