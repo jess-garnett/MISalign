@@ -6,11 +6,12 @@ but requires scikit-image for full search alignment with no initial information.
 """
 import logging
 from collections.abc import Callable
-from typing import Optional
+from typing import Optional, Any
 from math import dist
 from dataclasses import dataclass
 
 import numpy as np
+from misalign.model.project import MISProject
 from misalign.model.image import MISImage, HasArray, Filter, Modifier  # noqa: F401
     # `Filter` and `Modifier` are largely imported so they can be used with DGA
     # Might be good for something like PEP 843 – Export Statement for DRY Re-exports
@@ -626,6 +627,41 @@ class RectangularRegistrationResultPredictedFullSparse(RectangularRegistrationRe
     offsets_metric: np.ndarray
     optimized_offset: tuple[int,int]
 
+@dataclass(frozen=True)
+class RectangularRegistrationResultCompositePredictLocal(RectangularRegistrationResult):
+    """
+    Result from rectangular pairwise registration with prediction full search followed by a grid-based local strategy.
+
+    Attributes
+    ----------
+    offsets_searched : np.ndarray
+        Offsets that were searched with prediction strategy.
+    offsets_predicted : np.ndarray
+        Offsets that were predicted. Matches `offsets_searched` shape.
+    offsets_reduced : np.ndarray
+        Offsets that were predicted with duplicates removed.
+    offsets_metric : np.ndarray
+        Metric value at offsets. Matches `offsets_reduced` ordering.
+    optimized_offset : tuple[int,int]
+        Optimized offset based on minimum in metric value.
+    grid : np.ndarray
+        Offsets that were searched with local grid strategy.
+    grid_results : np.ndarray
+        Metric value at matching offset in `grid`.
+    initial_offset : tuple[int,int]
+        Initial offset used for local grid, optimized offset from prediction.
+    optimized_offset : tuple[int,int]
+        Optimized offset based on minimum in metric value.
+    """
+    offsets_searched: np.ndarray
+    offsets_predicted: np.ndarray
+    offsets_reduced: np.ndarray
+    offsets_metric: np.ndarray
+    grid: np.ndarray
+    grid_results: np.ndarray
+    initial_offset: tuple[int,int]
+    optimized_offset: tuple[int,int]
+
 
 """
 Strategy Functions
@@ -942,6 +978,35 @@ def pairwise_registration(
         initial_offset=initial_rectangular_offset,
         metric=metric,
         **kwargs)
+
+def pairwise_registration_project(project:MISProject,relation:MISRelation,**kwargs)->RectangularRegistrationResult:
+    """
+    Applies the supplied strategy to images in the given relation. Applies filter to given images before passing them to the strategy.
+    
+    Note: This functions primary purpose is to extract MISImage objects from a MISProject based on a MISRelation and then pass them to a strategy function.
+    
+    Parameters
+    ----------
+    project : MISProject
+        A MISProject with images.
+    relation : MISRelation
+        Initial relation between images.
+    kwargs
+        All keyword arguments are passed to `pairwise_registration` or the strategy function.
+
+    Returns
+    -------
+    registration_results : RectangularRegistrationResult
+        Object with results from registration strategy.
+
+    """
+    return pairwise_registration(
+        image_a=project.get_image(image_name=relation.get_reference()[0]),
+        image_b=project.get_image(image_name=relation.get_reference()[1]),
+        relation=relation,
+        **kwargs
+    )
+
 
 class StrategyFullSearch():
     """
@@ -1377,6 +1442,81 @@ class StrategyFullSearch():
                     offsets_metric=evaluated_metric,
                     optimized_offset=optimized_offset,
         )
+    def composite_predict_local(
+            array_a:np.ndarray,
+            array_b:np.ndarray,
+            metric:Callable[[np.ndarray,np.ndarray],float],
+            initial_offset:tuple[int,int]|None=None,
+            strategy_prediction_strategy:Callable[...,RectangularRegistrationResultPredictedFullSparse]|None=None,
+            strategy_prediction_kwargs:dict={},
+            strategy_local_strategy:Callable[...,RectangularRegistrationResultLocalGrid]|None=None,
+            strategy_local_kwargs:dict={},
+            **kwargs
+        )->RectangularRegistrationResultCompositePredictLocal:
+        """
+        Full search strategy based on combining a full search prediction strategy with a final local minimization strategy.
+        
+        Parameters
+        ----------
+        array_a : np.ndarray
+            Numpy array of image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        array_b : np.ndarray
+            Numpy array of image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        metric : Callable[[np.ndarray,np.ndarray],float]
+            Function that takes two numpy arrays and returns a value describing some aspect of them.
+            Will be overridden by `metric` terms in `..._kwargs` parameters.
+            Note: For full search it is likely that a custom combination of a metric which matches location and a metric which avoids low-feature regions will be needed.
+            Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
+        initial_offset : tuple[int,int] | None
+            Note: Value is not used.
+            An initial estimate for the vector from the top left corner of image a to the top left corner of image b or Default `None`.
+            In (x,y) order.
+            Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
+        strategy_prediction_strategy : Callable[...,RectangularRegistrationResultPredictedFullSparse] | None
+            Strategy function which returns a predicted full sparse result or `StrategyFullSearch.prediction_grid` by default.
+        strategy_prediction_kwargs : dict
+            Kwargs to use with prediction strategy.
+            Note: If `metric` is not in these kwargs then the `metric` parameter will be used.
+        strategy_local_strategy : Callable[...,RectangularRegistrationResultLocalGrid] | None
+            Strategy function which returns a local grid result or `StrategyLocal.local_minima_grid` by default.
+        strategy_local_kwargs : dict
+            Kwargs to use with local strategy.
+            Note: If `metric` is not in these kwargs then the `metric` parameter will be used.
+        kwargs
+            None
+
+        Returns
+        -------
+        strategy_results : RectangularRegistrationResultCompositePredictLocal
+            Result from rectangular pairwise registration with a prediction full search strategy followed by a local grid search..
+        """
+
+        if strategy_prediction_strategy is None:
+            strategy_prediction_strategy=StrategyFullSearch.prediction_grid
+        if strategy_local_strategy is None:
+            strategy_local_strategy=StrategyLocal.local_minima_grid
+        
+        if "metric" not in strategy_prediction_kwargs:
+            strategy_prediction_kwargs["metric"]=metric
+        if "metric" not in strategy_local_kwargs:
+            strategy_local_kwargs["metric"]=metric
+
+        prediction_result=strategy_prediction_strategy(array_a=array_a,array_b=array_b,**strategy_prediction_kwargs)
+
+        local_result=strategy_local_strategy(array_a=array_a,array_b=array_b,initial_offset=prediction_result.optimized_offset,**strategy_local_kwargs)
+
+        return RectangularRegistrationResultCompositePredictLocal(
+            offsets_searched=prediction_result.offsets_searched,
+            offsets_predicted=prediction_result.offsets_predicted,
+            offsets_reduced=prediction_result.offsets_reduced,
+            offsets_metric=prediction_result.offsets_metric,
+            initial_offset=prediction_result.optimized_offset,
+            grid=local_result.grid,
+            grid_results=local_result.grid_results,
+            optimized_offset=local_result.optimized_offset,
+            )
 
 
 
