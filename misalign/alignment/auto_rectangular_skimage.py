@@ -13,6 +13,7 @@ from dataclasses import dataclass
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import axes_grid1
+from mpl_toolkits.axes_grid1 import inset_locator
 
 from misalign.model.project import MISProject
 from misalign.model.image import MISImage, HasArray, Filter, Modifier  # noqa: F401
@@ -585,6 +586,15 @@ class RectangularRegistrationResultLocalGrid(RectangularRegistrationResult):
     grid_results: np.ndarray
     initial_offset: tuple[int,int]
     optimized_offset: tuple[int,int]
+    def get_plot_setup(self,plot_kwargs:dict|None=None):
+        plots:list[Callable]=[plot_before_after,plot_process_overlap,plot_local_grid]
+
+        mosaic_rows: list[list[str]]=[
+            get_plot_axs(plot_function=plot_before_after),
+            get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_local_grid)
+            ]
+            
+        return plots,mosaic_rows,plot_kwargs
 
 @dataclass(frozen=True)
 class RectangularRegistrationResultInterpolatedFullGrid(RectangularRegistrationResult):
@@ -606,6 +616,14 @@ class RectangularRegistrationResultInterpolatedFullGrid(RectangularRegistrationR
     grid_results: np.ndarray
     interp_results: np.ndarray
     optimized_offset: tuple[int,int]
+    def get_plot_setup(self,plot_kwargs:dict|None=None):
+        plots:list[Callable]=[plot_process_overlap,plot_interpolation_grid]
+
+        mosaic_rows: list[list[str]]=[
+            get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_interpolation_grid)
+            ]
+            
+        return plots,mosaic_rows,plot_kwargs
 
 @dataclass(frozen=True)
 class RectangularRegistrationResultPredictedFullSparse(RectangularRegistrationResult):
@@ -630,6 +648,15 @@ class RectangularRegistrationResultPredictedFullSparse(RectangularRegistrationRe
     offsets_reduced: np.ndarray
     offsets_metric: np.ndarray
     optimized_offset: tuple[int,int]
+    def get_plot_setup(self,plot_kwargs:dict|None=None):
+        plots:list[Callable]=[plot_predict_sparse]
+
+        mosaic_rows: list[list[str]]=[
+            get_plot_axs(plot_function=plot_predict_sparse),
+            ]
+
+        return plots,mosaic_rows,plot_kwargs
+
 
 @dataclass(frozen=True)
 class RectangularRegistrationResultCompositePredictLocal(RectangularRegistrationResult):
@@ -665,6 +692,25 @@ class RectangularRegistrationResultCompositePredictLocal(RectangularRegistration
     grid_results: np.ndarray
     initial_offset: tuple[int,int]
     optimized_offset: tuple[int,int]
+    def get_plot_setup(self,plot_kwargs:dict|None=None):
+        plots:list[Callable]=[plot_predict_sparse,plot_process_overlap,plot_local_grid]
+
+        mosaic_rows: list[list[str]]=[
+            get_plot_axs(plot_function=plot_predict_sparse),
+            get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_local_grid)
+            ]
+
+        if plot_kwargs is None:
+            plot_kwargs=dict()
+
+        if plot_predict_sparse not in plot_kwargs:
+            plot_kwargs[plot_predict_sparse]=dict()
+        
+        if "legend_kwargs" not in plot_kwargs[plot_predict_sparse]:
+            plot_kwargs[plot_predict_sparse]["legend_kwargs"]=dict(loc="lower left",bbox_to_anchor=(1.3,0))
+        if "optimized_offset" not in plot_kwargs[plot_predict_sparse]:
+            plot_kwargs[plot_predict_sparse]["optimized_offset"]=self.initial_offset
+        return plots,mosaic_rows,plot_kwargs
 
 
 """
@@ -1618,30 +1664,79 @@ def plot_before_after(
         )
 set_plot_axs(plot_function=plot_before_after,axs_keys=["before","after"])
 
-def plot_local_grid(
-        axs:dict[str,plt.Axes],result:RectangularRegistrationResultLocalGrid,
+def plot_metric_grid(
+        axs:dict[str,plt.Axes],result:RectangularRegistrationResultLocalGrid|RectangularRegistrationResultInterpolatedFullGrid,
+        grid_results:np.ndarray|None=None,
+        optimized_offset:tuple[int,int]|None=None,
+        reference_offset:tuple[int,int]|None=None,
+        axs_key:str="metric",
+        title:str="Grid Registration Results",
         overlays:bool=True,
         formatting:bool=True,
+        imshow_kwargs:dict|None=None,
         **kwargs):
 
-    grid_results=axs["local_grid"].imshow(result.grid_results,
+    if grid_results is None:
+        grid_results=result.grid_results
+    if imshow_kwargs is None:
+        imshow_kwargs=dict()
+    grid_plot=axs[axs_key].imshow(grid_results,
         extent=(np.min(result.grid[0])-0.5,
                 np.max(result.grid[0])+0.5,
                 np.max(result.grid[1])+0.5,
                 np.min(result.grid[1])-0.5,), #xmin,xmax,ymin,ymax
+        **imshow_kwargs
         )
     if formatting:
-        axs["local_grid"].set_xlabel("Rectangular X-offset")
-        axs["local_grid"].set_ylabel("Rectangular Y-offset")
+        axs[axs_key].set_xlabel("Rectangular X-offset")
+        axs[axs_key].set_ylabel("Rectangular Y-offset")
 
-        divider = axes_grid1.make_axes_locatable(axes=axs["local_grid"])
+        divider = axes_grid1.make_axes_locatable(axes=axs[axs_key])
         cax = divider.append_axes("right", size="5%", pad=0.05)
-        plt.colorbar(label="Metric",mappable=grid_results,cax=cax)
+        plt.colorbar(label="Metric",mappable=grid_plot,cax=cax)
 
-        axs["local_grid"].set_title("Local Grid Registration Results")
-
+        axs[axs_key].set_title(title)
 
     if overlays:
+        if reference_offset is not None:
+            axs[axs_key].scatter(
+                *reference_offset,
+                marker='x',
+                c='r',
+                label=f'Reference: {reference_offset}')
+        
+        if optimized_offset is None:
+            optimized_offset:Any=result.optimized_offset
+        axs[axs_key].scatter(
+            *optimized_offset,
+            marker="o",
+            facecolors='none', edgecolors='r',
+            label=f'Optimized: {optimized_offset}')
+        axs[axs_key].legend(loc='best')
+set_plot_axs(plot_function=plot_metric_grid,axs_keys=["metric_grid"])
+
+def plot_local_grid(
+        axs:dict[str,plt.Axes],result:RectangularRegistrationResultLocalGrid,
+        reference_offset:tuple[int,int]|None=None,
+        overlays:bool=True,
+        formatting:bool=True,
+        **kwargs):
+
+    if formatting:
+        formatting_kwargs=dict(formatting=True,title="Local Grid Registration Results")
+    else:
+        formatting_kwargs=dict(formatting=False)
+
+    plot_metric_grid(axs=axs,result=result,axs_key="local_grid",overlays=False,**formatting_kwargs)
+
+    if overlays:
+        if reference_offset is not None:
+            axs["local_grid"].scatter(
+                *reference_offset,
+                marker='x',
+                c='r',
+                label=f'Reference: {reference_offset}')
+
         initial_offset:Any=result.initial_offset
         axs["local_grid"].scatter(
             *initial_offset,
@@ -1653,7 +1748,7 @@ def plot_local_grid(
         axs["local_grid"].scatter(
             *optimized_offset,
             marker="o",
-            color="r",
+            facecolors='none', edgecolors='r',
             label=f'Optimized: {optimized_offset}')
         
         axs["local_grid"].annotate("", 
@@ -1662,6 +1757,32 @@ def plot_local_grid(
             arrowprops=dict(arrowstyle="->",color="w"),)
         axs["local_grid"].legend()
 set_plot_axs(plot_function=plot_local_grid,axs_keys=["local_grid"])
+
+
+def plot_interpolation_grid(
+        axs:dict[str,plt.Axes],result:RectangularRegistrationResultInterpolatedFullGrid,
+        optimized_offset:tuple[int,int]|None=None,
+        reference_offset:tuple[int,int]|None=None,
+        axs_key:str="metric",
+        title:str="Interpolated Grid Registration Results",
+        overlays:bool=True,
+        formatting:bool=True,
+        imshow_kwargs:dict|None=None,
+        **kwargs):
+
+    plot_metric_grid(
+        axs=axs,result=result,
+        grid_results=result.interp_results,
+        optimized_offset=optimized_offset,
+        reference_offset=reference_offset,
+        axs_key="interpolation_grid",
+        title=title,
+        overlays=overlays,
+        formatting=formatting,
+        imshow_kwargs=imshow_kwargs
+        )
+
+set_plot_axs(plot_function=plot_interpolation_grid,axs_keys=["interpolation_grid"])
 
 def plot_process_overlap(
         mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes],result:RectangularRegistrationResult|None=None,
@@ -1687,29 +1808,65 @@ def plot_process_overlap(
     processed=axs["process_overlap"].imshow(overlap,cmap="managua",vmin=min(overlap.min(),-overlap.max()),vmax=max(overlap.max(),-overlap.min()))
 
     if formatting:
+        axs["process_overlap"].set_axis_off()
         # divider = make_axes_locatable(axes=axs["process_overlap"])
         # cax = divider.append_axes("right", size="5%", pad=0.05)
         # plt.colorbar(label="Process Results",mappable=processed,cax=cax)
 
         # plt.colorbar(label="Process Results",mappable=processed,ax=axs["process_overlap"],pad=0,shrink=0.7,fraction=.2)
-
-        if overlap.shape[0]/overlap.shape[1]>1.5: # if 1.5x as many columns as row, make colorbar 15% of width away.
-            bbox_modifier=1.15
-        elif overlap.shape[1]/overlap.shape[0]>2: # if 2x as many rows as columns make colorbar 1% of width away.
-            bbox_modifier=1.01
-        else: # otherwise make colorbar 5% of width away.
-            bbox_modifier=1.05
+        #TODO consider keeping this method vs switching to the style used with metric grid with toggle between horizontal and vertical.
         
+        aspect_ratio=overlap.shape[1]/overlap.shape[0] # rows/columns
+        if aspect_ratio > 1.5:
+            match aspect_ratio:
+                case ratio if ratio > 20:
+                    inset_position = -1
+                case ratio if ratio > 10:
+                    inset_position = -0.5
+                case ratio if ratio > 5:
+                    inset_position = -0.2
+                case ratio if ratio > 1.5:
+                    inset_position = -0.1
+            inset_colorbar_kwargs=dict(
+                height=0.1,
+                width=2,
+                loc="lower center", #"center left"
+                bbox_to_anchor=(0, inset_position, 1, 1),
+                )
+            colorbar_kwargs=dict(
+                orientation="horizontal",
+                )
+        else:
+            match aspect_ratio:
+                case ratio if ratio < 1/20:
+                    inset_position = -1.5
+                case ratio if ratio < 1/10:
+                    inset_position = -1
+                case ratio if ratio < 1/5:
+                    inset_position = -0.5
+                case ratio if ratio < 2/3:
+                    inset_position = -0.2
+                case ratio if ratio <= 1.5:
+                    inset_position = -0.1
+            inset_colorbar_kwargs=dict(
+                height=1.5,
+                width=0.1,
+                loc="center left", #"center left"
+                bbox_to_anchor=(inset_position, 0, 1, 1),
+                )
+            colorbar_kwargs=dict(
+                orientation="vertical",
+                location="left",
+                )
 
-        cax=axes_grid1.inset_locator.inset_axes(
-            parent_axes=axs["process_overlap"],height=1.5,width=0.1,
-            loc="center left",
-            bbox_to_anchor=(bbox_modifier, 0., 1, 1),
+        cax=inset_locator.inset_axes(
+            parent_axes=axs["process_overlap"],
             bbox_transform=axs["process_overlap"].transAxes,
             borderpad=0,
+            **inset_colorbar_kwargs
             )
         
-        plt.colorbar(label="Process Result",mappable=processed,cax=cax)
+        plt.colorbar(label="Process Result",mappable=processed,cax=cax,**colorbar_kwargs) #f"{aspect_ratio} - 1/{1/aspect_ratio}"
         axs["process_overlap"].set_title(f"Overlap Regions Processed: {offset}")
 
 set_plot_axs(plot_function=plot_process_overlap,axs_keys=["process_overlap"])
@@ -1764,32 +1921,50 @@ def plot_predict_sparse(
 set_plot_axs(plot_function=plot_predict_sparse,axs_keys=["predict"])
 
 
-def plot_result(mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes]|None=None,result:RectangularRegistrationResult|None=None,plot_kwargs:dict={}):
-    mosaics:list[list[str]]=[get_plot_axs(plot_function=plot_image_a_image_b)+get_plot_axs(plot_function=plot_blend)]
+def plot_result(mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes]|None=None,result:RectangularRegistrationResult|None=None,
+    plot_functions:list[Callable]|None=None,
+    plot_kwargs:dict|None=None,
+    mosaic_rows:list[list[str]]|None=None,):
+
+    if plot_kwargs is None:
+        plot_kwargs=dict()
+
     plots:list[Callable]=[plot_image_a_image_b,plot_blend]
+    if plot_functions is not None:
+        plots.extend(plot_functions)
+    mosaics:list[list[str]]=[get_plot_axs(plot_function=plot_image_a_image_b)+get_plot_axs(plot_function=plot_blend)]
+    if mosaic_rows is not None:
+        mosaics.extend(mosaic_rows)
     
     # Replace this part with getting the plot functions/mosaics from the results class.
-    if isinstance(result,RectangularRegistrationResultLocalGrid):
-        plots.append(plot_before_after)
-        mosaics.append(get_plot_axs(plot_function=plot_before_after))
-        plots.append(plot_process_overlap)
-        plots.append(plot_local_grid)
-        mosaics.append(get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_local_grid))
-    elif isinstance(result,RectangularRegistrationResultPredictedFullSparse):
-        plots.append(plot_predict_sparse)
-        mosaics.append(get_plot_axs(plot_function=plot_predict_sparse))
-    elif isinstance(result,RectangularRegistrationResultCompositePredictLocal):
-        plots.append(plot_predict_sparse)
-        mosaics.append(get_plot_axs(plot_function=plot_predict_sparse))
-        plots.append(plot_process_overlap)
-        plots.append(plot_local_grid)
-        mosaics.append(get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_local_grid))
-    else:
-        if result is not None:
-            [plots.append(plot_function) for plot_function in result.get_plots()]
-            [mosaics.append(row) for row in result.get_mosaics()]
-            plot_kwargs=result.get_plot_kwargs(plot_kwargs)
-            
+    # if isinstance(result,RectangularRegistrationResultLocalGrid):
+    #     plots.append(plot_before_after)
+    #     mosaics.append(get_plot_axs(plot_function=plot_before_after))
+    #     plots.append(plot_process_overlap)
+    #     plots.append(plot_local_grid)
+    #     mosaics.append(get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_local_grid))
+    # elif isinstance(result,RectangularRegistrationResultPredictedFullSparse):
+    #     plots.append(plot_predict_sparse)
+    #     mosaics.append(get_plot_axs(plot_function=plot_predict_sparse))
+    # elif isinstance(result,RectangularRegistrationResultCompositePredictLocal):
+    #     plots.append(plot_predict_sparse)
+    #     mosaics.append(get_plot_axs(plot_function=plot_predict_sparse))
+    #     plots.append(plot_process_overlap)
+    #     plots.append(plot_local_grid)
+    #     mosaics.append(get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_local_grid))
+    # else:
+    if result is not None:
+        try:
+                # [plots.append(plot_function) for plot_function in result.get_plots()]
+                # [mosaics.append(row) for row in result.get_mosaics()]
+                # plot_kwargs=result.get_plot_kwargs(plot_kwargs)
+            added_plots,added_mosaic_rows,plot_kwargs=result.get_plot_setup(plot_kwargs)
+            plots.extend(added_plots)
+            mosaics.extend(added_mosaic_rows)
+        except AttributeError as e:
+            logging.warning(msg=f"Error setting up result plot: `result` does not implement `.get_plot_setup()` : {e} ")
+        
+
     
     if axs is None:
         columns=[len(row) for row in mosaics]
@@ -1797,6 +1972,8 @@ def plot_result(mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axe
         mosaics=[np.repeat(row,lcm/column_count).tolist() for row,column_count in zip(mosaics,columns)]
         
         fig,axs=plt.subplot_mosaic(mosaic=mosaics,layout='constrained',)
+        fig.set_figwidth(12)
+        fig.set_figheight(10)
         plot_result={"fig":fig,"axs":axs}
     else:
         plot_result={"axs":axs}
