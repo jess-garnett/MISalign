@@ -14,6 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import axes_grid1
 from mpl_toolkits.axes_grid1 import inset_locator
+import matplotlib.patches as mpatches
 
 from misalign.model.project import MISProject
 from misalign.model.image import MISImage, HasArray, Filter, Modifier  # noqa: F401
@@ -565,6 +566,8 @@ class RectangularRegistrationResult:
     optimized_offset: tuple[int,int]
     def get_relation(self,image_a_name,image_b_name,)->MISRelation:
         return MISRelationRectangular(image_pair=(image_a_name,image_b_name),rectangular=self.optimized_offset)
+    def get_plot_setup(self,plot_kwargs:dict|None=None):
+        return [],[],plot_kwargs
 
 @dataclass(frozen=True)
 class RectangularRegistrationResultLocalGrid(RectangularRegistrationResult):
@@ -1703,7 +1706,8 @@ def plot_metric_grid(
                 *reference_offset,
                 marker='x',
                 c='r',
-                label=f'Reference: {reference_offset}')
+                label=f'Reference: {reference_offset}',
+                zorder=10)
         
         if optimized_offset is None:
             optimized_offset:Any=result.optimized_offset
@@ -1711,7 +1715,8 @@ def plot_metric_grid(
             *optimized_offset,
             marker="o",
             facecolors='none', edgecolors='r',
-            label=f'Optimized: {optimized_offset}')
+            label=f'Optimized: {optimized_offset}',
+            zorder=11)
         axs[axs_key].legend(loc='best')
 set_plot_axs(plot_function=plot_metric_grid,axs_keys=["metric_grid"])
 
@@ -1723,9 +1728,9 @@ def plot_local_grid(
         **kwargs):
 
     if formatting:
-        formatting_kwargs=dict(formatting=True,title="Local Grid Registration Results")
+        formatting_kwargs:dict=dict(formatting=True,title="Local Grid Registration Results")
     else:
-        formatting_kwargs=dict(formatting=False)
+        formatting_kwargs:dict=dict(formatting=False)
 
     plot_metric_grid(axs=axs,result=result,axs_key="local_grid",overlays=False,**formatting_kwargs)
 
@@ -1763,8 +1768,9 @@ def plot_interpolation_grid(
         axs:dict[str,plt.Axes],result:RectangularRegistrationResultInterpolatedFullGrid,
         optimized_offset:tuple[int,int]|None=None,
         reference_offset:tuple[int,int]|None=None,
-        axs_key:str="metric",
         title:str="Interpolated Grid Registration Results",
+        inset:bool=True,
+        inset_focus:int=20,
         overlays:bool=True,
         formatting:bool=True,
         imshow_kwargs:dict|None=None,
@@ -1781,6 +1787,88 @@ def plot_interpolation_grid(
         formatting=formatting,
         imshow_kwargs=imshow_kwargs
         )
+    if inset:
+        grid_min_x=np.min(result.grid[0])
+        grid_max_x=np.max(result.grid[0])
+        grid_min_y=np.min(result.grid[1])
+        grid_max_y=np.max(result.grid[1])
+        
+        x_ratio=(result.optimized_offset[0]-grid_min_x)/(grid_max_x-grid_min_x) # higher than 0.5 means right side
+        y_ratio=(result.optimized_offset[1]-grid_min_y)/(grid_max_y-grid_min_y) # higher than 0.5 means lower half
+
+        xy_connections=[
+            (result.optimized_offset[0]-inset_focus,result.optimized_offset[1]+inset_focus),
+            (result.optimized_offset[0]+inset_focus,result.optimized_offset[1]-inset_focus)
+            ]
+        loc="lower right"
+        if x_ratio>0.6 and y_ratio>0.6:
+            loc="upper left"
+        elif x_ratio>0.6:
+            xy_connections=[
+                (result.optimized_offset[0]-inset_focus,result.optimized_offset[1]-inset_focus),
+                (result.optimized_offset[0]+inset_focus,result.optimized_offset[1]-inset_focus)
+                ]
+        elif y_ratio>0.6:
+            xy_connections=[
+                (result.optimized_offset[0]-inset_focus,result.optimized_offset[1]+inset_focus),
+                (result.optimized_offset[0]-inset_focus,result.optimized_offset[1]-inset_focus)
+                ]
+        inset_ax=inset_locator.inset_axes(parent_axes=axs["interpolation_grid"],width=1.5,height=1.5,loc=loc)
+        xy_connections=[
+            (min(grid_max_x,max(grid_min_x,x)),min(grid_max_y,max(grid_min_y,y)))
+            for x,y in xy_connections]
+        if imshow_kwargs is None:
+            imshow_kwargs=dict()
+        inset_ax.imshow(result.grid_results,
+            extent=(np.min(result.grid[0])-0.5,
+                    np.max(result.grid[0])+0.5,
+                    np.max(result.grid[1])+0.5,
+                    np.min(result.grid[1])-0.5,),
+            vmax=np.quantile(result.grid_results[~np.isnan(result.grid_results)],0.25),
+            cmap="viridis",
+            **imshow_kwargs
+            )
+        inset_ax.set_xlim(result.optimized_offset[0]-inset_focus,result.optimized_offset[0]+inset_focus)
+        inset_ax.set_ylim(result.optimized_offset[1]+inset_focus,result.optimized_offset[1]-inset_focus)
+        inset_ax.set_xticks([])
+        inset_ax.set_yticks([])
+
+        axs["interpolation_grid"].add_artist(
+            a=plt.Rectangle(
+                xy=(result.optimized_offset[0]-inset_focus,result.optimized_offset[1]-inset_focus),
+                width=2*inset_focus,
+                height=2*inset_focus,
+                facecolor=(0,0,0,0),
+                edgecolor=(0,0,0,1),
+                zorder=5
+                )
+            )
+        for xy in xy_connections:
+            connection=mpatches.ConnectionPatch(
+                xyA=xy,
+                xyB=xy,
+                coordsA='data',coordsB="data",
+                axesA=inset_ax,axesB=axs["interpolation_grid"],)
+            axs["interpolation_grid"].add_artist(connection)
+
+    
+    if overlays:
+        if reference_offset is not None:
+            inset_ax.scatter(
+                *reference_offset,
+                marker='x',
+                c='r',
+                label=f'Reference: {reference_offset}'
+                )
+        
+        if optimized_offset is None:
+            optimized_offset:Any=result.optimized_offset
+        inset_ax.scatter(
+            *optimized_offset,
+            marker="o",
+            facecolors='none', edgecolors='r',
+            label=f'Optimized: {optimized_offset}'
+            )
 
 set_plot_axs(plot_function=plot_interpolation_grid,axs_keys=["interpolation_grid"])
 
@@ -1833,7 +1921,7 @@ def plot_process_overlap(
                 loc="lower center", #"center left"
                 bbox_to_anchor=(0, inset_position, 1, 1),
                 )
-            colorbar_kwargs=dict(
+            colorbar_kwargs:dict=dict(
                 orientation="horizontal",
                 )
         else:
@@ -1854,7 +1942,7 @@ def plot_process_overlap(
                 loc="center left", #"center left"
                 bbox_to_anchor=(inset_position, 0, 1, 1),
                 )
-            colorbar_kwargs=dict(
+            colorbar_kwargs:dict=dict(
                 orientation="vertical",
                 location="left",
                 )
