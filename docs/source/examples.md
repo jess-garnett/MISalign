@@ -15,6 +15,7 @@ This workflow has preconfigured paths and intermediate files in the [notebooks](
 _notebooks/setup
 _notebooks/calibrate
 _notebooks/align
+_notebooks/align_auto
 _notebooks/render
 ```
 

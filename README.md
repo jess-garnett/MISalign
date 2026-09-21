@@ -22,6 +22,7 @@ The primary workflow is:
 - `setup.ipynb` - Create a project: select images files & scale calibration.
     - Optional: `calibration.ipynb` - Setup scale calibration by selecting points on an image.
 - `align.ipynb` - Select matching points in image pairs to relate the images.
+- `align_auto.ipynb` - Optimize initial manual offsets or automatically find offsets.
 - `render.ipynb` - Render image montages with and without blending and add scale bar overlays.
 
 ## What does this project do?
@@ -44,7 +45,7 @@ We recommend using [uv](https://docs.astral.sh/uv/) for python package managemen
 ## Where can I get more help, if I need it?
 Feel free to share issues on the Github(https://github.com/jess-garnett/misalign/issues).
 
-Documentation is being developed following the 2.0 release: https://misalign.readthedocs.io/en/stable/
+Documentation is available on Read The Docs: https://misalign.readthedocs.io/en/stable/
 
 ## Python and Package Version Support
 This project follows [SPEC 0 — Minimum Supported Dependencies](https://scientific-python.org/specs/spec-0000/) for its Python version and package dependency support.
