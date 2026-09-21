@@ -452,15 +452,32 @@ Prediction & Interpolation Functions
 
 Needed for full search strategies.
 """
-class InterpolateSkimage():
+class InterpolateScipy():
     """
-    Group of functions which take offsets and results to interpolate using scikit-image functions.
+    Group of functions which take offsets and results to interpolate using scipy functions.
     """
     @staticmethod
     def nearest_neighbor(
         grid:np.ndarray,
         grid_results:np.ndarray,
         )->np.ndarray:
+        """
+        Phase cross correlation with overlapping regions based on a rectangular offset.
+
+        Wrapper around `scipy.interpolate.NearestNDInterpolator` that handles array reshaping.
+
+        Parameters
+        ----------
+        grid : np.ndarray
+            (x,y) grid array with shape (2,M,N).
+        grid_results : np.ndarray
+            Metric-offset result array with shape (M,N) and `np.nan` at points that have not yet been searched.
+        
+        Returns
+        -------
+        interp_results : np.ndarray
+            Nearest neighbor interpolation results.
+        """
         interp=NearestNDInterpolator(
             np.array([
                 grid[0].flatten()[~np.isnan(grid_results.flatten())],
@@ -475,10 +492,41 @@ class PredictSkimage():
     """
     @staticmethod
     def phase_cross_correlation(
-            array_a:np.ndarray,
-            array_b:np.ndarray,
-            offset_ab:tuple[int,int]|np.ndarray,
-            ):
+        array_a:np.ndarray,
+        array_b:np.ndarray,
+        offset_ab:tuple[int,int]|np.ndarray,
+        )->dict:
+        """
+        Phase cross correlation with overlapping regions based on a rectangular offset.
+
+        Wrapper around `skimage.registration.phase_cross_correlation` that extracts overlapping regions and applies PCC shift to original offset.
+
+        Parameters
+        ----------
+        array_a : np.ndarray
+            Numpy array of image a.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        array_b : np.ndarray
+            Numpy array of image b.
+            Note: Unsigned integer arrays may underflow and should not be used.
+        offset_ab : tuple[int,int] | np.ndarray
+            The vector from the top left corner of image a to the top left corner of image b.
+            In (x,y) order.
+            Example: image b's top left corner is at image a's bottom right corner: `offset=(-width_a,-height_a)`
+
+        Returns
+        -------
+        prediction_results : dict
+            Dictionary with prediction results.
+            `offset` : np.ndarray
+            Predicted optimal offset, combination of `offset_ab` with PCC shift.
+            `shift` : np.ndarray
+            Shift from PCC as (y,x).
+            `error` : float
+            Error from PCC.
+            `phasediff` : float
+            Phase difference from PCC.
+        """
         ## Find overlap spans
         a_spans,b_spans=overlap_spans(tuple(offset_ab),array_a.shape,array_b.shape)
         ## Extract overlap regions
@@ -593,8 +641,8 @@ class RectangularRegistrationResultLocalGrid(RectangularRegistrationResult):
         plots:list[Callable]=[plot_before_after,plot_process_overlap,plot_local_grid]
 
         mosaic_rows: list[list[str]]=[
-            get_plot_axs(plot_function=plot_before_after),
-            get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_local_grid)
+            _get_plot_axs(plot_function=plot_before_after),
+            _get_plot_axs(plot_function=plot_process_overlap)+_get_plot_axs(plot_function=plot_local_grid)
             ]
             
         return plots,mosaic_rows,plot_kwargs
@@ -623,7 +671,7 @@ class RectangularRegistrationResultInterpolatedFullGrid(RectangularRegistrationR
         plots:list[Callable]=[plot_process_overlap,plot_interpolation_grid]
 
         mosaic_rows: list[list[str]]=[
-            get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_interpolation_grid)
+            _get_plot_axs(plot_function=plot_process_overlap)+_get_plot_axs(plot_function=plot_interpolation_grid)
             ]
             
         return plots,mosaic_rows,plot_kwargs
@@ -655,7 +703,7 @@ class RectangularRegistrationResultPredictedFullSparse(RectangularRegistrationRe
         plots:list[Callable]=[plot_predict_sparse]
 
         mosaic_rows: list[list[str]]=[
-            get_plot_axs(plot_function=plot_predict_sparse),
+            _get_plot_axs(plot_function=plot_predict_sparse),
             ]
 
         return plots,mosaic_rows,plot_kwargs
@@ -699,8 +747,8 @@ class RectangularRegistrationResultCompositePredictLocal(RectangularRegistration
         plots:list[Callable]=[plot_predict_sparse,plot_process_overlap,plot_local_grid]
 
         mosaic_rows: list[list[str]]=[
-            get_plot_axs(plot_function=plot_predict_sparse),
-            get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_local_grid)
+            _get_plot_axs(plot_function=plot_predict_sparse),
+            _get_plot_axs(plot_function=plot_process_overlap)+_get_plot_axs(plot_function=plot_local_grid)
             ]
 
         if plot_kwargs is None:
@@ -819,17 +867,6 @@ class StrategyLocal():
         -------
         strategy_results : RectangularRegistrationResultLocalGrid
             Dataclass with results of full local grid search.
-            ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        strategy_results : dict
-            Dictionary with results of full grid search.
-            `grid` : np.ndarray
-                Offsets that were searched.
-            `grid_results` : np.ndarray
-                Metric value at matching offset in `grid`.
-            `optimized_offset` : tuple[int,int]
-                Optimized offset based on minimum in metric value.
-            `initial_offset` : tuple[int,int]
-                Initial offset provided to strategy.
         """
         return StrategyLocal.scaled_grid(array_a=array_a,
                                     array_b=array_b,
@@ -1075,7 +1112,7 @@ class StrategyFullSearch():
             array_b:np.ndarray,
             metric:Callable[[np.ndarray,np.ndarray],float],
             initial_offset:tuple[int,int]|None=None,
-            strategy_interpolate:Callable=InterpolateSkimage.nearest_neighbor,
+            strategy_interpolate:Callable=InterpolateScipy.nearest_neighbor,
             strategy_edge_avoid=20,
             strategy_logger:logging.Logger=logging.getLogger(),
             strategy_initial_grid_number=20,
@@ -1107,7 +1144,7 @@ class StrategyFullSearch():
             Example: Function which takes the difference of the overlap regions and then squares it and gets the mean value.
         strategy_interpolate : Callable[[np.ndarray,np.ndarray],np.ndarray]
             Function that takes grid of offsets and grid of results and un-checked `np.nan` and interpolates for all `np.nan` values.
-            `interpolate_nearest_neighbor` by default.
+            `InterpolateScipy.nearest_neighbor` by default.
         strategy_edge_avoid : int
             Minimum amount of overlap to require between images. Default is 20.
         strategy_logger : logging.Logger
@@ -1390,7 +1427,7 @@ class StrategyFullSearch():
         strategy_predict : Callable[[np.ndarray,np.ndarray,tuple[int,int]],dict]
             Function that takes `array_a`, `array_b` and `offset_ab` and returns a dictionary with keys `offset`
             that is the predicted true offset as a pair of ints and `shift` that is the change in position as a pair of ints.
-            `overlap_phase_cross_correlation` by default.
+            `PredictSkimage.phase_cross_correlation` by default.
         strategy_edge_avoid : int
             Minimum amount of overlap to require between images. Default is 20.
         strategy_initial_grid_number : int
@@ -1576,20 +1613,46 @@ class StrategyFullSearch():
 """
 Plotting functions
 """
-# Generally want each plotting function to accept an ax(or set of ax) as well as the results from a certain strategy/family of strategies.
+# Generally want each plotting function to accept a dict of axes as well as the results from a certain strategy/family of strategies.
 plot_axs:dict[str,list[str]]={}
-def set_plot_axs(plot_function,axs_keys:list[str])->None:
+def _set_plot_axs(plot_function,axs_keys:list[str])->None:
+    """
+    Registers what axes keys should be provided for the given plot function.
+    """
     plot_axs[plot_function.__name__]=axs_keys
-def get_plot_axs(plot_function)->list[str]:
+def _get_plot_axs(plot_function)->list[str]:
+    """
+    Returns the axes keys for the given plot function.
+    """
     return plot_axs[plot_function.__name__]
 
 def plot_image_a_image_b(
-        mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes],
+        project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes],
         unfiltered=False,
         formatting=True,
-        **kwargs):
-    image_a=mis_project.get_image(relation.get_reference()[0])
-    image_b=mis_project.get_image(relation.get_reference()[1])
+        **kwargs)->None:
+    """
+    Plot showing image pair.
+
+    Parameters
+    ----------
+    project : MISProject
+        A MISProject with images.
+    relation : MISRelation
+        Relation between images.
+    axs : dict[str, plt.Axes] | None
+        A dictionary of Axes including `'image_a'` and `'image_b'`.
+    unfiltered : bool
+        Whether to get show images without default filter. `False` by default.
+        Note: Default fitlering might include cropping. This uses `.with_filter(filter=None,apply_default=False)` to get unfiltered image.
+    formatting : bool
+        Whether to format axes. `True` by default.
+        Formatting includes turning axes off and adding image name titles.
+    kwargs
+        None
+    """
+    image_a=project.get_image(relation.get_reference()[0])
+    image_b=project.get_image(relation.get_reference()[1])
     if unfiltered:
         image_a=image_a.with_filter(filter=None,apply_default=False)
         image_b=image_b.with_filter(filter=None,apply_default=False)
@@ -1600,16 +1663,54 @@ def plot_image_a_image_b(
         axs["image_b"].set_title(relation.get_reference()[1])
         axs["image_a"].set_axis_off()
         axs["image_b"].set_axis_off()
-set_plot_axs(plot_function=plot_image_a_image_b,axs_keys=["image_a","image_b"])
+_set_plot_axs(plot_function=plot_image_a_image_b,axs_keys=["image_a","image_b"])
 
 def plot_blend(
-        mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes],result:RectangularRegistrationResult|None=None,
+        project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes],result:RectangularRegistrationResult|None=None,
         offset:tuple[int,int]|None=None,
         focus_overlap:bool=False,focus_expand:int=50,
         formatting:bool=True,
         axs_key:str="blend",
         title:str|None=None,
-        **kwargs):
+        **kwargs)->dict:
+    """
+    Plot showing overlapped image pair given an offset.
+
+    Parameters
+    ----------
+    project : MISProject
+        A MISProject with images.
+    relation : MISRelation
+        Relation between images.
+    axs : dict[str, plt.Axes] | None
+        A dictionary of Axes including `'blend'`.
+    result : RectangularRegistrationResult | None
+        Result from registration strategy or `None` by default.
+        Note: Overrides `relation.get_relation('r')` if provided.
+    offset : tuple[int,int] | None
+        Offset to visualize `None` by default.
+        Note: Overrides `relation.get_relation('r')` and `result.optimized_offset` if provided.
+    focus_overlap : bool
+        Whether to view entire combined image or limit view to overlapping region and surrounding. `False` by default.
+    focus_expand : int
+        Distance in each direction from the overlapping region to show. `50` by default.
+    formatting : bool
+        Whether to format axes. `True` by default.
+        Formatting includes turning axes off and adding title.
+    axs_key : str
+        Key to use for plotting in `axs` or `'blend'` by default.
+    title : str
+        Title for Axes or `None` by default.
+        Note: Default is `f"Blend: {offset}"` if provided will be `f"{title}: {offset}"`
+        Note: Only displays if `formatting=True`.
+    kwargs
+        None
+    
+    Returns
+    -------
+    render : dict
+        Result of `canvas_rectangular.render_pair`.
+    """
     
     if offset is None:
         if result is not None:
@@ -1621,8 +1722,8 @@ def plot_blend(
     else:
         title:str=f"{title}: {offset}"
 
-    image_a=mis_project.get_image(relation.get_reference()[0])
-    image_b=mis_project.get_image(relation.get_reference()[1])
+    image_a=project.get_image(relation.get_reference()[0])
+    image_b=project.get_image(relation.get_reference()[1])
 
 
     render=canvas_rectangular.render_pair(image_a,image_b,offset=offset,weight=canvas_rectangular.weight_flat)
@@ -1643,41 +1744,109 @@ def plot_blend(
         axs[axs_key].set_title(title)
         axs[axs_key].set_axis_off()
     return render
-set_plot_axs(plot_function=plot_blend,axs_keys=["blend"])
+_set_plot_axs(plot_function=plot_blend,axs_keys=["blend"])
 
 def plot_before_after(
-        mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes],result:RectangularRegistrationResult,
-        after_offset:tuple[int,int]|None=None,before_offset:tuple[int,int]|None=None,
-        focus_overlap:bool=True,focus_expand:int=50,
-        formatting=True,
-        **kwargs):
+    project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes],result:RectangularRegistrationResult|None=None,
+    after_offset:tuple[int,int]|None=None,before_offset:tuple[int,int]|None=None,
+    focus_overlap:bool=True,focus_expand:int=50,
+    formatting=True,
+    **kwargs)->None:
+    """
+    Plot showing overlapped image pair given before and after offsets.
+
+    Parameters
+    ----------
+    project : MISProject
+        A MISProject with images.
+    relation : MISRelation
+        Relation between images.
+    axs : dict[str, plt.Axes] | None
+        A dictionary of Axes including `'before'` and `'after'`.
+    result : RectangularRegistrationResult | None
+        Result from registration strategy or `None` by default.
+        Note: Either `result` or `after_offset` must be provided.
+    before_offset : tuple[int,int] | None
+        Offset to visualize for before or `None` by default.
+        Note: Overrides `relation.get_relation('r')` if provided.
+    after_offset : tuple[int,int] | None
+        Offset to visualize for after or `None` by default.
+        Note: Overrides `result.optimized_offset` if provided.
+    focus_overlap : bool
+        Whether to view entire combined image or limit view to overlapping region and surrounding. `True` by default.
+    focus_expand : int
+        Distance in each direction from the overlapping region to show. `50` by default.
+    formatting : bool
+        Whether to format axes. `True` by default.
+        Formatting includes turning axes off and adding title.
+    kwargs
+        None
+    """
 
     if before_offset is None:
         before_offset:Any=relation.get_relation('r')
     if after_offset is None:
-        after_offset:Any=result.optimized_offset
+        if result is not None:
+            after_offset:Any=result.optimized_offset
+        else:
+            raise ValueError("Either `result` or `after_offset` must be provided.")
 
     for axs_key,offset in {"before":before_offset,"after":after_offset}.items():
-        plot_blend(mis_project=mis_project,relation=relation,axs=axs,
+        plot_blend(project=project,relation=relation,axs=axs,
             axs_key=axs_key,
             title=axs_key.title(),
             offset=offset,
             focus_overlap=focus_overlap,focus_expand=focus_expand,
             formatting=formatting,
         )
-set_plot_axs(plot_function=plot_before_after,axs_keys=["before","after"])
+_set_plot_axs(plot_function=plot_before_after,axs_keys=["before","after"])
 
 def plot_metric_grid(
-        axs:dict[str,plt.Axes],result:RectangularRegistrationResultLocalGrid|RectangularRegistrationResultInterpolatedFullGrid,
-        grid_results:np.ndarray|None=None,
-        optimized_offset:tuple[int,int]|None=None,
-        reference_offset:tuple[int,int]|None=None,
-        axs_key:str="metric",
-        title:str="Grid Registration Results",
-        overlays:bool=True,
-        formatting:bool=True,
-        imshow_kwargs:dict|None=None,
-        **kwargs):
+    axs:dict[str,plt.Axes],result:RectangularRegistrationResultLocalGrid|RectangularRegistrationResultInterpolatedFullGrid,
+    grid_results:np.ndarray|None=None,
+    optimized_offset:tuple[int,int]|None=None,
+    reference_offset:tuple[int,int]|None=None,
+    axs_key:str="metric_grid",
+    title:str="Grid Registration Results",
+    overlays:bool=True,
+    formatting:bool=True,
+    imshow_kwargs:dict|None=None,
+    **kwargs)->None:
+    """
+    Plot for result of grid strategy.
+
+    Plots offset-metric values.
+
+    Parameters
+    ----------
+    axs : dict[str, plt.Axes] | None
+        A dictionary of Axes including `'metric_grid'`.
+    result : RectangularRegistrationResultLocalGrid | RectangularRegistrationResultInterpolatedFullGrid
+        Result from grid search strategy.
+    grid_results : np.ndarray | None
+        Metric-offset results to plot or `None` by default.
+        Note: Overrides `result.grid_result` if provided.
+    optimized_offset : tuple[int,int] | None
+        Optimized offset from strategy or `None` by default.
+        Note: Overrides `result.optimized_offset` if provided.
+    reference_offset : tuple[int,int] | None
+        Reference offset for comparison with optimized offset or `None` by default.
+    axs_key : str
+        Key to use for plotting in `axs` or `'metric_grid'` by default.
+    title : str
+        Title for Axes or `"Grid Registration Results"` by default.
+        Note: Only displays if `formatting=True`.
+    overlays : bool
+        Whether to draw overlays. `True` by default.
+        Overlays include reference offset, optimized offset, and legend.
+    formatting : bool
+        Whether to format axes. `True` by default.
+        Formatting includes setting x and y labels and adding colorbar.
+    imshow_kwargs : dict
+        Keyword arguments for `plt.imshow` or `None` by default.
+    kwargs
+        None
+    """
 
     if grid_results is None:
         grid_results=result.grid_results
@@ -1718,14 +1887,36 @@ def plot_metric_grid(
             label=f'Optimized: {optimized_offset}',
             zorder=11)
         axs[axs_key].legend(loc='best')
-set_plot_axs(plot_function=plot_metric_grid,axs_keys=["metric_grid"])
+_set_plot_axs(plot_function=plot_metric_grid,axs_keys=["metric_grid"])
 
 def plot_local_grid(
-        axs:dict[str,plt.Axes],result:RectangularRegistrationResultLocalGrid,
-        reference_offset:tuple[int,int]|None=None,
-        overlays:bool=True,
-        formatting:bool=True,
-        **kwargs):
+    axs:dict[str,plt.Axes],result:RectangularRegistrationResultLocalGrid,
+    reference_offset:tuple[int,int]|None=None,
+    overlays:bool=True,
+    formatting:bool=True,
+    **kwargs)->None:
+    """
+    Plot for result of local grid strategy.
+
+    Plots offset-metric values.
+
+    Parameters
+    ----------
+    axs : dict[str, plt.Axes] | None
+        A dictionary of Axes including `'local_grid'`.
+    result : RectangularRegistrationResultLocalGrid
+        Result from local grid strategy.
+    reference_offset : tuple[int,int] | None
+        Reference offset for comparison with optimized offset or `None` by default.
+    overlays : bool
+        Whether to draw overlays. `True` by default.
+        Overlays include reference offset, optimized offset, and legend.
+    formatting : bool
+        Whether to format axes. `True` by default.
+        Formatting includes setting x and y labels and adding colorbar.
+    kwargs
+        None
+    """
 
     if formatting:
         formatting_kwargs:dict=dict(formatting=True,title="Local Grid Registration Results")
@@ -1761,20 +1952,54 @@ def plot_local_grid(
             xy=optimized_offset,
             arrowprops=dict(arrowstyle="->",color="w"),)
         axs["local_grid"].legend()
-set_plot_axs(plot_function=plot_local_grid,axs_keys=["local_grid"])
-
+_set_plot_axs(plot_function=plot_local_grid,axs_keys=["local_grid"])
 
 def plot_interpolation_grid(
-        axs:dict[str,plt.Axes],result:RectangularRegistrationResultInterpolatedFullGrid,
-        optimized_offset:tuple[int,int]|None=None,
-        reference_offset:tuple[int,int]|None=None,
-        title:str="Interpolated Grid Registration Results",
-        inset:bool=True,
-        inset_focus:int=20,
-        overlays:bool=True,
-        formatting:bool=True,
-        imshow_kwargs:dict|None=None,
-        **kwargs):
+    axs:dict[str,plt.Axes],result:RectangularRegistrationResultInterpolatedFullGrid,
+    optimized_offset:tuple[int,int]|None=None,
+    reference_offset:tuple[int,int]|None=None,
+    title:str="Interpolated Grid Registration Results",
+    inset:bool=True,
+    inset_focus:int=20,
+    overlays:bool=True,
+    formatting:bool=True,
+    imshow_kwargs:dict|None=None,
+    **kwargs)->None:
+    """
+    Plot for result of interpolated grid full search strategy.
+
+    Plots interpolated offset-metric values and optionally an inset of the non-interpolated results near the optimized offset.
+
+    Parameters
+    ----------
+    axs : dict[str, plt.Axes] | None
+        A dictionary of Axes including `'interpolation_grid'`.
+    result : RectangularRegistrationResultInterpolatedFullGrid
+        Result from interpolated grid full search strategy.
+    optimized_offset : tuple[int,int] | None
+        Optimized offset from strategy or `None` by default.
+        Note: Overrides `result.optimized_offset` if provided.
+    reference_offset : tuple[int,int] | None
+        Reference offset for comparison with optimized offset or `None` by default.
+    title : str
+        Title for Axes or `"Interpolated Grid Registration Results"` by default.
+        Note: Only displays if `formatting=True`.
+    inset : bool
+        Whether to draw an inset axes showing the non-interpolated grid around the optimized offset. `True` by default.
+        Note: Inset colormap is configured with it's maximum at the 25th quantile of the non-interpolated measurements.
+    inset_focus : int
+        Distance in each direction from the optimized offset to show in the inset axes. `20` by default.
+    overlays : bool
+        Whether to draw overlays. `True` by default.
+        Overlays include reference offset, optimized offset, and legend.
+    formatting : bool
+        Whether to format axes. `True` by default.
+        Formatting includes setting x and y labels and adding colorbar.
+    imshow_kwargs : dict
+        Keyword arguments for `plt.imshow` or `None` by default.
+    kwargs
+        None
+    """
 
     plot_metric_grid(
         axs=axs,result=result,
@@ -1851,34 +2076,60 @@ def plot_interpolation_grid(
                 axesA=inset_ax,axesB=axs["interpolation_grid"],)
             axs["interpolation_grid"].add_artist(connection)
 
-    
-    if overlays:
-        if reference_offset is not None:
+        if overlays:
+            if reference_offset is not None:
+                inset_ax.scatter(
+                    *reference_offset,
+                    marker='x',
+                    c='r',
+                    label=f'Reference: {reference_offset}'
+                    )
+            
+            if optimized_offset is None:
+                optimized_offset:Any=result.optimized_offset
             inset_ax.scatter(
-                *reference_offset,
-                marker='x',
-                c='r',
-                label=f'Reference: {reference_offset}'
+                *optimized_offset,
+                marker="o",
+                facecolors='none', edgecolors='r',
+                label=f'Optimized: {optimized_offset}'
                 )
-        
-        if optimized_offset is None:
-            optimized_offset:Any=result.optimized_offset
-        inset_ax.scatter(
-            *optimized_offset,
-            marker="o",
-            facecolors='none', edgecolors='r',
-            label=f'Optimized: {optimized_offset}'
-            )
-
-set_plot_axs(plot_function=plot_interpolation_grid,axs_keys=["interpolation_grid"])
+_set_plot_axs(plot_function=plot_interpolation_grid,axs_keys=["interpolation_grid"])
 
 def plot_process_overlap(
-        mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes],result:RectangularRegistrationResult|None=None,
-        offset:tuple[int,int]|None=None,
-        process_function:Callable[[np.ndarray,np.ndarray],np.ndarray]=np.subtract,
-        filter:Callable[[HasArray],np.ndarray]=Filter.float,
-        formatting:bool=True,
-        **kwargs):
+    project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes],result:RectangularRegistrationResult|None=None,
+    offset:tuple[int,int]|None=None,
+    process_function:Callable[[np.ndarray,np.ndarray],np.ndarray]=np.subtract,
+    filter:Callable[[HasArray],np.ndarray]=Filter.float,
+    formatting:bool=True,
+    **kwargs)->None:
+    """
+    Plot showing processed overlapping region of images for a given offset.
+
+    Parameters
+    ----------
+    project : MISProject
+        A MISProject with images.
+    relation : MISRelation
+        Relation between images.
+    axs : dict[str, plt.Axes] | None
+        A dictionary of Axes including `'process_overlap'`.
+    result : RectangularRegistrationResult | None
+        Result from registration strategy or `None` by default.
+        Note: If provided, offset from result will be used rather than offset from relation.
+    offset : tuple[int,int] | None
+        Offset to visualize or `None` by default.
+        Note: Overrides `result.optimized_offset` if provided.
+    process_function : Callable[[np.ndarray,np.ndarray],np.ndarray]
+        Function to process overlapping regions with or `np.subtract` by default.
+    filter : Callable[[HasArray],np.ndarray]
+        Filter to apply to images before processing or `Filter.float` by default.
+        Suggested: the filter that was used for pairwise registration.
+    formatting : bool
+        Whether to format axes. `True` by default.
+        Formatting includes turning axes off and adding colorbar and title.
+    kwargs
+        None
+    """
 
     if offset is None:
         if result is not None:
@@ -1886,8 +2137,8 @@ def plot_process_overlap(
         else:
             offset:Any=relation.get_relation('r')
     
-    array_a=filter(mis_project.get_image(relation.get_reference()[0]))
-    array_b=filter(mis_project.get_image(relation.get_reference()[1]))
+    array_a=filter(project.get_image(relation.get_reference()[0]))
+    array_b=filter(project.get_image(relation.get_reference()[1]))
 
     overlap=overlap_process(
         array_a=array_a,array_b=array_b,
@@ -1956,16 +2207,42 @@ def plot_process_overlap(
         
         plt.colorbar(label="Process Result",mappable=processed,cax=cax,**colorbar_kwargs) #f"{aspect_ratio} - 1/{1/aspect_ratio}"
         axs["process_overlap"].set_title(f"Overlap Regions Processed: {offset}")
-
-set_plot_axs(plot_function=plot_process_overlap,axs_keys=["process_overlap"])
+_set_plot_axs(plot_function=plot_process_overlap,axs_keys=["process_overlap"])
 
 def plot_predict_sparse(
-        relation:MISRelation,axs:dict[str,plt.Axes],result:RectangularRegistrationResultPredictedFullSparse,
-        optimized_offset:tuple[int,int]|None=None,
-        reference_offset:tuple[int,int]|None=None,
-        overlays:bool=True,legend_kwargs:dict=dict(loc="lower right"),
-        formatting:bool=True,
-        **kwargs):
+    axs:dict[str,plt.Axes],result:RectangularRegistrationResultPredictedFullSparse,
+    optimized_offset:tuple[int,int]|None=None,
+    reference_offset:tuple[int,int]|None=None,
+    overlays:bool=True,legend_kwargs:dict=dict(loc="lower right"),
+    formatting:bool=True,
+    **kwargs)->None:
+    """
+    Plot for result of sparse prediction full search strategy.
+
+    Plots offset searched, metric values at predicted points, and arrows connecting searched and predicted points.
+
+    Parameters
+    ----------
+    axs : dict[str, plt.Axes] | None
+        A dictionary of Axes including `'predict'`.
+    result : RectangularRegistrationResultPredictedFullSparse
+        Result from sparse prediction full search strategy.
+    optimized_offset : tuple[int,int] | None
+        Optimized offset from strategy or `None` by default.
+        Note: Overrides `result.optimized_offset` if provided.
+    reference_offset : tuple[int,int] | None
+        Reference offset for comparison with optimized offset or `None` by default.
+    overlays : bool
+        Whether to draw overlays. `True` by default.
+        Overlays include reference offset, optimized offset, and legend.
+    legend_kwargs : dict
+        Keyword arguments for legend or `dict(loc="lower right")` by default.
+    formatting : bool
+        Whether to format axes. `True` by default.
+        Formatting includes setting x and y labels and adding colorbar.
+    kwargs
+        None
+    """
 
     if optimized_offset is None:
         optimized_offset=result.optimized_offset
@@ -2006,13 +2283,44 @@ def plot_predict_sparse(
         divider = axes_grid1.make_axes_locatable(axes=axs["predict"])
         cax = divider.append_axes("right", size="5%", pad=0.1)
         plt.colorbar(label="Metric",mappable=predicted_offsets,cax=cax)
-set_plot_axs(plot_function=plot_predict_sparse,axs_keys=["predict"])
+_set_plot_axs(plot_function=plot_predict_sparse,axs_keys=["predict"])
 
 
-def plot_result(mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes]|None=None,result:RectangularRegistrationResult|None=None,
+def plot_result(
+    project:MISProject,relation:MISRelation,axs:dict[str,plt.Axes]|None=None,result:RectangularRegistrationResult|None=None,
     plot_functions:list[Callable]|None=None,
     plot_kwargs:dict|None=None,
-    mosaic_rows:list[list[str]]|None=None,):
+    mosaic_rows:list[list[str]]|None=None,
+    )->dict:
+    """
+    Plot pairwise image relation or registration result.
+
+    Parameters
+    ----------
+    project : MISProject
+        A MISProject with images.
+    relation : MISRelation
+        Relation between images.
+    axs : dict[str, plt.Axes] | None
+        A dictionary of Axes for the plot functions or `None` by default.
+    result : RectangularRegistrationResult | None
+        Result from registration strategy or `None` by default.
+        Note: Each result class provides its own default plotting configuration.
+    plot_functions : list[Callable] | None
+        Additional plot functions to call with or `None` by default.
+        Note: Calls will be of the form `plot_function(mis_project=project, relation=relation, axs=axs, result=result, **plot_kwargs[plot_function])`
+    plot_kwargs : dict | None
+        Plot function keyword args or `None` by default.
+        Note: The key should be the function.
+    mosaic_rows : list[list[str]] | None
+        Additional mosaic rows to include in `plt.subplot_mosaic` or `None` by default.
+        Note: A least common multiple approach is taken to combining mosaic rows so only include one string per plot.
+
+    Returns
+    -------
+    plot_results : dict
+        Dictionary that either contains `fig` and `axs` or just `axs` if the `axs` term was provided.
+    """
 
     if plot_kwargs is None:
         plot_kwargs=dict()
@@ -2020,27 +2328,10 @@ def plot_result(mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axe
     plots:list[Callable]=[plot_image_a_image_b,plot_blend]
     if plot_functions is not None:
         plots.extend(plot_functions)
-    mosaics:list[list[str]]=[get_plot_axs(plot_function=plot_image_a_image_b)+get_plot_axs(plot_function=plot_blend)]
+    mosaics:list[list[str]]=[_get_plot_axs(plot_function=plot_image_a_image_b)+_get_plot_axs(plot_function=plot_blend)]
     if mosaic_rows is not None:
         mosaics.extend(mosaic_rows)
     
-    # Replace this part with getting the plot functions/mosaics from the results class.
-    # if isinstance(result,RectangularRegistrationResultLocalGrid):
-    #     plots.append(plot_before_after)
-    #     mosaics.append(get_plot_axs(plot_function=plot_before_after))
-    #     plots.append(plot_process_overlap)
-    #     plots.append(plot_local_grid)
-    #     mosaics.append(get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_local_grid))
-    # elif isinstance(result,RectangularRegistrationResultPredictedFullSparse):
-    #     plots.append(plot_predict_sparse)
-    #     mosaics.append(get_plot_axs(plot_function=plot_predict_sparse))
-    # elif isinstance(result,RectangularRegistrationResultCompositePredictLocal):
-    #     plots.append(plot_predict_sparse)
-    #     mosaics.append(get_plot_axs(plot_function=plot_predict_sparse))
-    #     plots.append(plot_process_overlap)
-    #     plots.append(plot_local_grid)
-    #     mosaics.append(get_plot_axs(plot_function=plot_process_overlap)+get_plot_axs(plot_function=plot_local_grid))
-    # else:
     if result is not None:
         try:
                 # [plots.append(plot_function) for plot_function in result.get_plots()]
@@ -2052,8 +2343,6 @@ def plot_result(mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axe
         except AttributeError as e:
             logging.warning(msg=f"Error setting up result plot: `result` does not implement `.get_plot_setup()` : {e} ")
         
-
-    
     if axs is None:
         columns=[len(row) for row in mosaics]
         lcm=np.lcm.reduce(columns)
@@ -2062,16 +2351,16 @@ def plot_result(mis_project:MISProject,relation:MISRelation,axs:dict[str,plt.Axe
         fig,axs=plt.subplot_mosaic(mosaic=mosaics,layout='constrained',)
         fig.set_figwidth(12)
         fig.set_figheight(10)
-        plot_result={"fig":fig,"axs":axs}
+        plot_results={"fig":fig,"axs":axs}
     else:
-        plot_result={"axs":axs}
+        plot_results={"axs":axs}
 
     for plot_function in plots:
         if plot_function not in plot_kwargs:
             plot_kwargs[plot_function]={}
-        plot_function(mis_project=mis_project,relation=relation,axs=axs,result=result,**plot_kwargs[plot_function])
+        plot_function(project=project,relation=relation,axs=axs,result=result,**plot_kwargs[plot_function])
     
-    return plot_result
+    return plot_results
 
 """
 Automated Rectangular Alignment To-Do List
@@ -2079,13 +2368,10 @@ Automated Rectangular Alignment To-Do List
 #TODO add logging to all strategies
     #TODO implement logging in prediction grid.
 #TODO project based interface for running pairwise registration.
-    #TODO Ability to combine a full search and a local search
-    #TODO result object which contains other result objects and the final result
 
 #TODO pairwise_registration/strategies: make `filter_...` and `metric_...` kwargs passable through to their respective use case.
 #TODO consider adding downscaling for strategy/processing.
 #TODO consider local minimization "predict" based method.
-#TODO plotting/visualization functions
 
 #TODO potential full search strategy: `gaussian_minimization`
     # gaussian process regression is used to fit the minimization trend and efficiently reach the minimum value.

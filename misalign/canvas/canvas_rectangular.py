@@ -617,11 +617,32 @@ def render_blended_project(
     )
 
 def render_pair(
-        image_a:MISImage|HasArrayShapeName,
-        image_b:MISImage|HasArrayShapeName,
-        offset:tuple[int,int],
-        weight:Optional[Callable]=weight_flat
-        )->dict:
+    image_a:MISImage|HasArrayShapeName,
+    image_b:MISImage|HasArrayShapeName,
+    offset:tuple[int,int],
+    weight:Optional[Callable]=weight_flat
+    )->dict:
+    """
+    Renders a canvas from two images and an offset.
+
+    Handles creation of the normalization array.
+
+    Parameters
+    ----------
+    image_a : MISImage | HasArrayShapeName
+        First image to render.
+    image_b : MISImage | HasArrayShapeName
+        Second image to render.
+    offset : tuple[int,int]
+        Offset to render.
+    weight : Callable[tuple[int,int],numpy.ndarray]
+        Function that takes image shape and returns a weight array or `weight_flat` by default.
+    
+    Returns
+    -------
+    render : dict
+        Dictionary containing `'render'` and `'normalizer'` if `weight` is not `None` or just `'render'` if `weight` is `None`.
+    """
     origin_relative_offsets=rectangular_solve(
         relations=[{"ref":(image_a.name,image_b.name),"rel":offset}],
         image_names=[image_a.name,image_b.name],
