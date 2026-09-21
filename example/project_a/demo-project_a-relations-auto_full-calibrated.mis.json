@@ -1,7 +1,7 @@
 {
     "relations": [
         {
-            "note": "Alignment with DGA",
+            "note": "Aligned with `StrategyFullSearch.composite_predict_local`",
             "relation_type": "r",
             "image_pair": [
                 "image_a01.jpg",
@@ -9,47 +9,47 @@
             ],
             "rectangular": [
                 9,
-                -1087
+                -1088
             ]
         },
         {
-            "note": "Alignment with DGA",
+            "note": "Aligned with `StrategyFullSearch.composite_predict_local`",
             "relation_type": "r",
             "image_pair": [
                 "image_a02.jpg",
                 "image_a03.jpg"
             ],
             "rectangular": [
-                8,
-                -1146
+                9,
+                -1147
             ]
         },
         {
-            "note": "Alignment with DGA",
+            "note": "Aligned with `StrategyFullSearch.composite_predict_local`",
             "relation_type": "r",
             "image_pair": [
                 "image_a03.jpg",
                 "image_a04.jpg"
             ],
             "rectangular": [
-                -124,
-                -1060
+                -125,
+                -1061
             ]
         },
         {
-            "note": "Alignment with DGA",
+            "note": "Aligned with `StrategyFullSearch.composite_predict_local`",
             "relation_type": "r",
             "image_pair": [
                 "image_a04.jpg",
                 "image_a05.jpg"
             ],
             "rectangular": [
-                10,
-                -942
+                9,
+                -943
             ]
         },
         {
-            "note": "Alignment with DGA",
+            "note": "Aligned with `StrategyFullSearch.composite_predict_local`",
             "relation_type": "r",
             "image_pair": [
                 "image_a05.jpg",
@@ -57,11 +57,11 @@
             ],
             "rectangular": [
                 7,
-                -857
+                -858
             ]
         },
         {
-            "note": "Alignment with DGA",
+            "note": "Aligned with `StrategyFullSearch.composite_predict_local`",
             "relation_type": "r",
             "image_pair": [
                 "image_a06.jpg",
@@ -69,11 +69,11 @@
             ],
             "rectangular": [
                 8,
-                -989
+                -990
             ]
         },
         {
-            "note": "Alignment with DGA",
+            "note": "Aligned with `StrategyFullSearch.composite_predict_local`",
             "relation_type": "r",
             "image_pair": [
                 "image_a07.jpg",
@@ -81,23 +81,23 @@
             ],
             "rectangular": [
                 8,
-                -1008
+                -1009
             ]
         },
         {
-            "note": "Alignment with DGA",
+            "note": "Aligned with `StrategyFullSearch.composite_predict_local`",
             "relation_type": "r",
             "image_pair": [
                 "image_a08.jpg",
                 "image_a09.jpg"
             ],
             "rectangular": [
-                8,
-                -938
+                7,
+                -939
             ]
         },
         {
-            "note": "Alignment with DGA",
+            "note": "Aligned with `StrategyFullSearch.composite_predict_local`",
             "relation_type": "r",
             "image_pair": [
                 "image_a09.jpg",
@@ -105,7 +105,7 @@
             ],
             "rectangular": [
                 4,
-                -715
+                -716
             ]
         }
     ],
@@ -156,5 +156,5 @@
         "length": 1,
         "length_unit": "mm"
     },
-    "file_path": "../example/project_a/project_a-dga_relations-calibrated.mis.json"
+    "file_path": "../example/project_a/demo-project_a-relations-auto_full-calibrated.mis.json"
 }
