@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
-## [2.2.0.dev0]
+## [2.2.0] - 2026-09-21
 ### Added
 - Additional example projects.
     - Description of project a.
@@ -27,11 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Enables simple cropping(i.e. remove information bar) and type conversion(i.e. 16 bit image to 8 bit)
 - Added image boundary overlays and image label overlays to matplotlib-based canvas displays in `scale_bar.py`.
 - Added save with 10 to 1 downscaling option to the matplotlib-based canvas display in `render.ipynb`.
+- Added automated local and full alignment in `alignment/auto_rectangular_skimage.py` and simple automated alignment workflow in `align_auto.ipynb`.
 ### Changed
 - `canvas_rectangular.py` render can work with 2D/grayscale and 3D image depths other than `depth=3`/RGB. [#12](https://github.com/jess-garnett/MISalign/issues/12)
     - Added handling for 2D/grayscale images in `scale_bar.py` and `interactive_manual.py`
-### Deprecated
-### Removed
 ### Fixed
 - `file_contains` and `file_notcontains` updated to work properly with Path objects in `setup.ipynb`.
 

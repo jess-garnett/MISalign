@@ -16,8 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12","3.13","3.14"]
-        oldest-supported-python-version: ["3.12"]
+        python-version: ["3.13","3.14"]
+        oldest-supported-python-version: ["3.13"]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
@@ -37,9 +37,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install the project (oldest with lowest dependencies)
       if: ${{ matrix.python-version == matrix.oldest-supported-python-version}}
-      run: uv sync --all-extras --resolution lowest-direct
+      run: uv sync --all-extras --all-groups --resolution lowest-direct
     - name: Install the project (newer with locked dependencies)
       if: ${{ matrix.python-version != matrix.oldest-supported-python-version}}
-      run: uv sync --locked --all-extras
+      run: uv sync --locked --all-extras --all-groups
     - name: Run tests
-      run: uv run pytest tests
+      run: uv run pytest tests --benchmark-disable
