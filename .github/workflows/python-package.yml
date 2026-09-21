@@ -42,4 +42,4 @@ jobs:
       if: ${{ matrix.python-version != matrix.oldest-supported-python-version}}
       run: uv sync --locked --all-extras --all-groups
     - name: Run tests
-      run: uv run pytest tests
+      run: uv run pytest tests --benchmark-disable

@@ -1,0 +1,1311 @@
+{
+    "machine_info": {
+        "node": "Jess-Laptop",
+        "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+        "machine": "AMD64",
+        "python_compiler": "MSC v.1944 64 bit (AMD64)",
+        "python_implementation": "CPython",
+        "python_implementation_version": "3.13.11",
+        "python_version": "3.13.11",
+        "python_build": [
+            "tags/v3.13.11:6278944",
+            "Dec  5 2025 16:26:58"
+        ],
+        "release": "11",
+        "system": "Windows",
+        "cpu": {
+            "python_version": "3.13.11.final.0 (64 bit)",
+            "cpuinfo_version": [
+                9,
+                0,
+                0
+            ],
+            "cpuinfo_version_string": "9.0.0",
+            "arch": "X86_64",
+            "bits": 64,
+            "count": 20,
+            "arch_string_raw": "AMD64",
+            "vendor_id_raw": "GenuineIntel",
+            "brand_raw": "12th Gen Intel(R) Core(TM) i7-12700H",
+            "hz_advertised_friendly": "2.6880 GHz",
+            "hz_actual_friendly": "2.6880 GHz",
+            "hz_advertised": [
+                2688000000,
+                0
+            ],
+            "hz_actual": [
+                2688000000,
+                0
+            ],
+            "flags": [
+                "3dnow",
+                "3dnowprefetch",
+                "abm",
+                "acpi",
+                "adx",
+                "aes",
+                "apic",
+                "avx",
+                "avx2",
+                "bmi1",
+                "bmi2",
+                "clflush",
+                "clflushopt",
+                "clwb",
+                "cmov",
+                "cx16",
+                "cx8",
+                "de",
+                "dts",
+                "erms",
+                "est",
+                "f16c",
+                "fma",
+                "fpu",
+                "fxsr",
+                "gfni",
+                "ht",
+                "hypervisor",
+                "ia64",
+                "intel_pt",
+                "invpcid",
+                "lahf_lm",
+                "mca",
+                "mce",
+                "mmx",
+                "monitor",
+                "movbe",
+                "msr",
+                "mtrr",
+                "osxsave",
+                "pae",
+                "pat",
+                "pbe",
+                "pcid",
+                "pclmulqdq",
+                "pdcm",
+                "pge",
+                "pni",
+                "popcnt",
+                "pse",
+                "pse36",
+                "rdpid",
+                "rdrnd",
+                "rdseed",
+                "sep",
+                "serial",
+                "sha",
+                "smap",
+                "smep",
+                "ss",
+                "sse",
+                "sse2",
+                "sse4_1",
+                "sse4_2",
+                "ssse3",
+                "tm",
+                "tm2",
+                "tsc",
+                "tscdeadline",
+                "umip",
+                "vaes",
+                "vme",
+                "vpclmulqdq",
+                "x2apic",
+                "xsave",
+                "xtpr"
+            ],
+            "l2_cache_size": 65536,
+            "l2_cache_line_size": 1280,
+            "l2_cache_associativity": 7,
+            "stepping": 3,
+            "model": 154,
+            "family": 6
+        }
+    },
+    "commit_info": {
+        "id": "4adfc83f62cc57f1c42ddb7ddffda512ef15bfe1",
+        "time": "2026-09-21T12:24:51-04:00",
+        "author_time": "2026-09-21T12:24:51-04:00",
+        "dirty": true,
+        "project": "MISalign",
+        "branch": "feature_dga_update2"
+    },
+    "benchmarks": [
+        {
+            "group": null,
+            "name": "test_metric_dtypes[float32]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_dtypes[float32]",
+            "params": {
+                "dtype": "UNSERIALIZABLE[<class 'numpy.float32'>]"
+            },
+            "param": "float32",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 5.999987479299307e-06,
+                "max": 0.0022949999547563493,
+                "mean": 8.434750668642661e-06,
+                "stddev": 1.699412176236783e-05,
+                "rounds": 41018,
+                "median": 7.499998901039362e-06,
+                "iqr": 9.00006853044033e-07,
+                "q1": 6.89999433234334e-06,
+                "q3": 7.800001185387373e-06,
+                "iqr_outliers": 2713,
+                "stddev_outliers": 646,
+                "outliers": "646;2713",
+                "ld15iqr": 5.999987479299307e-06,
+                "hd15iqr": 9.199953638017178e-06,
+                "ops": 118557.14997215469,
+                "total": 0.34597660292638466,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_dtypes[float64]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_dtypes[float64]",
+            "params": {
+                "dtype": "UNSERIALIZABLE[<class 'numpy.float64'>]"
+            },
+            "param": "float64",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 4.599976819008589e-06,
+                "max": 0.0004013000288978219,
+                "mean": 9.924680234278699e-06,
+                "stddev": 1.027664889932402e-05,
+                "rounds": 69833,
+                "median": 6.199989002197981e-06,
+                "iqr": 4.600035026669502e-06,
+                "q1": 5.89998671784997e-06,
+                "q3": 1.0500021744519472e-05,
+                "iqr_outliers": 12054,
+                "stddev_outliers": 3674,
+                "outliers": "3674;12054",
+                "ld15iqr": 4.599976819008589e-06,
+                "hd15iqr": 1.7499958630651236e-05,
+                "ops": 100758.91377800924,
+                "total": 0.6930701948003843,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_dtypes[int16]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_dtypes[int16]",
+            "params": {
+                "dtype": "UNSERIALIZABLE[<class 'numpy.int16'>]"
+            },
+            "param": "int16",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 6.599992047995329e-06,
+                "max": 0.00029880000511184335,
+                "mean": 1.0321779211071397e-05,
+                "stddev": 9.070158856743674e-06,
+                "rounds": 39464,
+                "median": 7.800001185387373e-06,
+                "iqr": 6.999471224844456e-07,
+                "q1": 7.499998901039362e-06,
+                "q3": 8.199946023523808e-06,
+                "iqr_outliers": 5990,
+                "stddev_outliers": 5251,
+                "outliers": "5251;5990",
+                "ld15iqr": 6.599992047995329e-06,
+                "hd15iqr": 9.299954399466515e-06,
+                "ops": 96882.52185508629,
+                "total": 0.4073386947857216,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_dtypes[uint8]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_dtypes[uint8]",
+            "params": {
+                "dtype": "UNSERIALIZABLE[<class 'numpy.uint8'>]"
+            },
+            "param": "uint8",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 6.699992809444666e-06,
+                "max": 0.0006057000136934221,
+                "mean": 1.3160531696954027e-05,
+                "stddev": 1.369265055016318e-05,
+                "rounds": 53192,
+                "median": 8.700008038431406e-06,
+                "iqr": 2.0999577827751637e-06,
+                "q1": 8.200004231184721e-06,
+                "q3": 1.0299962013959885e-05,
+                "iqr_outliers": 12290,
+                "stddev_outliers": 2222,
+                "outliers": "2222;12290",
+                "ld15iqr": 6.699992809444666e-06,
+                "hd15iqr": 1.3499986380338669e-05,
+                "ops": 75984.77197022727,
+                "total": 0.7000350020243786,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[mean_squared_difference]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_locate_simple_1[mean_squared_difference]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetric.mean_squared_difference at 0x000001FD536118A0>]"
+            },
+            "param": "mean_squared_difference",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.1899974197149277e-05,
+                "max": 0.0005760999629274011,
+                "mean": 1.6003607068560154e-05,
+                "stddev": 8.34261628573696e-06,
+                "rounds": 84890,
+                "median": 1.4699995517730713e-05,
+                "iqr": 1.300009898841381e-06,
+                "q1": 1.4199991710484028e-05,
+                "q3": 1.550000160932541e-05,
+                "iqr_outliers": 5694,
+                "stddev_outliers": 2609,
+                "outliers": "2609;5694",
+                "ld15iqr": 1.2299977242946625e-05,
+                "hd15iqr": 1.7499958630651236e-05,
+                "ops": 62485.91306422084,
+                "total": 1.3585462040500715,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[mean_absolute_difference]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_locate_simple_1[mean_absolute_difference]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetric.mean_absolute_difference at 0x000001FD53611BC0>]"
+            },
+            "param": "mean_absolute_difference",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.1400028597563505e-05,
+                "max": 0.00021460000425577164,
+                "mean": 1.406727371819305e-05,
+                "stddev": 5.290965757660791e-06,
+                "rounds": 92082,
+                "median": 1.360004534944892e-05,
+                "iqr": 1.200009137392044e-06,
+                "q1": 1.2899981811642647e-05,
+                "q3": 1.4099990949034691e-05,
+                "iqr_outliers": 3518,
+                "stddev_outliers": 1705,
+                "outliers": "1705;3518",
+                "ld15iqr": 1.1400028597563505e-05,
+                "hd15iqr": 1.599994720891118e-05,
+                "ops": 71086.97961188536,
+                "total": 1.2953426985186525,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[max_absolute_difference]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_locate_simple_1[max_absolute_difference]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetric.max_absolute_difference at 0x000001FD53611C60>]"
+            },
+            "param": "max_absolute_difference",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 7.899943739175797e-06,
+                "max": 0.00028170004952698946,
+                "mean": 9.970910626736044e-06,
+                "stddev": 4.3512145384254926e-06,
+                "rounds": 107297,
+                "median": 9.600014891475439e-06,
+                "iqr": 8.00006091594696e-07,
+                "q1": 9.100011084228754e-06,
+                "q3": 9.90001717582345e-06,
+                "iqr_outliers": 4848,
+                "stddev_outliers": 1837,
+                "outliers": "1837;4848",
+                "ld15iqr": 7.90000194683671e-06,
+                "hd15iqr": 1.1199968867003918e-05,
+                "ops": 100291.74239297619,
+                "total": 1.0698487975168973,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[root_mean_squared_difference]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_locate_simple_1[root_mean_squared_difference]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetric.root_mean_squared_difference at 0x000001FD53611A80>]"
+            },
+            "param": "root_mean_squared_difference",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.2299977242946625e-05,
+                "max": 0.0002933000214397907,
+                "mean": 1.5051904903791988e-05,
+                "stddev": 5.286520027846416e-06,
+                "rounds": 85179,
+                "median": 1.4599994756281376e-05,
+                "iqr": 1.300009898841381e-06,
+                "q1": 1.3899989426136017e-05,
+                "q3": 1.5199999324977398e-05,
+                "iqr_outliers": 2897,
+                "stddev_outliers": 1485,
+                "outliers": "1485;2897",
+                "ld15iqr": 1.2299977242946625e-05,
+                "hd15iqr": 1.7199956346303225e-05,
+                "ops": 66436.77371015496,
+                "total": 1.2821062078000978,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[norm_mean_squared_difference]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_locate_simple_1[norm_mean_squared_difference]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetric.norm_mean_squared_difference at 0x000001FD53611B20>]"
+            },
+            "param": "norm_mean_squared_difference",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 6.0100050177425146e-05,
+                "max": 0.0015097999712452292,
+                "mean": 8.880259432694029e-05,
+                "stddev": 4.504666807501806e-05,
+                "rounds": 17422,
+                "median": 7.71000050008297e-05,
+                "iqr": 7.499998901039362e-06,
+                "q1": 7.370003731921315e-05,
+                "q3": 8.120003622025251e-05,
+                "iqr_outliers": 2527,
+                "stddev_outliers": 1602,
+                "outliers": "1602;2527",
+                "ld15iqr": 6.249995203688741e-05,
+                "hd15iqr": 9.250000584870577e-05,
+                "ops": 11260.932268694172,
+                "total": 1.5471187983639538,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[deviation_difference_over_source]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_locate_simple_1[deviation_difference_over_source]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetric.deviation_difference_over_source at 0x000001FD53611D00>]"
+            },
+            "param": "deviation_difference_over_source",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 4.7200010158121586e-05,
+                "max": 0.002943499945104122,
+                "mean": 8.396013098259958e-05,
+                "stddev": 5.39365001529563e-05,
+                "rounds": 49901,
+                "median": 5.709996912628412e-05,
+                "iqr": 8.389994036406279e-05,
+                "q1": 5.270005203783512e-05,
+                "q3": 0.0001365999924018979,
+                "iqr_outliers": 481,
+                "stddev_outliers": 10057,
+                "outliers": "10057;481",
+                "ld15iqr": 4.7200010158121586e-05,
+                "hd15iqr": 0.0002625000197440386,
+                "ops": 11910.414958824282,
+                "total": 4.189694496162701,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[modified_pearson]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_locate_simple_1[modified_pearson]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetricSkimage.modified_pearson at 0x000001FD53611EE0>]"
+            },
+            "param": "modified_pearson",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00020980002591386437,
+                "max": 0.0003349999897181988,
+                "mean": 0.0002489666687324643,
+                "stddev": 3.496912209772619e-05,
+                "rounds": 15,
+                "median": 0.00024159997701644897,
+                "iqr": 2.6725028874352574e-05,
+                "q1": 0.0002278749889228493,
+                "q3": 0.00025460001779720187,
+                "iqr_outliers": 2,
+                "stddev_outliers": 3,
+                "outliers": "3;2",
+                "ld15iqr": 0.00020980002591386437,
+                "hd15iqr": 0.0003168000257574022,
+                "ops": 4016.601921418583,
+                "total": 0.0037345000309869647,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_locate_simple_1[modified_mutual_information]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_locate_simple_1[modified_mutual_information]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function LocateMetricSkimage.modified_mutual_information at 0x000001FD53611F80>]"
+            },
+            "param": "modified_mutual_information",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0007038999465294182,
+                "max": 0.004414799972437322,
+                "mean": 0.0008704861878798194,
+                "stddev": 0.00031743949250218165,
+                "rounds": 181,
+                "median": 0.0008242000476457179,
+                "iqr": 4.9000009312294424e-05,
+                "q1": 0.0007961500086821616,
+                "q3": 0.000845150017994456,
+                "iqr_outliers": 12,
+                "stddev_outliers": 6,
+                "outliers": "6;12",
+                "ld15iqr": 0.0007376000285148621,
+                "hd15iqr": 0.000957000011112541,
+                "ops": 1148.7833051499967,
+                "total": 0.1575580000062473,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_weight_simple_1[highlow_inverse]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_weight_simple_1[highlow_inverse]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function WeightMetric.highlow_inverse at 0x000001FD53611DA0>]",
+                "expected_value": 0.00020824657
+            },
+            "param": "highlow_inverse",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.5199999324977398e-05,
+                "max": 0.003292700042948127,
+                "mean": 2.0757843171302623e-05,
+                "stddev": 1.709653476893094e-05,
+                "rounds": 107527,
+                "median": 1.8199963960796595e-05,
+                "iqr": 1.400010660290718e-06,
+                "q1": 1.7600017599761486e-05,
+                "q3": 1.9000028260052204e-05,
+                "iqr_outliers": 9492,
+                "stddev_outliers": 6452,
+                "outliers": "6452;9492",
+                "ld15iqr": 1.550000160932541e-05,
+                "hd15iqr": 2.1199986804276705e-05,
+                "ops": 48174.56186307851,
+                "total": 2.232028602680657,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_metric_weight_simple_1[metric_linear_edge_penalty]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestMetric::test_metric_weight_simple_1[metric_linear_edge_penalty]",
+            "params": {
+                "metric": "UNSERIALIZABLE[<function WeightMetric.linear_edge_penalty at 0x000001FD53611E40>]",
+                "expected_value": 0.1366666666666667
+            },
+            "param": "metric_linear_edge_penalty",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.5999692045152187e-06,
+                "max": 0.001052499981597066,
+                "mean": 5.024095554927456e-06,
+                "stddev": 5.3580271095292585e-06,
+                "rounds": 190114,
+                "median": 4.200031980872154e-06,
+                "iqr": 4.00003045797348e-07,
+                "q1": 4.099973011761904e-06,
+                "q3": 4.499976057559252e-06,
+                "iqr_outliers": 16342,
+                "stddev_outliers": 11917,
+                "outliers": "11917;16342",
+                "ld15iqr": 3.5999692045152187e-06,
+                "hd15iqr": 5.100038833916187e-06,
+                "ops": 199040.80029274826,
+                "total": 0.9551509023294784,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_strategy_scaled_grid_simple_1[initial_offset0-1-5]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestStrategy::test_strategy_scaled_grid_simple_1[initial_offset0-1-5]",
+            "params": {
+                "initial_offset": [
+                    -5,
+                    -5
+                ],
+                "strategy_grid_scale": 1,
+                "strategy_max_size": 5
+            },
+            "param": "initial_offset0-1-5",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.001573899993672967,
+                "max": 0.012807199964299798,
+                "mean": 0.0022845865373576466,
+                "stddev": 0.0009929830188868307,
+                "rounds": 2778,
+                "median": 0.0019238000095356256,
+                "iqr": 0.00035389995900914073,
+                "q1": 0.0018096000421792269,
+                "q3": 0.0021635000011883676,
+                "iqr_outliers": 412,
+                "stddev_outliers": 318,
+                "outliers": "318;412",
+                "ld15iqr": 0.001573899993672967,
+                "hd15iqr": 0.0026947000296786427,
+                "ops": 437.71596463866075,
+                "total": 6.346581400779542,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_strategy_scaled_grid_simple_1[initial_offset1-1-5]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestStrategy::test_strategy_scaled_grid_simple_1[initial_offset1-1-5]",
+            "params": {
+                "initial_offset": [
+                    -7,
+                    -1
+                ],
+                "strategy_grid_scale": 1,
+                "strategy_max_size": 5
+            },
+            "param": "initial_offset1-1-5",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.001600799965672195,
+                "max": 0.007639900024514645,
+                "mean": 0.002395110424347337,
+                "stddev": 0.0010761046370480626,
+                "rounds": 2753,
+                "median": 0.0018797999946400523,
+                "iqr": 0.0008132750081131235,
+                "q1": 0.0017238750297110528,
+                "q3": 0.0025371500378241763,
+                "iqr_outliers": 409,
+                "stddev_outliers": 469,
+                "outliers": "469;409",
+                "ld15iqr": 0.001600799965672195,
+                "hd15iqr": 0.003760300052817911,
+                "ops": 417.5172843116401,
+                "total": 6.593738998228218,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_strategy_scaled_grid_simple_1[initial_offset2-1-10]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestStrategy::test_strategy_scaled_grid_simple_1[initial_offset2-1-10]",
+            "params": {
+                "initial_offset": [
+                    1,
+                    4
+                ],
+                "strategy_grid_scale": 1,
+                "strategy_max_size": 10
+            },
+            "param": "initial_offset2-1-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.005726200004573911,
+                "max": 0.019538399996235967,
+                "mean": 0.008641506354331564,
+                "stddev": 0.003182180315023738,
+                "rounds": 661,
+                "median": 0.007189999974798411,
+                "iqr": 0.002115725030307658,
+                "q1": 0.006732299996656366,
+                "q3": 0.008848025026964024,
+                "iqr_outliers": 111,
+                "stddev_outliers": 114,
+                "outliers": "114;111",
+                "ld15iqr": 0.005726200004573911,
+                "hd15iqr": 0.012040700006764382,
+                "ops": 115.72056525755477,
+                "total": 5.712035700213164,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_full_grid_simple[full_grid - small]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_full_grid_simple[full_grid - small]",
+            "params": {
+                "kwargs": {
+                    "strategy": "UNSERIALIZABLE[<function StrategyLocal.full_grid at 0x000001FD53613F60>]",
+                    "strategy_max_size": 5,
+                    "filter": "UNSERIALIZABLE[<function Filter.rgb_gray_mean at 0x000001FD288818A0>]",
+                    "metric": "UNSERIALIZABLE[<function LocateMetric.mean_squared_difference at 0x000001FD536118A0>]"
+                }
+            },
+            "param": "full_grid - small",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.07980270002735779,
+                "max": 0.11775009997654706,
+                "mean": 0.09353076956746087,
+                "stddev": 0.00869325955430884,
+                "rounds": 46,
+                "median": 0.09178010001778603,
+                "iqr": 0.010779500007629395,
+                "q1": 0.08719300001394004,
+                "q3": 0.09797250002156943,
+                "iqr_outliers": 2,
+                "stddev_outliers": 13,
+                "outliers": "13;2",
+                "ld15iqr": 0.07980270002735779,
+                "hd15iqr": 0.11460400000214577,
+                "ops": 10.691668684268985,
+                "total": 4.3024154001032,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_full_grid_simple[full_grid - small-medium]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_full_grid_simple[full_grid - small-medium]",
+            "params": {
+                "kwargs": {
+                    "strategy": "UNSERIALIZABLE[<function StrategyLocal.full_grid at 0x000001FD53613F60>]",
+                    "strategy_max_size": 10,
+                    "filter": "UNSERIALIZABLE[<function Filter.rgb_gray_mean at 0x000001FD288818A0>]",
+                    "metric": "UNSERIALIZABLE[<function LocateMetric.mean_squared_difference at 0x000001FD536118A0>]"
+                }
+            },
+            "param": "full_grid - small-medium",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.12808260001474991,
+                "max": 0.27170809998642653,
+                "mean": 0.15402492999952908,
+                "stddev": 0.02797983204590757,
+                "rounds": 30,
+                "median": 0.14733669999986887,
+                "iqr": 0.02088620001450181,
+                "q1": 0.1372755999909714,
+                "q3": 0.1581618000054732,
+                "iqr_outliers": 2,
+                "stddev_outliers": 2,
+                "outliers": "2;2",
+                "ld15iqr": 0.12808260001474991,
+                "hd15iqr": 0.20037700003013015,
+                "ops": 6.492455474597895,
+                "total": 4.620747899985872,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_full_grid_simple[full_grid - medium]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_full_grid_simple[full_grid - medium]",
+            "params": {
+                "kwargs": {
+                    "strategy": "UNSERIALIZABLE[<function StrategyLocal.full_grid at 0x000001FD53613F60>]",
+                    "strategy_max_size": 20,
+                    "filter": "UNSERIALIZABLE[<function Filter.rgb_gray_mean at 0x000001FD288818A0>]",
+                    "metric": "UNSERIALIZABLE[<function LocateMetric.mean_squared_difference at 0x000001FD536118A0>]"
+                }
+            },
+            "param": "full_grid - medium",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.3291656999499537,
+                "max": 0.5879422000143677,
+                "mean": 0.3787748846091115,
+                "stddev": 0.07224332865323976,
+                "rounds": 13,
+                "median": 0.3535000999690965,
+                "iqr": 0.035821174999000505,
+                "q1": 0.33935025001119357,
+                "q3": 0.37517142501019407,
+                "iqr_outliers": 2,
+                "stddev_outliers": 2,
+                "outliers": "2;2",
+                "ld15iqr": 0.3291656999499537,
+                "hd15iqr": 0.45679739996558055,
+                "ops": 2.6400905673352155,
+                "total": 4.92407349991845,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_full_grid_simple[scaled_grid - x2 - small-medium]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_full_grid_simple[scaled_grid - x2 - small-medium]",
+            "params": {
+                "kwargs": {
+                    "strategy": "UNSERIALIZABLE[<function StrategyLocal.scaled_grid at 0x000001FD53613A60>]",
+                    "strategy_grid_scale": 2,
+                    "strategy_max_size": 5,
+                    "filter": "UNSERIALIZABLE[<function Filter.rgb_gray_mean at 0x000001FD288818A0>]",
+                    "metric": "UNSERIALIZABLE[<function LocateMetric.mean_squared_difference at 0x000001FD536118A0>]"
+                }
+            },
+            "param": "scaled_grid - x2 - small-medium",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.07778729998972267,
+                "max": 0.10885220003547147,
+                "mean": 0.08846669056439632,
+                "stddev": 0.006734078100984741,
+                "rounds": 53,
+                "median": 0.08772099995985627,
+                "iqr": 0.007659249997232109,
+                "q1": 0.08459090000542346,
+                "q3": 0.09225015000265557,
+                "iqr_outliers": 2,
+                "stddev_outliers": 17,
+                "outliers": "17;2",
+                "ld15iqr": 0.07778729998972267,
+                "hd15iqr": 0.10379799996735528,
+                "ops": 11.303689486068025,
+                "total": 4.688734599913005,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_full_grid_simple[local_minima_grid - small]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_full_grid_simple[local_minima_grid - small]",
+            "params": {
+                "kwargs": {
+                    "strategy": "UNSERIALIZABLE[<function StrategyLocal.local_minima_grid at 0x000001FD53640040>]",
+                    "strategy_max_size": 5,
+                    "filter": "UNSERIALIZABLE[<function Filter.rgb_gray_mean at 0x000001FD288818A0>]",
+                    "metric": "UNSERIALIZABLE[<function LocateMetric.mean_squared_difference at 0x000001FD536118A0>]"
+                }
+            },
+            "param": "local_minima_grid - small",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.06579809996765107,
+                "max": 0.102790399978403,
+                "mean": 0.07487430298047613,
+                "stddev": 0.008058038443448271,
+                "rounds": 67,
+                "median": 0.07228480000048876,
+                "iqr": 0.0044624000147450715,
+                "q1": 0.07060559999081306,
+                "q3": 0.07506800000555813,
+                "iqr_outliers": 11,
+                "stddev_outliers": 12,
+                "outliers": "12;11",
+                "ld15iqr": 0.06579809996765107,
+                "hd15iqr": 0.08297469996614382,
+                "ops": 13.355716984246989,
+                "total": 5.016578299691901,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_predict[a01-a02]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_predict[a01-a02]",
+            "params": {
+                "offset": [
+                    9,
+                    -1087
+                ],
+                "kwargs": {
+                    "image_a": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD7FF3DE80>]",
+                    "image_b": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD534FB750>]",
+                    "filter": "UNSERIALIZABLE[<function Filter.rgb_gray_mean at 0x000001FD288818A0>]"
+                }
+            },
+            "param": "a01-a02",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 2.4458803000161424,
+                "max": 2.8037127999705262,
+                "mean": 2.5987416499992833,
+                "stddev": 0.12998932080542194,
+                "rounds": 10,
+                "median": 2.6257592999900226,
+                "iqr": 0.25638610002351925,
+                "q1": 2.457833099993877,
+                "q3": 2.7142192000173964,
+                "iqr_outliers": 0,
+                "stddev_outliers": 5,
+                "outliers": "5;0",
+                "ld15iqr": 2.4458803000161424,
+                "hd15iqr": 2.8037127999705262,
+                "ops": 0.3848016212001204,
+                "total": 25.987416499992833,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_predict[b25-b26]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_predict[b25-b26]",
+            "params": {
+                "offset": [
+                    934,
+                    -210
+                ],
+                "kwargs": {
+                    "image_a": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD534FB4D0>]",
+                    "image_b": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD53634C30>]",
+                    "filter": "UNSERIALIZABLE[<function Filter.rgb_gray_mean at 0x000001FD288818A0>]"
+                }
+            },
+            "param": "b25-b26",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 2.69086159998551,
+                "max": 2.9762068999698386,
+                "mean": 2.8394196399953215,
+                "stddev": 0.0883633443685423,
+                "rounds": 10,
+                "median": 2.859616450004978,
+                "iqr": 0.14129330002469942,
+                "q1": 2.764871299965307,
+                "q3": 2.9061645999900065,
+                "iqr_outliers": 0,
+                "stddev_outliers": 3,
+                "outliers": "3;0",
+                "ld15iqr": 2.69086159998551,
+                "hd15iqr": 2.9762068999698386,
+                "ops": 0.35218464573332586,
+                "total": 28.394196399953216,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_predict[c26-c27]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_predict[c26-c27]",
+            "params": {
+                "offset": [
+                    1144,
+                    91
+                ],
+                "kwargs": {
+                    "image_a": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD53634B00>]",
+                    "image_b": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD28875370>]",
+                    "filter": "UNSERIALIZABLE[<function Filter.rgb_gray_mean at 0x000001FD288818A0>]"
+                }
+            },
+            "param": "c26-c27",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 2.532069100008812,
+                "max": 3.742622299992945,
+                "mean": 2.981134929996915,
+                "stddev": 0.3895603748652115,
+                "rounds": 10,
+                "median": 2.8490385499899276,
+                "iqr": 0.37399019999429584,
+                "q1": 2.742228199960664,
+                "q3": 3.1162183999549598,
+                "iqr_outliers": 1,
+                "stddev_outliers": 3,
+                "outliers": "3;1",
+                "ld15iqr": 2.532069100008812,
+                "hd15iqr": 3.742622299992945,
+                "ops": 0.33544271677801407,
+                "total": 29.81134929996915,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_predict[d04-d05]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_predict[d04-d05]",
+            "params": {
+                "offset": [
+                    7,
+                    -786
+                ],
+                "kwargs": {
+                    "image_a": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD535767A0>]",
+                    "image_b": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD53576690>]",
+                    "filter": "UNSERIALIZABLE[<function Filter.rgb_gray_mean at 0x000001FD288818A0>]"
+                }
+            },
+            "param": "d04-d05",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 2.449204100004863,
+                "max": 2.793081699986942,
+                "mean": 2.7055613799835556,
+                "stddev": 0.10319507885413937,
+                "rounds": 10,
+                "median": 2.7430454999848735,
+                "iqr": 0.10972319997381419,
+                "q1": 2.66656659997534,
+                "q3": 2.7762897999491543,
+                "iqr_outliers": 1,
+                "stddev_outliers": 1,
+                "outliers": "1;1",
+                "ld15iqr": 2.6586040999973193,
+                "hd15iqr": 2.793081699986942,
+                "ops": 0.3696090605810163,
+                "total": 27.055613799835555,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_predict[e004-e005]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_predict[e004-e005]",
+            "params": {
+                "offset": [
+                    0,
+                    1174
+                ],
+                "kwargs": {
+                    "image_a": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD28849450>]",
+                    "image_b": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD535DD150>]",
+                    "filter": "UNSERIALIZABLE[<function ModifierSkimage.median_disk.<locals>.modified_filter at 0x000001FD53641260>]"
+                }
+            },
+            "param": "e004-e005",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 6.567599400004838,
+                "max": 7.323557600029744,
+                "mean": 6.9546511599910446,
+                "stddev": 0.24987126482683975,
+                "rounds": 10,
+                "median": 6.881676849967334,
+                "iqr": 0.384552400035318,
+                "q1": 6.849990199960303,
+                "q3": 7.2345425999956205,
+                "iqr_outliers": 0,
+                "stddev_outliers": 5,
+                "outliers": "5;0",
+                "ld15iqr": 6.567599400004838,
+                "hd15iqr": 7.323557600029744,
+                "ops": 0.14378866416087616,
+                "total": 69.54651159991045,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_predict[e100-e101]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_predict[e100-e101]",
+            "params": {
+                "offset": [
+                    -55,
+                    748
+                ],
+                "kwargs": {
+                    "image_a": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD535E98B0>]",
+                    "image_b": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD535E99A0>]",
+                    "filter": "UNSERIALIZABLE[<function ModifierSkimage.median_disk.<locals>.modified_filter at 0x000001FD536413A0>]"
+                }
+            },
+            "param": "e100-e101",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 7.029455100011546,
+                "max": 8.453834599989932,
+                "mean": 7.755389669991564,
+                "stddev": 0.4647520046107327,
+                "rounds": 10,
+                "median": 7.748119249969022,
+                "iqr": 0.6009671000065282,
+                "q1": 7.487220000009984,
+                "q3": 8.088187100016512,
+                "iqr_outliers": 0,
+                "stddev_outliers": 4,
+                "outliers": "4;0",
+                "ld15iqr": 7.029455100011546,
+                "hd15iqr": 8.453834599989932,
+                "ops": 0.12894258606622505,
+                "total": 77.55389669991564,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_pairwise_predict[f03-f04]",
+            "fullname": "tests/test_auto_rectangular_skimage.py::TestRegistration::test_pairwise_predict[f03-f04]",
+            "params": {
+                "offset": [
+                    12,
+                    -3500
+                ],
+                "kwargs": {
+                    "image_a": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD5360D7F0>]",
+                    "image_b": "UNSERIALIZABLE[<misalign.model.image.MISImageFile object at 0x000001FD5360DA90>]",
+                    "strategy_downsample": 10,
+                    "filter": "UNSERIALIZABLE[<function ModifierSkimage.median_disk.<locals>.modified_filter at 0x000001FD536414E0>]"
+                }
+            },
+            "param": "f03-f04",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 10,
+                "max_time": 5.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 8.340248399996199,
+                "max": 9.459387600014452,
+                "mean": 8.888584060006542,
+                "stddev": 0.3418505722540839,
+                "rounds": 10,
+                "median": 8.932309049996547,
+                "iqr": 0.4458757999818772,
+                "q1": 8.586710400006268,
+                "q3": 9.032586199988145,
+                "iqr_outliers": 0,
+                "stddev_outliers": 3,
+                "outliers": "3;0",
+                "ld15iqr": 8.340248399996199,
+                "hd15iqr": 9.459387600014452,
+                "ops": 0.11250385812284977,
+                "total": 88.88584060006542,
+                "iterations": 1
+            }
+        }
+    ],
+    "datetime": "2026-09-21T17:33:11.834109+00:00",
+    "version": "5.2.3"
+}
