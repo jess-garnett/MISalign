@@ -918,6 +918,12 @@ dependencies = [
     { name = "quantiphy" },
 ]
 
+[package.optional-dependencies]
+sci = [
+    { name = "scikit-image" },
+    { name = "scipy" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "ipykernel" },
@@ -937,10 +943,6 @@ docs = [
     { name = "sphinx" },
     { name = "sphinx-rtd-theme" },
 ]
-sci = [
-    { name = "scikit-image" },
-    { name = "scipy" },
-]
 
 [package.metadata]
 requires-dist = [
@@ -953,7 +955,10 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.2.0" },
     { name = "pillow", specifier = ">=11.0.0" },
     { name = "quantiphy", specifier = ">=2.21" },
+    { name = "scikit-image", marker = "extra == 'sci'", specifier = ">=0.25.0" },
+    { name = "scipy", marker = "extra == 'sci'", specifier = ">=1.15.0" },
 ]
+provides-extras = ["sci"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -973,10 +978,6 @@ docs = [
     { name = "numpydoc", specifier = ">=1.10.0" },
     { name = "sphinx", specifier = ">=9.1.0" },
     { name = "sphinx-rtd-theme", specifier = ">=3.1.0" },
-]
-sci = [
-    { name = "scikit-image", specifier = ">=0.25.0" },
-    { name = "scipy", specifier = ">=1.15.0" },
 ]
 
 [[package]]

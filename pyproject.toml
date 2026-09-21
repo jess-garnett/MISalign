@@ -20,13 +20,14 @@ dependencies = [
     "ipympl>=0.9.7", # https://pypi.org/project/ipympl/#history
     "ipywidgets>=8.1.6", # https://pypi.org/project/ipywidgets/#history
 ] #TODO revisit dependencies with respect to `PEP 771 - Default Extras for Python Software Packages`.
-    # Moving forward with all the dependencies needed to make all the examples work.
 
-[dependency-groups]
+[project.optional-dependencies]
 sci = [
     "scipy>=1.15.0", # SPEC0 Core Project
     "scikit-image>=0.25.0", # SPEC0 Core Project
 ]
+
+[dependency-groups]
 dev = [
     "pytest>=9.0.3",
     "ruff>=0.15.12",
