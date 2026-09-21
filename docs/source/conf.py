@@ -9,7 +9,7 @@
 project = 'misalign'
 copyright = '2023, Jessica Garnett'
 author = 'Jessica Garnett'
-release = '2.2.0.dev1'
+release = '2.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -57,6 +57,7 @@ example_path_find="../example/"
 example_path_replace="../../../example/"
 for notebook in [
     "align.ipynb",
+    "align_auto.ipynb",
     "calibrate.ipynb",
     "render.ipynb",
     "setup.ipynb"
@@ -173,8 +174,6 @@ for notebook in [
         ]
         })
                 
-        
-
     with open(notebook_docs_path.joinpath(notebook),mode='w') as f_d:
         f_d.write(dumps(notebook_json,indent=2))
         
