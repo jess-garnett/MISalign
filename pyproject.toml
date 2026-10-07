@@ -38,6 +38,7 @@ dev = [
     "seaborn>=0.13.2", # temporarily in development dependency group until core or extra dependency is decided.
     "pytest-benchmark>=5.2.3",
     "snakeviz>=2.2.2",
+    "jupytext>=1.19.6",
 ]
 docs = [
     "myst-nb>=1.4.0",
@@ -54,3 +55,6 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-name = "misalign"
 module-root = ""
+
+[tool.jupytext.formats]
+formats = "ipynb,md:myst;notebooks///ipynb,scripts///md:myst"
