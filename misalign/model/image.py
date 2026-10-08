@@ -671,7 +671,7 @@ class MISImageNPZ():
             **self._dict, # loaded dict first and then get the current values
             "image_type":self._image_type,
             "npz_filepath":self.npz_filepath.as_posix(),
-            "npz_path":self.npz_key,
+            "npz_key":self.npz_key,
             "image_name":self.name
             }
     def check_npz_path(self)->bool:
