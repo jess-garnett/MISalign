@@ -9,4 +9,18 @@ jobs:
   test:
     runs-on: codeberg-tiny-lazy
     steps:
-      - run: echo Pulling main onto ${{ inputs.branch_name }}
+      - run: echo Updating main onto ${{ inputs.branch_name }}
+      
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      
+      - name: Update Stable Branch
+        run: |
+          git checkout main
+          git fetch origin
+          git checkout ${{ inputs.branch_name }}
+          git pull
+          git merge origin/main
+          git push origin test
