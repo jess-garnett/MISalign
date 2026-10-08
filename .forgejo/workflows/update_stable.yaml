@@ -1,6 +1,12 @@
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "Stable Branch Name (i.e. 2.2.x)"
+        required: True
+        type: string
 jobs:
   test:
     runs-on: codeberg-tiny-lazy
     steps:
-      - run: echo All good!
+      - run: echo Pulling `main` onto `${{ inputs.branch_name }}`
