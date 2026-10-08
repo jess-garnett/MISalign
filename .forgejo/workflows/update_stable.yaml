@@ -9,4 +9,4 @@ jobs:
   test:
     runs-on: codeberg-tiny-lazy
     steps:
-      - run: echo Pulling `main` onto `${{ inputs.branch_name }}`
+      - run: echo Pulling main onto ${{ inputs.branch_name }}
