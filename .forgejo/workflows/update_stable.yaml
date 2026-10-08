@@ -23,4 +23,4 @@ jobs:
           git checkout ${{ inputs.branch_name }}
           git pull
           git merge origin/main
-          git push origin test
+          git push origin ${{ inputs.branch_name }}
