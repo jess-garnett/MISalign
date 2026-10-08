@@ -1,6 +1,6 @@
 <h1 align="center">
 
-<img src="https://github.com/jess-garnett/MISalign/blob/main/develop/misalign_logo/misalign_logo_r2_wide.png?raw=true" width="300">
+<img src="https://codeberg.org/jgarnett/MISalign/media/branch/main/develop/misalign_logo/misalign_logo_r2_wide.png" width="300">
 
 </h1><br>
 
@@ -10,7 +10,7 @@ A Metallography Image Software for Alignment.
 [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
 
 ## How to use MISalign
-Make a copy of the git repository using `git clone https://github.com/jess-garnett/MISalign.git`.
+Make a copy of the git repository using `git clone https://codeberg.org/jgarnett/MISalign.git`.
 We recommend installing the library with [uv](https://docs.astral.sh/uv/).
 Install the package using `uv sync`.
 
@@ -43,7 +43,7 @@ A secondary assumption of MISalign, in its current state, is that all images are
 We're in the process of getting on PyPi so for now you will need to download(or clone) a copy of this repository.
 We recommend using [uv](https://docs.astral.sh/uv/) for python package management. With uv installed you should be able to run `uv sync` and then `misalign` will be installed in its own virtual environment and ready to use with the Jupyter Notebooks(`.ipynb`) in the `notebooks` folder which are configured with paths to the example data so you can explore how it works.
 ## Where can I get more help, if I need it?
-Feel free to share issues on the Github(https://github.com/jess-garnett/misalign/issues).
+Feel free to share issues on the Codeberg(https://codeberg.org/jgarnett/MISalign/issues).
 
 Documentation is available on Read The Docs: https://misalign.readthedocs.io/en/stable/
 
